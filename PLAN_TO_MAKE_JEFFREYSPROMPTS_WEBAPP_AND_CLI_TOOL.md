@@ -1186,6 +1186,9 @@ interface Flags {
   category?: string;
   tag?: string;
   raw: boolean;
+  limit?: number;
+  bundle?: string;
+  format?: string;  // "skill" | "md"
 }
 
 function parseFlags(args: string[]): { command: string; positional: string[]; flags: Flags } {
@@ -1207,11 +1210,32 @@ function parseFlags(args: string[]): { command: string; positional: string[]; fl
     flags.tag = args[tagIdx + 1];
   }
 
+  // Extract --limit value
+  const limitIdx = args.indexOf("--limit");
+  if (limitIdx !== -1 && args[limitIdx + 1]) {
+    flags.limit = parseInt(args[limitIdx + 1], 10);
+  }
+
+  // Extract --bundle value
+  const bundleIdx = args.indexOf("--bundle");
+  if (bundleIdx !== -1 && args[bundleIdx + 1]) {
+    flags.bundle = args[bundleIdx + 1];
+  }
+
+  // Extract --format value
+  const formatIdx = args.indexOf("--format");
+  if (formatIdx !== -1 && args[formatIdx + 1]) {
+    flags.format = args[formatIdx + 1];
+  }
+
   // Remove flags from args to get positional arguments
   const positional = args.filter((a) =>
     !a.startsWith("--") &&
     a !== flags.category &&
-    a !== flags.tag
+    a !== flags.tag &&
+    a !== flags.limit?.toString() &&
+    a !== flags.bundle &&
+    a !== flags.format
   );
 
   return {
@@ -1382,6 +1406,63 @@ async function copyCommand(id: string, flags: Flags) {
   }
 
   console.log(chalk.green(`✓ Copied "${prompt.title}" to clipboard`));
+}
+
+// jfp export — Export prompt as SKILL.md or markdown
+async function exportCommand(ids: string[], flags: Flags) {
+  const format = flags.format ?? "skill";  // "skill" or "md"
+  const all = flags.all;
+
+  const toExport = all
+    ? prompts
+    : prompts.filter((p) => ids.includes(p.id));
+
+  if (toExport.length === 0) {
+    console.error(chalk.red("No matching prompts found."));
+    console.error(chalk.dim(`Available: ${prompts.map((p) => p.id).join(", ")}`));
+    process.exit(1);
+  }
+
+  for (const prompt of toExport) {
+    const filename = format === "skill"
+      ? `${prompt.id}-SKILL.md`
+      : `${prompt.id}.md`;
+
+    const content = format === "skill"
+      ? generateSkillMd(prompt)
+      : generateMarkdown(prompt);
+
+    await Bun.write(filename, content);
+    console.log(chalk.green(`✓ Exported ${filename}`));
+  }
+}
+
+// Generate markdown export
+function generateMarkdown(prompt: Prompt): string {
+  return `# ${prompt.title}
+
+**Category:** ${prompt.category}
+**Tags:** ${prompt.tags.join(", ")}
+**Author:** ${prompt.author}
+
+---
+
+${prompt.content}
+
+---
+
+## When to Use
+
+${prompt.whenToUse?.map((w) => `- ${w}`).join("\n") ?? ""}
+
+## Tips
+
+${prompt.tips?.map((t) => `- ${t}`).join("\n") ?? ""}
+
+---
+
+*From [JeffreysPrompts.com](https://jeffreysprompts.com/prompts/${prompt.id})*
+`;
 }
 
 // jfp i — Interactive fzf-style browser
@@ -1825,6 +1906,26 @@ export async function GET(
     headers: {
       "Content-Type": "text/markdown; charset=utf-8",
       "Content-Disposition": `attachment; filename="${id}-SKILL.md"`,
+    },
+  });
+}
+```
+
+**API endpoint for embeddings (semantic search):**
+
+```typescript
+// apps/web/src/app/api/embeddings/route.ts
+
+import { NextResponse } from "next/server";
+import embeddingsData from "@/../public/embeddings.json";
+
+export async function GET() {
+  // Return pre-computed embeddings for semantic search
+  // The embeddings.json file is generated at build time by scripts/generate-embeddings.ts
+  return NextResponse.json(embeddingsData, {
+    headers: {
+      // Cache for 1 hour (embeddings change only on new builds)
+      "Cache-Control": "public, max-age=3600",
     },
   });
 }
@@ -4618,8 +4719,51 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Build WASM first (web app depends on it)
+  build-wasm:
+    name: Build WASM Module
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            crates/jfp-search-wasm/target/
+          key: ${{ runner.os }}-cargo-wasm-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install wasm-pack
+        run: cargo install wasm-pack --locked || true
+
+      - name: Build WASM
+        run: |
+          cd crates/jfp-search-wasm
+          wasm-pack build --target web --release
+
+      - name: Test WASM crate
+        run: |
+          cd crates/jfp-search-wasm
+          cargo test
+
+      - name: Upload WASM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wasm-module
+          path: crates/jfp-search-wasm/pkg/
+
   lint-and-test:
     name: Lint & Test
+    needs: build-wasm  # Wait for WASM to be built
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -4631,6 +4775,15 @@ jobs:
 
       - name: Install dependencies
         run: bun install
+
+      - name: Download WASM artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: wasm-module
+          path: apps/web/public/wasm/
+
+      - name: Generate embeddings
+        run: bun run scripts/generate-embeddings.ts
 
       - name: Lint (ESLint + Oxlint)
         run: |
@@ -4659,31 +4812,7 @@ jobs:
         run: |
           /tmp/jfp --version
           /tmp/jfp list --json | jq '.length'
-
-  build-wasm:
-    name: Build WASM Module
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32-unknown-unknown
-
-      - name: Install wasm-pack
-        run: cargo install wasm-pack
-
-      - name: Build WASM
-        run: |
-          cd crates/jfp-search-wasm
-          wasm-pack build --target web --release
-
-      - name: Upload WASM artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: wasm-module
-          path: crates/jfp-search-wasm/pkg/
+          /tmp/jfp suggest "update documentation" --json | jq '.count'
 ```
 
 ### 11.2 Release Workflow (Version Tags)
@@ -4959,8 +5088,10 @@ The flywheel includes:
 - **Three coding agents**: Claude Code, Codex CLI, Gemini CLI
 - **NTM**: Multi-agent orchestration with the command palette
 - **Modern terminal**: zsh + oh-my-zsh + powerlevel10k + fzf + zoxide
-- **Session search**: `cass` for searching Claude Code transcripts
+- **Session search**: [`cass`](https://github.com/Dicklesworthstone/coding_agent_session_search) for searching Claude Code transcripts
 - **All of Jeffrey's prompts**: Pre-installed as Claude Code skills
+
+> **Note**: `cass` (coding-agent-session-search) is the semantic search tool that jfp's hash embedder algorithm is derived from. It provides full-text and semantic search over your Claude Code session transcripts.
 ```
 
 ### 12.2 Web App Footer Integration
@@ -5026,6 +5157,10 @@ export function Footer() {
 
 ```typescript
 // Add to jfp.ts
+
+// Read version from package.json at compile time (Bun inlines this)
+import packageJson from "./package.json";
+const VERSION = packageJson.version;
 
 function showAbout() {
   const banner = `
@@ -5150,16 +5285,22 @@ Use these prompts in sequence for maximum impact:
   {
     id: "documentation-suite",
     title: "Documentation Suite",
-    description: "Comprehensive documentation generation and maintenance",
+    description: "Documentation prompts (growing collection)",
     promptIds: ["readme-reviser"],
     workflow: `
 ## Documentation Workflow
+
+**Currently includes:**
 
 1. **README Reviser** → Ensure README reflects actual code
    - Cross-reference implemented features with docs
    - Add missing sections for undocumented features
 
-(More documentation prompts will be added as the registry grows)
+**Coming soon** (as the registry grows):
+- API documentation generator
+- Changelog writer
+- Code comment enhancer
+- Architecture documentation
     `,
     whenToUse: [
       "Before releasing a new version",
@@ -5167,7 +5308,7 @@ Use these prompts in sequence for maximum impact:
       "After major refactoring",
     ],
     author: "Jeffrey Emanuel",
-    featured: false,
+    featured: false,  // Not featured until it has more prompts
     icon: "FileText",
   },
 ];
@@ -5767,31 +5908,149 @@ lto = true
 ```bash
 #!/bin/bash
 # scripts/build-wasm.sh
+#
+# Builds the jfp-search WASM module for browser use.
+#
+# We use --target web (not bundler) because:
+# - The WASM is loaded dynamically from public/wasm/
+# - No bundler integration needed (avoids Next.js complexity)
+# - Works with dynamic import() in the browser
 
 set -e
 
-echo "Building jfp-search WASM module..."
-
+cd "$(dirname "$0")/.."  # Navigate to project root
 cd crates/jfp-search-wasm
 
-# Build for web target
+echo "Building jfp-search WASM module..."
+
+# Build for web target (browser dynamic loading)
 wasm-pack build --target web --release
 
-# Also build for bundler (Next.js)
-wasm-pack build --target bundler --release --out-dir pkg-bundler
-
+# Show built files and sizes
 echo ""
-echo "Built WASM modules:"
-ls -la pkg/
-ls -la pkg-bundler/
+echo "Built WASM files:"
+ls -lh pkg/*.wasm pkg/*.js
 
-# Copy to web app
+# Optimize WASM size with wasm-opt if available
+if command -v wasm-opt &> /dev/null; then
+  echo ""
+  echo "Optimizing WASM with wasm-opt..."
+  wasm-opt -Os pkg/jfp_search_wasm_bg.wasm -o pkg/jfp_search_wasm_bg.wasm
+  echo "Optimized size:"
+  ls -lh pkg/*.wasm
+fi
+
+# Copy to web app public directory
+echo ""
+echo "Copying to apps/web/public/wasm/..."
 mkdir -p ../../apps/web/public/wasm
 cp pkg/jfp_search_wasm_bg.wasm ../../apps/web/public/wasm/
 cp pkg/jfp_search_wasm.js ../../apps/web/public/wasm/
 
 echo ""
-echo "Copied to apps/web/public/wasm/"
+echo "Done! WASM module available at /wasm/jfp_search_wasm.js"
+```
+
+### 14.5.5 Shared TypeScript Hash Embedder Module
+
+To avoid duplicating the hash embedder logic across CLI and build scripts, we extract it to a shared module:
+
+```typescript
+// apps/web/src/lib/search/hash-embedder.ts
+
+/**
+ * FNV-1a Hash Embedder
+ *
+ * This module implements the same algorithm as the Rust WASM version,
+ * but in pure TypeScript for use in:
+ * - CLI (jfp suggest command)
+ * - Build scripts (generate-embeddings.ts)
+ *
+ * The algorithm:
+ * 1. Tokenize text (lowercase, split on non-alphanumeric)
+ * 2. Hash each token with FNV-1a
+ * 3. Project hash to embedding dimension with sign flip
+ * 4. L2 normalize the resulting vector
+ */
+
+// FNV-1a constants (64-bit)
+const FNV_OFFSET_BASIS = 0xcbf29ce484222325n;
+const FNV_PRIME = 0x100000001b3n;
+
+// Embedding dimension (matches MiniLM for future compatibility)
+export const DIMENSION = 384;
+
+// Minimum token length
+const MIN_TOKEN_LEN = 2;
+
+/**
+ * Tokenize text for embedding.
+ */
+export function tokenize(text: string): string[] {
+  return text
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((s) => s.length >= MIN_TOKEN_LEN);
+}
+
+/**
+ * Compute FNV-1a hash of a string.
+ */
+function fnv1aHash(str: string): bigint {
+  let hash = FNV_OFFSET_BASIS;
+  for (const char of str) {
+    hash ^= BigInt(char.charCodeAt(0));
+    hash = (hash * FNV_PRIME) & 0xFFFFFFFFFFFFFFFFn;
+  }
+  return hash;
+}
+
+/**
+ * L2 normalize a vector in place.
+ */
+function l2Normalize(vec: number[]): void {
+  const norm = Math.sqrt(vec.reduce((sum, x) => sum + x * x, 0));
+  if (norm > 1e-10) {
+    for (let i = 0; i < vec.length; i++) {
+      vec[i] /= norm;
+    }
+  }
+}
+
+/**
+ * Generate a hash embedding for text.
+ *
+ * @param text - The text to embed
+ * @returns A 384-dimensional L2-normalized vector
+ */
+export function hashEmbed(text: string): number[] {
+  const tokens = tokenize(text);
+
+  if (tokens.length === 0) {
+    // Return uniform vector for empty input
+    const val = 1.0 / Math.sqrt(DIMENSION);
+    return Array(DIMENSION).fill(val);
+  }
+
+  const embedding = Array(DIMENSION).fill(0);
+
+  for (const token of tokens) {
+    const hash = fnv1aHash(token);
+    const idx = Number(hash % BigInt(DIMENSION));
+    const sign = (hash >> 63n) === 0n ? 1 : -1;
+    embedding[idx] += sign;
+  }
+
+  l2Normalize(embedding);
+  return embedding;
+}
+
+/**
+ * Compute cosine similarity between two L2-normalized vectors.
+ */
+export function cosineSimilarity(a: number[], b: number[]): number {
+  return a.reduce((sum, x, i) => sum + x * b[i], 0);
+}
 ```
 
 ### 14.6 CLI Integration
@@ -5799,8 +6058,23 @@ echo "Copied to apps/web/public/wasm/"
 ```typescript
 // Add to jfp.ts
 
-// Import the native Rust implementation (or WASM fallback)
-// The build process compiles Rust to a native addon or WASM
+// The CLI uses a pure TypeScript implementation of the hash embedder.
+// This is the same algorithm as the Rust WASM version, but runs natively in Bun.
+// (WASM is for the browser; the CLI doesn't need it)
+
+/**
+ * Embedded prompt with pre-computed embedding vector.
+ * Note: Uses snake_case for JSON compatibility with Rust-generated embeddings.
+ */
+interface EmbeddedPrompt {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  tags: string[];
+  when_to_use: string[];  // snake_case to match JSON from generate-embeddings
+  embedding: number[];
+}
 
 interface SuggestionResult {
   id: string;
@@ -5821,7 +6095,8 @@ async function suggestCommand(task: string, flags: Flags) {
   const limit = flags.limit ?? 3;
 
   // Load pre-computed embeddings
-  const embeddingsPath = join(__dirname, "prompt_embeddings.json");
+  // Use import.meta.dir for Bun compatibility (not __dirname)
+  const embeddingsPath = join(import.meta.dir, "prompt_embeddings.json");
   let embeddings: EmbeddedPrompt[];
 
   try {
@@ -5864,6 +6139,9 @@ async function suggestCommand(task: string, flags: Flags) {
   console.log(chalk.dim(`Install: jfp install ${results[0].id}`));
 }
 
+// Import shared hash embedder (see section 14.5.5)
+import { hashEmbed, cosineSimilarity, tokenize } from "./apps/web/src/lib/search/hash-embedder";
+
 // Pure TypeScript implementation of semantic suggestion
 // (Uses pre-computed embeddings, computes query embedding at runtime)
 function semanticSuggest(task: string, embeddings: EmbeddedPrompt[], limit: number): SuggestionResult[] {
@@ -5888,57 +6166,12 @@ function semanticSuggest(task: string, embeddings: EmbeddedPrompt[], limit: numb
     .slice(0, limit);
 }
 
-// FNV-1a hash embedder (TypeScript port)
-const FNV_OFFSET_BASIS = 0xcbf29ce484222325n;
-const FNV_PRIME = 0x100000001b3n;
-const DIMENSION = 384;
-
-function hashEmbed(text: string): number[] {
-  const tokens = text
-    .toLowerCase()
-    .split(/[^a-z0-9]+/)
-    .filter((s) => s.length >= 2);
-
-  if (tokens.length === 0) {
-    const val = 1.0 / Math.sqrt(DIMENSION);
-    return Array(DIMENSION).fill(val);
-  }
-
-  const embedding = Array(DIMENSION).fill(0);
-
-  for (const token of tokens) {
-    let hash = FNV_OFFSET_BASIS;
-    for (const char of token) {
-      hash ^= BigInt(char.charCodeAt(0));
-      hash = (hash * FNV_PRIME) & 0xFFFFFFFFFFFFFFFFn;
-    }
-
-    const idx = Number(hash % BigInt(DIMENSION));
-    const sign = (hash >> 63n) === 0n ? 1 : -1;
-    embedding[idx] += sign;
-  }
-
-  // L2 normalize
-  const norm = Math.sqrt(embedding.reduce((sum, x) => sum + x * x, 0));
-  if (norm > 1e-10) {
-    for (let i = 0; i < embedding.length; i++) {
-      embedding[i] /= norm;
-    }
-  }
-
-  return embedding;
-}
-
-function cosineSimilarity(a: number[], b: number[]): number {
-  return a.reduce((sum, x, i) => sum + x * b[i], 0);
-}
-
 function whenToUseBoost(task: string, whenToUse: string[]): number {
-  const taskTokens = new Set(task.toLowerCase().split(/[^a-z0-9]+/).filter((s) => s.length >= 2));
+  const taskTokens = new Set(tokenize(task));
   let matches = 0;
 
   for (const when of whenToUse) {
-    const whenTokens = new Set(when.toLowerCase().split(/[^a-z0-9]+/).filter((s) => s.length >= 2));
+    const whenTokens = new Set(tokenize(when));
     if ([...taskTokens].some((t) => whenTokens.has(t))) {
       matches++;
     }
@@ -5948,7 +6181,7 @@ function whenToUseBoost(task: string, whenToUse: string[]): number {
 }
 
 function generateReason(task: string, prompt: EmbeddedPrompt, score: number, boost: number): string {
-  const taskTokens = new Set(task.toLowerCase().split(/[^a-z0-9]+/).filter((s) => s.length >= 2));
+  const taskTokens = new Set(tokenize(task));
 
   // Check tag matches
   const matchingTags = prompt.tags.filter((t) => taskTokens.has(t.toLowerCase()));
@@ -5958,7 +6191,7 @@ function generateReason(task: string, prompt: EmbeddedPrompt, score: number, boo
 
   // Check whenToUse matches
   for (const when of prompt.when_to_use) {
-    const whenTokens = new Set(when.toLowerCase().split(/[^a-z0-9]+/).filter((s) => s.length >= 2));
+    const whenTokens = new Set(tokenize(when));
     if ([...taskTokens].some((t) => whenTokens.has(t))) {
       return `Matches use case: "${when}"`;
     }
@@ -5975,26 +6208,34 @@ function generateReason(task: string, prompt: EmbeddedPrompt, score: number, boo
 ```tsx
 // apps/web/src/lib/search/semantic.ts
 
-let wasmModule: typeof import("@/wasm/jfp_search_wasm") | null = null;
+// WASM module loaded from public directory
+let wasmModule: any = null;
 let searchInstance: any = null;
 
 /**
  * Initialize the WASM semantic search module.
  * Lazy-loaded on first use.
+ *
+ * Note: WASM files are in public/wasm/ and must be fetched at runtime.
+ * We use the standard wasm-bindgen pattern for web targets.
  */
 async function initWasm(): Promise<void> {
   if (searchInstance) return;
 
   try {
-    // Dynamic import for code splitting
-    wasmModule = await import("@/wasm/jfp_search_wasm");
-    await wasmModule.default(); // Initialize WASM
+    // Fetch the WASM JavaScript glue code
+    const jsModule = await import(/* webpackIgnore: true */ "/wasm/jfp_search_wasm.js");
 
-    // Load pre-computed embeddings
+    // Initialize WASM binary (wasm-bindgen handles this)
+    await jsModule.default("/wasm/jfp_search_wasm_bg.wasm");
+
+    // Load pre-computed embeddings from API
     const response = await fetch("/api/embeddings");
     const embeddingsJson = await response.text();
 
-    searchInstance = new wasmModule.JfpSearch(embeddingsJson);
+    // Create search instance
+    searchInstance = new jsModule.JfpSearch(embeddingsJson);
+    wasmModule = jsModule;
   } catch (error) {
     console.warn("WASM semantic search unavailable, using fallback:", error);
     searchInstance = null;
@@ -6035,50 +6276,12 @@ export async function suggestPrompts(task: string, limit = 3): Promise<Suggestio
 /**
  * Generate prompt embeddings at build time.
  * Run: bun run scripts/generate-embeddings.ts
+ *
+ * Uses the shared hash embedder module (see section 14.5.5)
  */
 
 import { prompts } from "../apps/web/src/lib/prompts/registry";
-
-// FNV-1a constants
-const FNV_OFFSET_BASIS = 0xcbf29ce484222325n;
-const FNV_PRIME = 0x100000001b3n;
-const DIMENSION = 384;
-
-function hashEmbed(text: string): number[] {
-  const tokens = text
-    .toLowerCase()
-    .split(/[^a-z0-9]+/)
-    .filter((s) => s.length >= 2);
-
-  if (tokens.length === 0) {
-    const val = 1.0 / Math.sqrt(DIMENSION);
-    return Array(DIMENSION).fill(val);
-  }
-
-  const embedding = Array(DIMENSION).fill(0);
-
-  for (const token of tokens) {
-    let hash = FNV_OFFSET_BASIS;
-    for (const char of token) {
-      hash ^= BigInt(char.charCodeAt(0));
-      hash = (hash * FNV_PRIME) & 0xFFFFFFFFFFFFFFFFn;
-    }
-
-    const idx = Number(hash % BigInt(DIMENSION));
-    const sign = (hash >> 63n) === 0n ? 1 : -1;
-    embedding[idx] += sign;
-  }
-
-  // L2 normalize
-  const norm = Math.sqrt(embedding.reduce((sum, x) => sum + x * x, 0));
-  if (norm > 1e-10) {
-    for (let i = 0; i < embedding.length; i++) {
-      embedding[i] /= norm;
-    }
-  }
-
-  return embedding;
-}
+import { hashEmbed } from "../apps/web/src/lib/search/hash-embedder";
 
 // Generate embeddings for all prompts
 const embeddedPrompts = prompts.map((prompt) => {
@@ -6112,34 +6315,54 @@ console.log(`Output: prompt_embeddings.json (${(output.length / 1024).toFixed(1)
 
 ### 14.9 Updated Project Structure
 
+The following additions extend the base structure defined in **Part 5**:
+
 ```
 jeffreysprompts.com/
-├── ...existing files...
+├── ...files from Part 5...
 │
-├── crates/
-│   └── jfp-search-wasm/           # Rust WASM crate
+├── crates/                        # NEW: Rust WASM crates
+│   └── jfp-search-wasm/
 │       ├── Cargo.toml
+│       ├── Cargo.lock
 │       ├── src/
 │       │   └── lib.rs             # Semantic search implementation
-│       └── pkg/                   # Built WASM output
+│       └── pkg/                   # Built WASM output (gitignored)
 │           ├── jfp_search_wasm.js
 │           ├── jfp_search_wasm_bg.wasm
 │           └── jfp_search_wasm.d.ts
 │
-├── .github/
-│   └── workflows/
-│       ├── ci.yml                 # Lint, test, build on every push
-│       ├── release.yml            # Release on version tags
-│       └── dependabot.yml         # Dependency updates
+├── .github/                       # NEW: GitHub Actions
+│   ├── workflows/
+│   │   ├── ci.yml                 # Lint, test, build on every push
+│   │   ├── release.yml            # Release on version tags
+│   │   └── dependabot.yml         # Dependency updates
+│   └── CODEOWNERS                 # Optional: define code owners
 │
-├── prompt_embeddings.json         # Pre-computed embeddings (CLI)
+├── prompt_embeddings.json         # NEW: Pre-computed embeddings (CLI)
 │
-└── apps/web/
-    └── public/
-        ├── embeddings.json        # Pre-computed embeddings (web)
-        └── wasm/
-            ├── jfp_search_wasm.js
-            └── jfp_search_wasm_bg.wasm
+├── apps/web/
+│   ├── src/lib/
+│   │   ├── search/
+│   │   │   ├── engine.ts          # MiniSearch wrapper (existing)
+│   │   │   ├── hash-embedder.ts   # NEW: Shared hash embedder module
+│   │   │   └── semantic.ts        # NEW: WASM semantic search wrapper
+│   │   └── prompts/
+│   │       ├── types.ts           # Existing
+│   │       ├── registry.ts        # Existing
+│   │       └── bundles.ts         # NEW: Prompt bundles
+│   │
+│   └── public/
+│       ├── embeddings.json        # NEW: Pre-computed embeddings (web)
+│       └── wasm/                  # NEW: WASM files for browser
+│           ├── jfp_search_wasm.js
+│           └── jfp_search_wasm_bg.wasm
+│
+└── scripts/
+    ├── build-cli.sh               # Existing
+    ├── build-releases.sh          # Existing
+    ├── build-wasm.sh              # NEW: Build WASM module
+    └── generate-embeddings.ts     # NEW: Generate prompt embeddings
 ```
 
 ### 14.10 Implementation Phase Addition
