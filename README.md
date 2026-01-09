@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="illustration.webp" alt="JeffreysPrompts.com - A friendly robot shopping for prompts in a cozy prompt shop, with shelves of labeled prompt scrolls and a terminal showing 'jfp install idea-wizard'">
+
 # JeffreysPrompts.com
 
 **A curated collection of battle-tested prompts for agentic coding**
