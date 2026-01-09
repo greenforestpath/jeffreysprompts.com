@@ -1395,18 +1395,22 @@ async function copyCommand(id: string, flags: Flags) {
     process.exit(1);
   }
 
-  // Use platform-specific clipboard command
-  const { $ } = await import("bun");
+  // Use platform-specific clipboard command with safe stdin piping
+  // Note: Using Bun.spawn instead of shell echo to handle special characters safely
+  const clipboardCmd =
+    process.platform === "darwin" ? ["pbcopy"] :
+    process.platform === "win32" ? ["clip"] :
+    ["xclip", "-selection", "clipboard"];
+
   try {
-    await $`echo ${prompt.content}`.pipe($`pbcopy`).quiet();
+    const proc = Bun.spawn(clipboardCmd, { stdin: "pipe" });
+    proc.stdin.write(prompt.content);
+    proc.stdin.end();
+    const exitCode = await proc.exited;
+    if (exitCode !== 0) throw new Error(`Exit code: ${exitCode}`);
   } catch {
-    // Fallback for Linux
-    try {
-      await $`echo ${prompt.content}`.pipe($`xclip -selection clipboard`).quiet();
-    } catch {
-      console.error(chalk.red("Could not copy to clipboard. Install xclip or pbcopy."));
-      process.exit(3);
-    }
+    console.error(chalk.red("Could not copy to clipboard. Install xclip (Linux) or pbcopy (macOS)."));
+    process.exit(3);
   }
 
   console.log(chalk.green(`✓ Copied "${prompt.title}" to clipboard`));
@@ -3027,6 +3031,88 @@ ${chalk.dim("https://jeffreysprompts.com")}
 ```typescript
 import { search, select, confirm } from "@inquirer/prompts";
 import Fuse from "fuse.js";
+
+// Helper: Copy text to clipboard (cross-platform, using Bun.spawn)
+async function copyToClipboard(text: string): Promise<void> {
+  const clipboardCmd =
+    process.platform === "darwin" ? ["pbcopy"] :
+    process.platform === "win32" ? ["clip"] :
+    ["xclip", "-selection", "clipboard"];
+
+  const proc = Bun.spawn(clipboardCmd, { stdin: "pipe" });
+  proc.stdin.write(text);
+  proc.stdin.end();
+  const exitCode = await proc.exited;
+
+  if (exitCode !== 0) {
+    throw new Error(`Clipboard command failed with exit code ${exitCode}`);
+  }
+}
+
+// Helper: Show prompt details (reuses showCommand logic)
+function showPrompt(prompt: Prompt): void {
+  console.log(chalk.bold(`\n# ${prompt.title}\n`));
+  console.log(`${chalk.dim("Category:")} ${prompt.category}`);
+  console.log(`${chalk.dim("Tags:")} ${prompt.tags.join(", ")}`);
+  console.log();
+  console.log(prompt.content);
+  if (prompt.whenToUse?.length) {
+    console.log(chalk.bold("\n## When to Use"));
+    for (const when of prompt.whenToUse) {
+      console.log(`- ${when}`);
+    }
+  }
+  if (prompt.tips?.length) {
+    console.log(chalk.bold("\n## Tips"));
+    for (const tip of prompt.tips) {
+      console.log(`- ${tip}`);
+    }
+  }
+  console.log();
+}
+
+// Helper: Install prompt as Claude Code skill
+async function installSkill(prompt: Prompt): Promise<void> {
+  const targetDir = join(homedir(), ".config", "claude", "skills", prompt.id);
+  const skillPath = join(targetDir, "SKILL.md");
+
+  mkdirSync(targetDir, { recursive: true });
+  writeFileSync(skillPath, generateSkillMd(prompt));
+  console.log(chalk.green(`✓ Installed "${prompt.title}" → ${targetDir}`));
+  console.log(chalk.dim("Restart Claude Code to load the new skill."));
+}
+
+// Helper: Export prompt as markdown file
+async function exportMarkdown(prompt: Prompt): Promise<void> {
+  const filename = `${prompt.id}.md`;
+  const content = `# ${prompt.title}
+
+**Category:** ${prompt.category}
+**Tags:** ${prompt.tags.join(", ")}
+**Author:** ${prompt.author}
+
+---
+
+${prompt.content}
+
+---
+
+## When to Use
+
+${prompt.whenToUse?.map((w) => `- ${w}`).join("\n") ?? ""}
+
+## Tips
+
+${prompt.tips?.map((t) => `- ${t}`).join("\n") ?? ""}
+
+---
+
+*From [JeffreysPrompts.com](https://jeffreysprompts.com/prompts/${prompt.id})*
+`;
+
+  await Bun.write(filename, content);
+  console.log(chalk.green(`✓ Exported ${filename}`));
+}
 
 async function interactiveMode() {
   const fuse = new Fuse(prompts, {
@@ -5324,11 +5410,7 @@ export function Footer() {
 ### 12.3 CLI `jfp about` Command
 
 ```typescript
-// Add to jfp.ts
-
-// Read version from package.json at compile time (Bun inlines this)
-import packageJson from "./package.json";
-const VERSION = packageJson.version;
+// Add to jfp.ts (VERSION is already imported in section 3.3)
 
 function showAbout() {
   const banner = `
@@ -5551,8 +5633,12 @@ ${bundle.whenToUse.map((w) => `- ${w}`).join("\n")}
 
 ### 13.2 CLI Bundle Commands
 
+> **Note**: The canonical CLI implementation is in **Part 6**. The code below shows the simplified
+> bundle-specific logic for reference. In jfp.ts, these functions use dynamic imports
+> (see `bundlesCommand` and `bundleShowCommand` in Part 6.1).
+
 ```typescript
-// Add to jfp.ts
+// Reference implementation — see Part 6 for full CLI integration
 
 // jfp bundles — List available bundles
 async function bundlesCommand(flags: Flags) {
@@ -6161,13 +6247,20 @@ export function tokenize(text: string): string[] {
     .filter((s) => s.length >= MIN_TOKEN_LEN);
 }
 
+// TextEncoder for UTF-8 byte conversion (matches Rust's str.as_bytes())
+const encoder = new TextEncoder();
+
 /**
  * Compute FNV-1a hash of a string.
+ *
+ * IMPORTANT: Uses UTF-8 bytes, not UTF-16 code units.
+ * This matches Rust's `str.as_bytes()` behavior exactly.
  */
 function fnv1aHash(str: string): bigint {
+  const bytes = encoder.encode(str); // UTF-8 bytes
   let hash = FNV_OFFSET_BASIS;
-  for (const char of str) {
-    hash ^= BigInt(char.charCodeAt(0));
+  for (const byte of bytes) {
+    hash ^= BigInt(byte);
     hash = (hash * FNV_PRIME) & 0xFFFFFFFFFFFFFFFFn;
   }
   return hash;
