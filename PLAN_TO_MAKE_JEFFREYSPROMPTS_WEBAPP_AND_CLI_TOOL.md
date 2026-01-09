@@ -1168,6 +1168,58 @@ export function searchAndFilter(
 
 ```typescript
 // jfp.ts — Skills management commands
+// Entry point for the jfp CLI tool
+
+import { existsSync, mkdirSync, writeFileSync, rmSync, readFileSync } from "fs";
+import { join, dirname } from "path";
+import { homedir } from "os";
+import chalk from "chalk";
+import { prompts, getPrompt, type Prompt } from "./apps/web/src/lib/prompts/registry";
+import { generateSkillMd } from "./apps/web/src/lib/export/skills";
+
+// Parse command-line arguments
+interface Flags {
+  json: boolean;
+  all: boolean;
+  project: boolean;
+  force: boolean;
+  category?: string;
+  tag?: string;
+  raw: boolean;
+}
+
+function parseFlags(args: string[]): { command: string; positional: string[]; flags: Flags } {
+  const flags: Flags = {
+    json: args.includes("--json") || !process.stdout.isTTY,
+    all: args.includes("--all"),
+    project: args.includes("--project"),
+    force: args.includes("--force"),
+    raw: args.includes("--raw"),
+  };
+
+  // Extract --category and --tag values
+  const categoryIdx = args.indexOf("--category");
+  if (categoryIdx !== -1 && args[categoryIdx + 1]) {
+    flags.category = args[categoryIdx + 1];
+  }
+  const tagIdx = args.indexOf("--tag");
+  if (tagIdx !== -1 && args[tagIdx + 1]) {
+    flags.tag = args[tagIdx + 1];
+  }
+
+  // Remove flags from args to get positional arguments
+  const positional = args.filter((a) =>
+    !a.startsWith("--") &&
+    a !== flags.category &&
+    a !== flags.tag
+  );
+
+  return {
+    command: positional[0] ?? "",
+    positional: positional.slice(1),
+    flags,
+  };
+}
 
 // ~/.config/jfp/config.json
 interface JfpConfig {
@@ -1175,6 +1227,223 @@ interface JfpConfig {
   projectSkillsDir: string;    // Default: .claude/skills
   autoUpdate: boolean;         // Check for updates on startup
   lastUpdateCheck: string;     // ISO timestamp
+}
+
+// jfp list — List all prompts
+async function listCommand(flags: Flags) {
+  let result = prompts;
+
+  // Apply filters
+  if (flags.category) {
+    result = result.filter((p) => p.category === flags.category);
+  }
+  if (flags.tag) {
+    result = result.filter((p) => p.tags.includes(flags.tag!));
+  }
+
+  if (flags.json) {
+    console.log(JSON.stringify(result.map((p) => ({
+      id: p.id,
+      title: p.title,
+      category: p.category,
+      tags: p.tags,
+      description: p.description,
+    })), null, 2));
+    return;
+  }
+
+  // Human-readable table
+  console.log(chalk.bold("ID".padEnd(20) + "CATEGORY".padEnd(15) + "TAGS".padEnd(30) + "DESCRIPTION"));
+  console.log("─".repeat(90));
+  for (const p of result) {
+    console.log(
+      chalk.cyan(p.id.padEnd(20)) +
+      p.category.padEnd(15) +
+      p.tags.slice(0, 2).join(",").padEnd(30) +
+      p.description.slice(0, 40)
+    );
+  }
+}
+
+// jfp search — Fuzzy search prompts
+async function searchCommand(query: string, flags: Flags) {
+  if (!query) {
+    console.error(chalk.red("Usage: jfp search <query>"));
+    process.exit(2);
+  }
+
+  // Simple fuzzy search (in full implementation, use MiniSearch or Fuse.js)
+  const queryLower = query.toLowerCase();
+  const results = prompts
+    .map((p) => {
+      const text = `${p.title} ${p.description} ${p.tags.join(" ")} ${p.content}`.toLowerCase();
+      const score = text.includes(queryLower) ? 1 : 0;
+      return { ...p, score };
+    })
+    .filter((r) => r.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  if (flags.json) {
+    console.log(JSON.stringify({
+      query,
+      count: results.length,
+      results: results.map((r) => ({
+        id: r.id,
+        score: r.score,
+        title: r.title,
+        description: r.description,
+      })),
+    }, null, 2));
+    return;
+  }
+
+  if (results.length === 0) {
+    console.log(chalk.dim(`No prompts found matching "${query}"`));
+    return;
+  }
+
+  console.log(chalk.bold(`Found ${results.length} prompts matching "${query}":\n`));
+  for (const r of results) {
+    console.log(`  ${chalk.cyan(r.id)}`);
+    console.log(`  ${chalk.dim(r.description)}\n`);
+  }
+}
+
+// jfp show — Show full prompt details
+async function showCommand(id: string, flags: Flags) {
+  if (!id) {
+    console.error(chalk.red("Usage: jfp show <prompt-id>"));
+    process.exit(2);
+  }
+
+  const prompt = getPrompt(id);
+  if (!prompt) {
+    console.error(chalk.red(`Prompt not found: ${id}`));
+    console.error(chalk.dim(`Available: ${prompts.map((p) => p.id).join(", ")}`));
+    process.exit(1);
+  }
+
+  if (flags.raw) {
+    // Just the prompt text, for piping
+    console.log(prompt.content);
+    return;
+  }
+
+  if (flags.json) {
+    console.log(JSON.stringify(prompt, null, 2));
+    return;
+  }
+
+  // Human-readable markdown-style output
+  console.log(chalk.bold(`# ${prompt.title}\n`));
+  console.log(`${chalk.dim("Category:")} ${prompt.category}`);
+  console.log(`${chalk.dim("Tags:")} ${prompt.tags.join(", ")}`);
+  console.log();
+  console.log(prompt.content);
+  if (prompt.whenToUse?.length) {
+    console.log(chalk.bold("\n## When to Use"));
+    for (const when of prompt.whenToUse) {
+      console.log(`- ${when}`);
+    }
+  }
+  if (prompt.tips?.length) {
+    console.log(chalk.bold("\n## Tips"));
+    for (const tip of prompt.tips) {
+      console.log(`- ${tip}`);
+    }
+  }
+}
+
+// jfp copy — Copy prompt to clipboard
+async function copyCommand(id: string, flags: Flags) {
+  if (!id) {
+    console.error(chalk.red("Usage: jfp copy <prompt-id>"));
+    process.exit(2);
+  }
+
+  const prompt = getPrompt(id);
+  if (!prompt) {
+    console.error(chalk.red(`Prompt not found: ${id}`));
+    process.exit(1);
+  }
+
+  // Use platform-specific clipboard command
+  const { $ } = await import("bun");
+  try {
+    await $`echo ${prompt.content}`.pipe($`pbcopy`).quiet();
+  } catch {
+    // Fallback for Linux
+    try {
+      await $`echo ${prompt.content}`.pipe($`xclip -selection clipboard`).quiet();
+    } catch {
+      console.error(chalk.red("Could not copy to clipboard. Install xclip or pbcopy."));
+      process.exit(3);
+    }
+  }
+
+  console.log(chalk.green(`✓ Copied "${prompt.title}" to clipboard`));
+}
+
+// jfp i — Interactive fzf-style browser
+async function interactiveCommand() {
+  // In full implementation, use @inquirer/prompts for interactive selection
+  console.log(chalk.dim("Interactive mode requires @inquirer/prompts."));
+  console.log(chalk.dim("Use 'jfp list' and 'jfp show <id>' for now."));
+}
+
+// jfp help — Full documentation
+function showHelp() {
+  console.log(`jfp — Jeffrey's Prompts CLI
+
+USAGE:
+  jfp <command> [options]
+
+COMMANDS:
+  list                    List all prompts
+    --category <cat>      Filter by category
+    --tag <tag>           Filter by tag
+    --json                Output as JSON
+
+  search <query>          Fuzzy search prompts
+    --json                Output as JSON
+
+  show <id>               Show full prompt details
+    --raw                 Output just the prompt text
+    --json                Output as JSON
+
+  copy <id>               Copy prompt to clipboard
+
+  install <id>...         Install as Claude Code skills
+    --all                 Install all prompts
+    --project             Install to .claude/skills (project-local)
+    --force               Overwrite existing skills
+
+  uninstall <id>...       Remove installed skills
+    --all                 Remove all installed skills
+    --project             Remove from .claude/skills
+
+  installed               List installed skills
+    --json                Output as JSON
+
+  update                  Update all installed skills
+
+  i, interactive          Interactive browser (fzf-style)
+
+  help                    Show this help message
+
+GLOBAL OPTIONS:
+  --json                  Output as JSON (auto-enabled when piped)
+  --version, -v           Show version
+
+EXAMPLES:
+  jfp list --category ideation
+  jfp search "brainstorm"
+  jfp show idea-wizard --raw | pbcopy
+  jfp install --all
+  results=$(jfp search "idea" --json)
+
+DOCS: https://jeffreysprompts.com
+`);
 }
 
 // jfp install — Install skills
@@ -1316,6 +1585,81 @@ async function updateCommand(flags: Flags) {
     console.log(chalk.cyan(`Updated ${updated} skill(s). Restart Claude Code to reload.`));
   }
 }
+
+// Quick-start help (no args)
+function showQuickStart() {
+  console.log(`jfp — Jeffrey's Prompts CLI
+
+QUICK START:
+  jfp list                    List all prompts
+  jfp search "idea"           Fuzzy search
+  jfp show idea-wizard        View full prompt
+  jfp install idea-wizard     Install as Claude Code skill
+
+ADD --json TO ANY COMMAND FOR MACHINE-READABLE OUTPUT
+
+EXPLORE:
+  jfp i                       Interactive browser (fzf-style)
+
+MORE: jfp help | Docs: jeffreysprompts.com`);
+}
+
+// Main entry point
+async function main() {
+  const args = process.argv.slice(2);
+  const { command, positional, flags } = parseFlags(args);
+
+  switch (command) {
+    case "":
+      showQuickStart();
+      break;
+    case "list":
+      await listCommand(flags);
+      break;
+    case "search":
+      await searchCommand(positional[0] ?? "", flags);
+      break;
+    case "show":
+      await showCommand(positional[0] ?? "", flags);
+      break;
+    case "copy":
+      await copyCommand(positional[0] ?? "", flags);
+      break;
+    case "install":
+      await installCommand(positional, flags);
+      break;
+    case "uninstall":
+      await uninstallCommand(positional, flags);
+      break;
+    case "installed":
+      await installedCommand(flags);
+      break;
+    case "update":
+      await updateCommand(flags);
+      break;
+    case "i":
+    case "interactive":
+      await interactiveCommand();
+      break;
+    case "help":
+      showHelp();
+      break;
+    case "--version":
+    case "-v":
+      console.log("jfp v1.0.0");
+      break;
+    default:
+      console.error(chalk.red(`Unknown command: ${command}`));
+      console.error(chalk.dim(`Run 'jfp help' for available commands.`));
+      process.exit(2);
+  }
+}
+
+// Run the CLI
+main().catch((err) => {
+  console.error(chalk.red(`Error: ${err.message}`));
+  process.exit(1);
+});
 ```
 
 ### 3.4 Web App Skills Integration
@@ -3209,7 +3553,12 @@ export interface TranscriptHighlight {
 ```typescript
 // apps/web/src/lib/transcript/processor.ts
 
-import { type ProcessedTranscript, type TranscriptMessage } from "./types";
+import {
+  type ProcessedTranscript,
+  type TranscriptMessage,
+  type TranscriptSection,
+  type ToolCall,
+} from "./types";
 
 /**
  * Process raw JSONL transcript into structured format for display.
@@ -3536,13 +3885,14 @@ A vertical timeline showing the flow of the session:
 "use client";
 
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 import { type TranscriptMessage, type TranscriptSection } from "@/lib/transcript/types";
 import { formatDuration, formatTime } from "@/lib/transcript/utils";
 
 interface TimelineProps {
   messages: TranscriptMessage[];
   sections: TranscriptSection[];
-  onSelectMessage: (id: string) => void;
+  onSelectMessage?: (id: string) => void;
 }
 
 export function TranscriptTimeline({ messages, sections, onSelectMessage }: TimelineProps) {
@@ -3577,7 +3927,7 @@ export function TranscriptTimeline({ messages, sections, onSelectMessage }: Time
               <MessagePreview
                 key={msg.id}
                 message={msg}
-                onClick={() => onSelectMessage(msg.id)}
+                onClick={() => onSelectMessage?.(msg.id)}
               />
             ))}
           </div>
@@ -3587,7 +3937,7 @@ export function TranscriptTimeline({ messages, sections, onSelectMessage }: Time
   );
 }
 
-function MessagePreview({ message, onClick }: { message: TranscriptMessage; onClick: () => void }) {
+function MessagePreview({ message, onClick }: { message: TranscriptMessage; onClick?: () => void }) {
   const isUser = message.type === "user";
   const hasTools = message.toolCalls && message.toolCalls.length > 0;
 
@@ -3638,8 +3988,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronRight, Code, FileText, Brain, Terminal, Search } from "lucide-react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { type TranscriptMessage } from "@/lib/transcript/types";
+import { cn } from "@/lib/utils";
+import { type TranscriptMessage, type ToolCall } from "@/lib/transcript/types";
+import { detectLanguage } from "@/lib/transcript/utils";
 import { CopyButton } from "@/components/ui/copy-button";
+import { MessageContent } from "./message-content";
 
 interface MessageDetailProps {
   message: TranscriptMessage;
@@ -3846,6 +4199,7 @@ Visual summary of the session:
 
 import { motion } from "framer-motion";
 import { Clock, MessageSquare, Wrench, FileCode, Code2, Zap } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { type ProcessedTranscript } from "@/lib/transcript/types";
 
 interface StatsDashboardProps {
@@ -3931,6 +4285,8 @@ import { Suspense } from "react";
 import { TranscriptTimeline } from "@/components/transcript/timeline";
 import { StatsDashboard } from "@/components/transcript/stats-dashboard";
 import { MessageDetail } from "@/components/transcript/message-detail";
+import { TimelineSkeleton } from "@/components/transcript/timeline-skeleton";
+import { InsightCard } from "@/components/transcript/insight-card";
 import { processTranscript } from "@/lib/transcript/processor";
 import { getTranscriptData } from "@/lib/transcript/data";
 
