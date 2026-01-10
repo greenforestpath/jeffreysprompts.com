@@ -178,13 +178,20 @@ export async function serveCommand(options: ServeOptions): Promise<void> {
     const { name, arguments: args } = request.params;
 
     if (name === "search_prompts") {
-      const query = (args?.query as string) || "";
-      const category = args?.category as string | undefined;
-      const tags = args?.tags as string[] | undefined;
-      const limit = (args?.limit as number) ?? 5;
+      const query = String(args?.query ?? "");
+      const category = args?.category != null ? String(args.category) : undefined;
+      const tags = Array.isArray(args?.tags)
+        ? args.tags.map((t) => String(t))
+        : undefined;
+      // Coerce to number and clamp to reasonable range
+      const rawLimit = Number(args?.limit);
+      const limit = Number.isFinite(rawLimit) ? Math.max(1, Math.min(100, rawLimit)) : 5;
 
-      // Get all prompts and filter
-      let results = searchPrompts(query || "", { limit: 50 });
+      // Get base results (support category/tag filters without a query)
+      const trimmedQuery = query.trim();
+      let results = trimmedQuery
+        ? searchPrompts(trimmedQuery, { limit: 50 })
+        : prompts.map((prompt) => ({ prompt, score: 0, matchedFields: [] }));
 
       // Filter by category if specified
       if (category) {
@@ -226,9 +233,14 @@ export async function serveCommand(options: ServeOptions): Promise<void> {
     }
 
     if (name === "render_prompt") {
-      const id = args?.id as string;
-      const variables = (args?.variables as Record<string, string>) || {};
-      const context = args?.context as string | undefined;
+      const id = args?.id != null ? String(args.id) : "";
+      // Coerce all variable values to strings to ensure consistent rendering
+      const rawVariables = (args?.variables as Record<string, unknown>) || {};
+      const variables: Record<string, string> = {};
+      for (const [key, value] of Object.entries(rawVariables)) {
+        variables[key] = value != null ? String(value) : "";
+      }
+      const context = args?.context != null ? String(args.context) : undefined;
 
       if (!id) {
         return {
