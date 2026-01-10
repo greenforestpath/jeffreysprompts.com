@@ -11,8 +11,7 @@ import { NextResponse } from "next/server";
 import { prompts, featuredPrompts } from "@jeffreysprompts/core/prompts/registry";
 import { generateInstallScript } from "@jeffreysprompts/core/export/skills";
 
-export const dynamic = "force-static";
-export const revalidate = 3600; // Revalidate every hour
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request): Promise<NextResponse> {
   const url = new URL(request.url);
