@@ -5,6 +5,7 @@ import { Download, Check, Terminal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/analytics";
 import { generateSkillMd } from "@jeffreysprompts/core/export/skills";
 import type { Prompt } from "@jeffreysprompts/core/prompts/types";
 
@@ -76,6 +77,7 @@ export function InstallSkillButton({
         `Paste in terminal to install "${prompt.title}"`,
         4000
       );
+      trackEvent("skill_install", { id: prompt.id, source: "install_button", project });
       setTimeout(() => setCopied(false), 2000);
     } catch {
       error("Failed to copy", "Please try again");
@@ -162,6 +164,11 @@ export function InstallAllSkillsButton({
         `Paste in terminal to install ${skillCount}`,
         4000
       );
+      trackEvent("skill_install", {
+        count: promptIds?.length ?? "all",
+        source: "install_all_button",
+        project,
+      });
       setTimeout(() => setCopied(false), 2000);
     } catch {
       error("Failed to copy", "Please try again");

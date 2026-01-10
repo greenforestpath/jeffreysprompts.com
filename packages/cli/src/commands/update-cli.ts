@@ -13,7 +13,6 @@ const RELEASE_API = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}
 interface UpdateCliOptions {
   check?: boolean;
   force?: boolean;
-  skipVerify?: boolean;
   json?: boolean;
 }
 
@@ -277,6 +276,8 @@ async function replaceBinary(
 }
 
 export async function updateCliCommand(options: UpdateCliOptions = {}) {
+  const jsonOutput = shouldOutputJson(options);
+  const config = loadConfig();
   const result: UpdateResult = {
     currentVersion: version,
     latestVersion: "",
@@ -285,19 +286,20 @@ export async function updateCliCommand(options: UpdateCliOptions = {}) {
   };
 
   try {
-    if (!options.json) {
+    if (!jsonOutput) {
       console.log(chalk.dim("Checking for updates..."));
     }
 
     const release = await fetchLatestRelease();
-    result.latestVersion = release.tag_name.replace(/^v/, "");
+    recordUpdateCheck(config.updates);
 
+    result.latestVersion = release.tag_name.replace(/^v/, "");
     const comparison = compareVersions(version, result.latestVersion);
     result.hasUpdate = comparison < 0;
 
-    if (comparison === 0) {
+    if (comparison === 0 && !options.force) {
       result.message = `You are running the latest version (${version})`;
-      if (options.json) {
+      if (jsonOutput) {
         console.log(JSON.stringify(result, null, 2));
       } else {
         console.log(chalk.green("✓ " + result.message));
@@ -305,9 +307,9 @@ export async function updateCliCommand(options: UpdateCliOptions = {}) {
       return;
     }
 
-    if (comparison > 0) {
+    if (comparison > 0 && !options.force) {
       result.message = `You are running a newer version (${version}) than the latest release (${result.latestVersion})`;
-      if (options.json) {
+      if (jsonOutput) {
         console.log(JSON.stringify(result, null, 2));
       } else {
         console.log(chalk.yellow("! " + result.message));
@@ -322,7 +324,7 @@ export async function updateCliCommand(options: UpdateCliOptions = {}) {
 
     if (!asset) {
       result.error = `No binary found for ${process.platform}-${process.arch}`;
-      if (options.json) {
+      if (jsonOutput) {
         console.log(JSON.stringify(result, null, 2));
       } else {
         console.log(chalk.yellow("! Update available: " + version + " -> " + result.latestVersion));
@@ -336,7 +338,7 @@ export async function updateCliCommand(options: UpdateCliOptions = {}) {
     result.assetName = asset.name;
 
     if (options.check) {
-      if (options.json) {
+      if (jsonOutput) {
         console.log(JSON.stringify(result, null, 2));
       } else {
         console.log(chalk.yellow("! " + result.message));
@@ -345,8 +347,11 @@ export async function updateCliCommand(options: UpdateCliOptions = {}) {
       return;
     }
 
-    if (!options.json) {
+    if (!jsonOutput) {
       console.log(chalk.yellow("! " + result.message));
+      if (!config.updates.autoUpdate) {
+        console.log(chalk.dim("Auto-update is disabled in config; running manual update."));
+      }
     }
 
     let currentPath: string;
@@ -354,7 +359,7 @@ export async function updateCliCommand(options: UpdateCliOptions = {}) {
       currentPath = getCurrentBinaryPath();
     } catch (err) {
       result.error = err instanceof Error ? err.message : String(err);
-      if (options.json) {
+      if (jsonOutput) {
         console.log(JSON.stringify(result, null, 2));
       } else {
         console.log(chalk.red("x " + result.error));
@@ -363,13 +368,22 @@ export async function updateCliCommand(options: UpdateCliOptions = {}) {
     }
 
     const tempPath = `${currentPath}.new`;
-    if (!options.json) {
+    if (!jsonOutput) {
       console.log(chalk.dim("Downloading " + asset.name + "..."));
     }
 
     await downloadFile(asset.browser_download_url, tempPath, asset.size);
 
-    if (!options.json) {
+    const expectedHash = await fetchChecksumForAsset(release, asset.name);
+    if (!expectedHash) {
+      throw new Error("Checksum not available for verification");
+    }
+    const actualHash = computeSha256(tempPath);
+    if (actualHash !== expectedHash) {
+      throw new Error("Checksum verification failed");
+    }
+
+    if (!jsonOutput) {
       console.log(chalk.dim("Installing update..."));
     }
 
@@ -380,7 +394,7 @@ export async function updateCliCommand(options: UpdateCliOptions = {}) {
       if (existsSync(tempPath)) {
         unlinkSync(tempPath);
       }
-      if (options.json) {
+      if (jsonOutput) {
         console.log(JSON.stringify(result, null, 2));
       } else {
         console.log(chalk.red("x " + result.error));
@@ -389,7 +403,7 @@ export async function updateCliCommand(options: UpdateCliOptions = {}) {
     }
 
     result.message = `Successfully updated to ${result.latestVersion}`;
-    if (options.json) {
+    if (jsonOutput) {
       console.log(JSON.stringify(result, null, 2));
     } else {
       console.log(chalk.green("✓ " + result.message));
@@ -397,7 +411,7 @@ export async function updateCliCommand(options: UpdateCliOptions = {}) {
     }
   } catch (err) {
     result.error = err instanceof Error ? err.message : String(err);
-    if (options.json) {
+    if (jsonOutput) {
       console.log(JSON.stringify({ ...result, error: result.error }, null, 2));
     } else {
       console.log(chalk.red("x Update check failed: " + result.error));
