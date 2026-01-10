@@ -201,10 +201,11 @@ export function formatFilePath(path: string, maxLength = 60): string {
 export function formatBytes(bytes: number): string {
   if (!Number.isFinite(bytes) || bytes < 0) return "0 B";
   if (bytes === 0) return "0 B";
+  if (bytes < 1) return "0 B"; // Handle fractional bytes
 
   const units = ["B", "KB", "MB", "GB"];
   const k = 1024;
-  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), units.length - 1);
+  const i = Math.min(Math.max(0, Math.floor(Math.log(bytes) / Math.log(k))), units.length - 1);
   const value = bytes / Math.pow(k, i);
 
   return `${value.toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
