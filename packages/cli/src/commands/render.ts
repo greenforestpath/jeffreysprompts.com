@@ -109,8 +109,32 @@ export async function renderCommand(id: string, options: RenderOptions) {
 
   if (options.stdin) {
     const chunks: Buffer[] = [];
-    for await (const chunk of process.stdin) {
-      chunks.push(chunk);
+    const STDIN_TIMEOUT_MS = 30000; // 30 second timeout for stdin
+
+    // Create a timeout promise that rejects if stdin takes too long
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error("stdin_timeout")), STDIN_TIMEOUT_MS);
+    });
+
+    // Read stdin with timeout protection
+    const readStdin = async () => {
+      for await (const chunk of process.stdin) {
+        chunks.push(chunk);
+      }
+    };
+
+    try {
+      await Promise.race([readStdin(), timeoutPromise]);
+    } catch (err) {
+      if ((err as Error).message === "stdin_timeout") {
+        if (shouldOutputJson(options)) {
+          console.log(JSON.stringify({ error: "stdin_timeout", message: "Timed out waiting for stdin input (30s)" }));
+        } else {
+          console.error(chalk.red("Timed out waiting for stdin input (30s). Did you mean to pipe content?"));
+        }
+        process.exit(1);
+      }
+      throw err;
     }
     context = Buffer.concat(chunks).toString("utf-8");
     contextSource = "stdin";

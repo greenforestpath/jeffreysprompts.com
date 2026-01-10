@@ -9,7 +9,7 @@ interface HelpOptions {
 /**
  * Comprehensive help command with organized documentation
  */
-export function helpCommand(options: HelpOptions) {
+export async function helpCommand(options: HelpOptions) {
   if (shouldOutputJson(options)) {
     console.log(JSON.stringify(getHelpData(), null, 2));
     return;
@@ -23,7 +23,7 @@ export function helpCommand(options: HelpOptions) {
     helpText.split("\n").length > (process.stdout.rows || 24);
 
   if (usePager) {
-    outputWithPager(helpText);
+    await outputWithPager(helpText);
   } else {
     console.log(helpText);
   }
@@ -213,7 +213,7 @@ function formatExample(command: string, description: string): string {
 /**
  * Output text using a pager (less) if available
  */
-function outputWithPager(text: string): void {
+async function outputWithPager(text: string): Promise<void> {
   try {
     // Try to spawn less with ANSI color support
     const proc = Bun.spawn(["less", "-R"], {
@@ -226,8 +226,8 @@ function outputWithPager(text: string): void {
     writer.write(text);
     writer.close();
 
-    // Wait for less to complete (synchronously for CLI)
-    // Note: This is a simplification; in practice we'd await
+    // Wait for pager to complete (user quits with 'q')
+    await proc.exited;
   } catch {
     // Fallback to direct output if less is not available
     console.log(text);
