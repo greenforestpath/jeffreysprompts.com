@@ -99,7 +99,7 @@ export function MessageDetail({ message, highlight }: MessageDetailProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        "rounded-xl border p-4",
+        "group rounded-xl border p-4",
         isUser
           ? "bg-violet-50/50 dark:bg-violet-950/20 border-violet-200 dark:border-violet-800"
           : "bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"

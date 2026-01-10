@@ -130,8 +130,8 @@ export function CopyButton({
 
       // Callback
       onCopy?.();
-    } catch (error) {
-      console.error("Failed to copy:", error);
+    } catch (err) {
+      console.error("Failed to copy:", err);
       error("Failed to copy", "Please try again");
     }
   };

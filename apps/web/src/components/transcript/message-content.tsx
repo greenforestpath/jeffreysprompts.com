@@ -28,8 +28,9 @@ function parseContent(content: string): ContentBlock[] {
   let codeBlockLanguage: string | undefined;
 
   for (const line of lines) {
-    // Check for code fence start
-    const fenceMatch = line.match(/^```(\w*)?$/);
+    // Check for code fence start (trim to handle trailing whitespace)
+    const trimmedLine = line.trim();
+    const fenceMatch = trimmedLine.match(/^```(\w*)$/);
 
     if (fenceMatch && !inCodeBlock) {
       // Starting a code block
@@ -43,7 +44,7 @@ function parseContent(content: string): ContentBlock[] {
         content: "",
         language: codeBlockLanguage,
       };
-    } else if (line === "```" && inCodeBlock) {
+    } else if (trimmedLine === "```" && inCodeBlock) {
       // Ending a code block
       if (currentBlock) {
         // If no language was specified in the fence, detect it
