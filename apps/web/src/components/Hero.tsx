@@ -89,37 +89,40 @@ export function Hero({
           </p>
 
           {/* Stats */}
-          <div className="flex items-center justify-center gap-8 mb-8">
+          <div className="flex items-center justify-center gap-6 sm:gap-8 mb-8">
             <div className="text-center">
-              <div className="text-3xl font-bold text-zinc-900 dark:text-white">{promptCount}</div>
-              <div className="text-sm text-zinc-500 dark:text-zinc-400">Prompts</div>
+              <div className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white">{promptCount}</div>
+              <div className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">Prompts</div>
             </div>
-            <div className="w-px h-12 bg-zinc-200 dark:bg-zinc-700" />
+            <div className="w-px h-10 sm:h-12 bg-zinc-200 dark:bg-zinc-700" />
             <div className="text-center">
-              <div className="text-3xl font-bold text-zinc-900 dark:text-white">{categoryCount}</div>
-              <div className="text-sm text-zinc-500 dark:text-zinc-400">Categories</div>
+              <div className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white">{categoryCount}</div>
+              <div className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">Categories</div>
             </div>
-            <div className="w-px h-12 bg-zinc-200 dark:bg-zinc-700" />
+            <div className="w-px h-10 sm:h-12 bg-zinc-200 dark:bg-zinc-700" />
             <div className="text-center">
-              <div className="text-3xl font-bold text-zinc-900 dark:text-white">Free</div>
-              <div className="text-sm text-zinc-500 dark:text-zinc-400">Forever</div>
+              <div className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white">Free</div>
+              <div className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">Forever</div>
             </div>
           </div>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
-            <Button size="lg" className="gap-2 px-6">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-10">
+            <Button size="lg" className="gap-2 px-6 min-h-[48px] w-full sm:w-auto touch-manipulation">
               <Download className="w-4 h-4" />
               Install CLI
             </Button>
-            <Button size="lg" variant="outline" className="gap-2 px-6">
-              <Terminal className="w-4 h-4" />
-              <code className="text-xs font-mono">curl jeffreysprompts.com/install.sh | bash</code>
+            <Button size="lg" variant="outline" className="gap-2 px-4 sm:px-6 min-h-[48px] w-full sm:w-auto touch-manipulation">
+              <Terminal className="w-4 h-4 shrink-0" />
+              <code className="text-xs font-mono truncate">
+                <span className="hidden sm:inline">curl jeffreysprompts.com/install.sh | bash</span>
+                <span className="sm:hidden">curl jfp.com/install.sh | bash</span>
+              </code>
             </Button>
           </div>
 
           {/* Search bar */}
-          <form onSubmit={handleSearchSubmit} className="max-w-xl mx-auto mb-8">
+          <form onSubmit={handleSearchSubmit} className="max-w-xl mx-auto mb-8 px-2 sm:px-0">
             <div className="relative group">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-indigo-500 transition-colors" />
               <input
@@ -128,9 +131,9 @@ export function Hero({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Search prompts..."
-                className="w-full h-12 pl-12 pr-24 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                className="w-full h-14 sm:h-12 pl-12 pr-4 sm:pr-24 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 text-base sm:text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all touch-manipulation"
               />
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 text-xs text-zinc-400">
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-1 text-xs text-zinc-400">
                 <kbd className="px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-700 border border-zinc-200 dark:border-zinc-600 font-mono">
                   {modifierKey}
                 </kbd>
