@@ -24,6 +24,7 @@ import {
 } from "./commands/utilities";
 import { helpCommand } from "./commands/help";
 import { serveCommand } from "./commands/serve";
+import { updateCliCommand } from "./commands/update-cli";
 
 export const cli = cac("jfp");
 
@@ -167,6 +168,13 @@ cli
   .command("serve", "Start MCP server for agent-native access")
   .option("--config", "Show Claude Desktop config snippet")
   .action(serveCommand);
+
+cli
+  .command("update-cli", "Update jfp CLI to latest version")
+  .option("--check", "Check for updates without installing")
+  .option("--force", "Force reinstall even if up to date")
+  .option("--json", "Output JSON")
+  .action(updateCliCommand);
 
 cli
   .command("help", "Show comprehensive documentation")
