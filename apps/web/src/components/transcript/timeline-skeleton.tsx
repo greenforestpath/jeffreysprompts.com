@@ -153,3 +153,42 @@ export function TimelineSkeletonCompact() {
     </div>
   );
 }
+
+/**
+ * Loading skeleton for StatsDashboard.
+ * Shows 6 stat card placeholders in a responsive grid.
+ */
+export function StatsDashboardSkeleton() {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div
+          key={i}
+          className={cn(
+            "relative rounded-xl p-4 border",
+            "bg-zinc-50 dark:bg-zinc-900",
+            "border-zinc-200 dark:border-zinc-800"
+          )}
+        >
+          {/* Icon placeholder */}
+          <Skeleton
+            variant="pulse"
+            className="w-10 h-10 rounded-lg mb-3 bg-zinc-200 dark:bg-zinc-700"
+          />
+
+          {/* Value */}
+          <Skeleton
+            variant="pulse"
+            className="h-7 w-16 mb-1 bg-zinc-200 dark:bg-zinc-700"
+          />
+
+          {/* Label */}
+          <Skeleton
+            variant="pulse"
+            className="h-4 w-20 bg-zinc-100 dark:bg-zinc-800"
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
