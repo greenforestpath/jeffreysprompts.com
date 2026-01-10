@@ -212,8 +212,13 @@ async function verifyBinary(path: string): Promise<boolean> {
   return new Promise((resolve) => {
     const child = spawn(path, ["--version"], {
       stdio: "pipe",
-      timeout: 5000,
     });
+
+    let timedOut = false;
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      child.kill();
+    }, 5000);
 
     let output = "";
     child.stdout?.on("data", (data) => {
@@ -221,10 +226,12 @@ async function verifyBinary(path: string): Promise<boolean> {
     });
 
     child.on("close", (code) => {
-      resolve(code === 0 && output.includes("jfp"));
+      clearTimeout(timeout);
+      resolve(!timedOut && code === 0 && output.includes("jfp"));
     });
 
     child.on("error", () => {
+      clearTimeout(timeout);
       resolve(false);
     });
   });
