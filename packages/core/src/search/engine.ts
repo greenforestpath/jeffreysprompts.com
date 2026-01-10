@@ -55,12 +55,12 @@ export function searchPrompts(
   const index = getIndex();
 
   // Optionally expand query with synonyms
-  let searchQuery = query;
+  const queryTokens = tokenize(query);
+  let searchTokens = queryTokens;
   if (expandSynonyms) {
-    const tokens = tokenize(query);
-    const expanded = expandQuery(tokens);
-    searchQuery = expanded.join(" ");
+    searchTokens = expandQuery(queryTokens);
   }
+  const searchQuery = searchTokens.join(" ");
 
   const bm25Results = bm25Search(index, searchQuery, limit * 2);
 
@@ -70,13 +70,28 @@ export function searchPrompts(
       const prompt = getPrompt(id);
       if (!prompt) return null;
 
-      // Determine which fields matched
+      // Determine which fields matched (check both original query and expanded synonyms)
       const matchedFields: string[] = [];
-      const queryLower = query.toLowerCase();
-      if (prompt.title.toLowerCase().includes(queryLower)) matchedFields.push("title");
-      if (prompt.description.toLowerCase().includes(queryLower)) matchedFields.push("description");
-      if (prompt.tags.some((t) => t.toLowerCase().includes(queryLower))) matchedFields.push("tags");
-      if (prompt.content.toLowerCase().includes(queryLower)) matchedFields.push("content");
+      const titleLower = prompt.title.toLowerCase();
+      const descLower = prompt.description.toLowerCase();
+      const tagsLower = prompt.tags.map((t) => t.toLowerCase());
+      const contentLower = prompt.content.toLowerCase();
+
+      // Check if any search term matches each field
+      for (const term of searchTokens) {
+        if (titleLower.includes(term) && !matchedFields.includes("title")) {
+          matchedFields.push("title");
+        }
+        if (descLower.includes(term) && !matchedFields.includes("description")) {
+          matchedFields.push("description");
+        }
+        if (tagsLower.some((t) => t.includes(term)) && !matchedFields.includes("tags")) {
+          matchedFields.push("tags");
+        }
+        if (contentLower.includes(term) && !matchedFields.includes("content")) {
+          matchedFields.push("content");
+        }
+      }
 
       return { prompt, score, matchedFields };
     })
