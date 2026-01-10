@@ -1,7 +1,7 @@
 /**
  * Unit tests for CopyButton components
  *
- * Tests the CopyButton and ReferenceCopyButton components.
+ * Tests the CopyButton component.
  * Philosophy: NO mocks except for browser APIs (clipboard) that don't exist in test env.
  *
  * @see @/components/ui/copy-button.tsx
@@ -10,7 +10,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { CopyButton, ReferenceCopyButton } from "./copy-button";
+import { CopyButton } from "./copy-button";
 
 // Mock clipboard API since it doesn't exist in test environment
 const mockWriteText = vi.fn().mockResolvedValue(undefined);
@@ -178,80 +178,3 @@ describe("CopyButton", () => {
   });
 });
 
-describe("ReferenceCopyButton", () => {
-  describe("rendering", () => {
-    it("renders with reference text", () => {
-      render(<ReferenceCopyButton reference="§42" quoteText="Test quote" />);
-      expect(screen.getByText("§42")).toBeInTheDocument();
-    });
-
-    it("applies custom className", () => {
-      render(
-        <ReferenceCopyButton
-          reference="§42"
-          quoteText="Test quote"
-          className="custom-class"
-        />
-      );
-      expect(screen.getByRole("button")).toHaveClass("custom-class");
-    });
-
-    it("has correct title attribute", () => {
-      render(<ReferenceCopyButton reference="§42" quoteText="Test quote" />);
-      expect(screen.getByRole("button")).toHaveAttribute("title", "Copy §42");
-    });
-  });
-
-  describe("copy functionality", () => {
-    // Note: clipboard API mocking is complex in happy-dom
-    // Clipboard integration is tested via E2E tests with Playwright
-    it.skip("copies formatted quote with default source", async () => {
-      const user = userEvent.setup();
-      render(<ReferenceCopyButton reference="§42" quoteText="Test quote" />);
-
-      await user.click(screen.getByRole("button"));
-
-      expect(mockWriteText).toHaveBeenCalledWith(
-        '"Test quote"\n\n— Sydney Brenner, §42'
-      );
-    });
-
-    it.skip("copies formatted quote with custom source", async () => {
-      const user = userEvent.setup();
-      render(
-        <ReferenceCopyButton
-          reference="§42"
-          quoteText="Test quote"
-          source="Custom Source"
-        />
-      );
-
-      await user.click(screen.getByRole("button"));
-
-      expect(mockWriteText).toHaveBeenCalledWith(
-        '"Test quote"\n\n— Custom Source, §42'
-      );
-    });
-
-    it.skip("shows checkmark after successful copy", async () => {
-      const user = userEvent.setup();
-      render(<ReferenceCopyButton reference="§42" quoteText="Test quote" />);
-
-      await user.click(screen.getByRole("button"));
-
-      // The reference text should become invisible (opacity-0)
-      // and the checkmark should appear
-      await waitFor(() => {
-        const svg = screen.getByRole("button").querySelector("svg.text-success");
-        expect(svg).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe("button attributes", () => {
-    it("has type button to prevent form submission", () => {
-      render(<ReferenceCopyButton reference="§42" quoteText="Test quote" />);
-      expect(screen.getByRole("button")).toHaveAttribute("type", "button");
-    });
-  });
-});

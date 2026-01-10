@@ -7,7 +7,7 @@
  * @see @/components/ui/collapsible.tsx
  */
 
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import {
@@ -79,9 +79,11 @@ describe("Collapsible", () => {
       await user.click(screen.getByRole("button"));
       expect(screen.getByText("Content")).toBeInTheDocument();
 
-      // Click to close
+      // Click to close - wait for exit animation to complete
       await user.click(screen.getByRole("button"));
-      expect(screen.queryByText("Content")).not.toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.queryByText("Content")).not.toBeInTheDocument();
+      });
     });
 
     it("has correct data-state attribute", async () => {
