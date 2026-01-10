@@ -258,6 +258,8 @@ jfp i                         # Interactive browser (fzf-style)
 jfp categories                # List categories
 jfp tags                      # List tags with counts
 
+jfp completion --shell zsh    # Generate shell completion script
+
 jfp --version
 jfp --help
 ```
