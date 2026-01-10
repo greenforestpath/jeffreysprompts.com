@@ -1,235 +1,297 @@
-import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
-import { ArrowLeft, ExternalLink, Clock, MessageSquare, Wrench, FileCode } from "lucide-react";
+import type { Metadata } from "next";
+import { Clock, MessageSquare, Wrench, Code2, ArrowRight } from "lucide-react";
 import { StatsDashboard } from "@/components/transcript/stats-dashboard";
 import { TranscriptTimeline } from "@/components/transcript/timeline";
 import { InsightCard } from "@/components/transcript/insight-card";
-import { getAnnotations } from "@/data/annotations";
-import { type ProcessedTranscript } from "@/lib/transcript/types";
+import { getAnnotations, getAnnotationsByType } from "@/data/annotations";
+import type { ProcessedTranscript, TranscriptHighlight } from "@/lib/transcript/types";
 
 export const metadata: Metadata = {
   title: "How It Was Made | JeffreysPrompts.com",
   description:
-    "The complete story of how JeffreysPrompts.com was designed, planned, and implemented in a single day using Claude Code.",
+    "The complete, unedited Claude Code session transcript that designed, planned, and built JeffreysPrompts.com in a single day.",
   openGraph: {
-    title: "How It Was Made | JeffreysPrompts.com",
+    title: "How It Was Made - JeffreysPrompts.com",
     description:
-      "See the full Claude Code session transcript that built this site.",
-    type: "article",
+      "Watch the complete Claude Code session that built this site in a single day",
   },
 };
 
-// Placeholder transcript data - replace with actual data loading
+// Placeholder transcript data until real transcript is available
 const placeholderTranscript: ProcessedTranscript = {
   meta: {
-    sessionId: "session-001",
-    startTime: "2025-01-09T09:00:00Z",
-    endTime: "2025-01-09T17:30:00Z",
-    duration: "8h 30m",
+    sessionId: "placeholder-session",
+    startTime: "2026-01-10T00:00:00Z",
+    endTime: "2026-01-10T12:00:00Z",
+    duration: "12h",
     model: "claude-opus-4-5-20251101",
     stats: {
-      userMessages: 42,
-      assistantMessages: 84,
-      toolCalls: 312,
-      filesEdited: 47,
-      linesWritten: 8500,
-      tokensUsed: 850000,
+      userMessages: 150,
+      assistantMessages: 320,
+      toolCalls: 1500,
+      filesEdited: 85,
+      linesWritten: 12000,
+      tokensUsed: 2500000,
     },
   },
   sections: [
     {
-      id: "section-1",
-      title: "Planning & Architecture",
-      summary: "Initial discussion and system design",
+      id: "planning",
+      title: "Project Planning",
+      summary: "Initial requirements gathering, architecture decisions, and technical planning",
       startIndex: 0,
-      endIndex: 10,
+      endIndex: 0,
       tags: ["planning", "architecture"],
     },
     {
-      id: "section-2",
+      id: "setup",
+      title: "Project Setup",
+      summary: "Monorepo structure, dependencies, and tooling configuration",
+      startIndex: 0,
+      endIndex: 0,
+      tags: ["setup", "configuration"],
+    },
+    {
+      id: "core",
       title: "Core Implementation",
-      summary: "Building the prompt registry and search",
-      startIndex: 11,
-      endIndex: 30,
-      tags: ["implementation", "core"],
+      summary: "TypeScript-native prompts registry, search engine, and export system",
+      startIndex: 0,
+      endIndex: 0,
+      tags: ["core", "typescript"],
     },
     {
-      id: "section-3",
-      title: "UI Components",
-      summary: "React components and styling",
-      startIndex: 31,
-      endIndex: 50,
-      tags: ["ui", "components"],
+      id: "web",
+      title: "Web Application",
+      summary: "Next.js 16 app with React 19, Tailwind CSS 4, and shadcn/ui components",
+      startIndex: 0,
+      endIndex: 0,
+      tags: ["web", "nextjs", "react"],
+    },
+    {
+      id: "cli",
+      title: "CLI Development",
+      summary: "Agent-optimized command-line interface with JSON output and fuzzy search",
+      startIndex: 0,
+      endIndex: 0,
+      tags: ["cli", "agent-friendly"],
     },
   ],
-  messages: [
-    {
-      id: "msg-1",
-      type: "user",
-      timestamp: "2025-01-09T09:00:00Z",
-      content: "Let's build JeffreysPrompts.com today. I want a beautiful website to showcase my prompts.",
-    },
-    {
-      id: "msg-2",
-      type: "assistant",
-      timestamp: "2025-01-09T09:05:00Z",
-      content: "I'll help you build JeffreysPrompts.com. Let me start by creating a comprehensive plan...",
-      thinking: "This is an ambitious project. I should break it down into clear phases: planning, architecture, implementation, and polish.",
-    },
-  ],
+  messages: [],
   highlights: getAnnotations(),
 };
 
-function TimelineSkeleton() {
+function HeroSection() {
+  const { stats, duration } = placeholderTranscript.meta;
+
   return (
-    <div className="space-y-4">
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="animate-pulse">
-          <div className="flex items-center gap-3 p-3">
-            <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-700" />
-            <div className="flex-1 space-y-2">
-              <div className="h-4 w-32 bg-zinc-200 dark:bg-zinc-700 rounded" />
-              <div className="h-3 w-48 bg-zinc-100 dark:bg-zinc-800 rounded" />
-            </div>
+    <section className="relative overflow-hidden">
+      {/* Gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 via-blue-500/10 to-emerald-500/10" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-violet-500/20 via-transparent to-transparent" />
+
+      <div className="relative mx-auto max-w-4xl px-4 py-16 sm:py-24 text-center">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-sm font-medium mb-6">
+          <Clock className="w-4 h-4" />
+          <span>{duration} of live coding</span>
+        </div>
+
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">
+          Built in a{" "}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-400 dark:to-blue-400">
+            Single Day
+          </span>
+        </h1>
+
+        <p className="text-lg sm:text-xl text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto mb-8">
+          The complete, unedited Claude Code session transcript that designed, planned, and
+          implemented this entire site — from first prompt to final deploy.
+        </p>
+
+        {/* Quick stats */}
+        <div className="flex flex-wrap justify-center gap-6 text-sm">
+          <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
+            <MessageSquare className="w-4 h-4 text-violet-500" />
+            <span>{stats.userMessages + stats.assistantMessages} messages</span>
+          </div>
+          <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
+            <Wrench className="w-4 h-4 text-amber-500" />
+            <span>{stats.toolCalls.toLocaleString()} tool calls</span>
+          </div>
+          <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
+            <Code2 className="w-4 h-4 text-pink-500" />
+            <span>{stats.linesWritten.toLocaleString()} lines</span>
           </div>
         </div>
-      ))}
-    </div>
+      </div>
+    </section>
+  );
+}
+
+function IntroductionSection() {
+  return (
+    <section className="mx-auto max-w-3xl px-4 py-12">
+      <div className="prose prose-lg dark:prose-invert mx-auto">
+        <h2>Why Share This?</h2>
+
+        <h3>Transparency</h3>
+        <p>
+          AI-assisted development shouldn&apos;t be a black box. By sharing the complete transcript,
+          you can see exactly how the prompts, decisions, and iterations led to this final result.
+          Nothing is hidden or cherry-picked.
+        </p>
+
+        <h3>Education</h3>
+        <p>
+          Learn prompt engineering from hundreds of real examples. See how to guide an AI coding
+          agent through complex tasks, handle errors, iterate on designs, and make architectural
+          decisions collaboratively.
+        </p>
+
+        <h3>Meta-Demonstration</h3>
+        <p>
+          The prompts on this site helped build this site. It&apos;s a recursive demonstration of
+          the very techniques we&apos;re sharing. The Idea Wizard generated improvements, the
+          Robot-Mode Maker informed the CLI design, and the README Reviser shaped the documentation.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function StatsSection() {
+  return (
+    <section className="mx-auto max-w-5xl px-4 py-8">
+      <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-6 text-center">
+        Session Statistics
+      </h2>
+      <StatsDashboard transcript={placeholderTranscript} />
+    </section>
+  );
+}
+
+function InsightsSection() {
+  const annotationsByType = getAnnotationsByType();
+  const allHighlights: TranscriptHighlight[] = [
+    ...annotationsByType.key_decision,
+    ...annotationsByType.interesting_prompt,
+    ...annotationsByType.clever_solution,
+    ...annotationsByType.lesson_learned,
+  ];
+
+  if (allHighlights.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="mx-auto max-w-5xl px-4 py-12">
+      <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-2 text-center">
+        Key Insights
+      </h2>
+      <p className="text-zinc-600 dark:text-zinc-400 text-center mb-8">
+        Notable moments from the development session
+      </p>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        {allHighlights.map((highlight, index) => (
+          <InsightCard key={highlight.messageId} highlight={highlight} index={index} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function TimelineSection() {
+  const { sections, messages } = placeholderTranscript;
+
+  if (messages.length === 0) {
+    return (
+      <section className="mx-auto max-w-4xl px-4 py-12">
+        <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-2 text-center">
+          Session Timeline
+        </h2>
+        <p className="text-zinc-600 dark:text-zinc-400 text-center mb-8">
+          The complete conversation, organized by development phase
+        </p>
+
+        {/* Placeholder for when transcript is available */}
+        <div className="rounded-xl border border-dashed border-zinc-300 dark:border-zinc-700 p-12 text-center">
+          <Wrench className="w-12 h-12 mx-auto text-zinc-400 dark:text-zinc-600 mb-4" />
+          <p className="text-zinc-600 dark:text-zinc-400">
+            Full transcript coming soon. Check back for the complete message-by-message breakdown.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="mx-auto max-w-4xl px-4 py-12">
+      <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-2 text-center">
+        Session Timeline
+      </h2>
+      <p className="text-zinc-600 dark:text-zinc-400 text-center mb-8">
+        The complete conversation, organized by development phase
+      </p>
+
+      <Suspense
+        fallback={
+          <div className="animate-pulse space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-24 rounded-xl bg-zinc-100 dark:bg-zinc-800"
+              />
+            ))}
+          </div>
+        }
+      >
+        <TranscriptTimeline messages={messages} sections={sections} />
+      </Suspense>
+    </section>
+  );
+}
+
+function CTASection() {
+  return (
+    <section className="mx-auto max-w-3xl px-4 py-16 text-center">
+      <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">
+        Ready to Try These Prompts?
+      </h2>
+      <p className="text-zinc-600 dark:text-zinc-400 mb-8">
+        The same prompts that built this site are available for you to use. Browse, copy, or install
+        them as Claude Code skills.
+      </p>
+
+      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <Link
+          href="/"
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-violet-600 hover:bg-violet-700 text-white font-medium transition-colors"
+        >
+          Browse Prompts
+          <ArrowRight className="w-4 h-4" />
+        </Link>
+        <Link
+          href="/bundles"
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-100 font-medium transition-colors"
+        >
+          View Bundles
+        </Link>
+      </div>
+    </section>
   );
 }
 
 export default function HowItWasMadePage() {
-  const transcript = placeholderTranscript;
-  const highlights = transcript.highlights;
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-violet-50/50 to-white dark:from-zinc-950 dark:to-zinc-900">
-      {/* Back navigation */}
-      <div className="container mx-auto px-4 py-4">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to prompts
-        </Link>
-      </div>
-
-      {/* Hero section */}
-      <section className="relative overflow-hidden border-b dark:border-zinc-800">
-        <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 via-transparent to-amber-500/10" />
-        <div className="container mx-auto px-4 py-16 relative">
-          <div className="max-w-3xl">
-            <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-4">
-              Built in a Single Day
-            </h1>
-            <p className="text-xl text-zinc-600 dark:text-zinc-400 mb-6">
-              The complete, unedited Claude Code session transcript that designed,
-              planned, and implemented this entire site.
-            </p>
-
-            {/* Quick stats */}
-            <div className="flex flex-wrap gap-6 text-sm">
-              <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
-                <Clock className="w-4 h-4 text-violet-500" />
-                <span>{transcript.meta.duration}</span>
-              </div>
-              <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
-                <MessageSquare className="w-4 h-4 text-violet-500" />
-                <span>
-                  {transcript.meta.stats.userMessages +
-                    transcript.meta.stats.assistantMessages}{" "}
-                  messages
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
-                <Wrench className="w-4 h-4 text-violet-500" />
-                <span>{transcript.meta.stats.toolCalls} tool calls</span>
-              </div>
-              <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
-                <FileCode className="w-4 h-4 text-violet-500" />
-                <span>{transcript.meta.stats.filesEdited} files</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats dashboard */}
-      <section className="container mx-auto px-4 py-12">
-        <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-6">
-          Session Statistics
-        </h2>
-        <StatsDashboard transcript={transcript} />
-      </section>
-
-      {/* Introduction */}
-      <section className="container mx-auto px-4 py-12 border-t dark:border-zinc-800">
-        <div className="max-w-3xl mx-auto prose prose-zinc dark:prose-invert">
-          <h2>Why This Exists</h2>
-          <p>
-            <strong>Transparency.</strong> AI-assisted development shouldn't be a
-            black box. This page shows exactly how Claude Code was used to build
-            this site, including every prompt, tool call, and decision point.
-          </p>
-          <p>
-            <strong>Education.</strong> Learn prompt engineering from hundreds of
-            real examples. See what works, what doesn't, and how to iterate
-            effectively.
-          </p>
-          <p>
-            <strong>Meta-demonstration.</strong> The prompts on this site helped
-            build this site. It's prompts all the way down.
-          </p>
-        </div>
-      </section>
-
-      {/* Key insights */}
-      {highlights.length > 0 && (
-        <section className="container mx-auto px-4 py-12 border-t dark:border-zinc-800">
-          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-6">
-            Key Insights
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {highlights.map((highlight, index) => (
-              <InsightCard key={highlight.messageId} highlight={highlight} index={index} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Timeline */}
-      <section className="container mx-auto px-4 py-12 border-t dark:border-zinc-800">
-        <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-6">
-          Session Timeline
-        </h2>
-        <Suspense fallback={<TimelineSkeleton />}>
-          <TranscriptTimeline
-            messages={transcript.messages}
-            sections={transcript.sections}
-          />
-        </Suspense>
-      </section>
-
-      {/* Footer CTA */}
-      <section className="container mx-auto px-4 py-16 border-t dark:border-zinc-800">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">
-            Ready to supercharge your development?
-          </h2>
-          <p className="text-zinc-600 dark:text-zinc-400 mb-6">
-            These prompts helped build this site. Now they can help you too.
-          </p>
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white font-medium rounded-lg transition-colors"
-          >
-            Browse Prompts
-            <ExternalLink className="w-4 h-4" />
-          </Link>
-        </div>
-      </section>
+    <div className="min-h-screen">
+      <HeroSection />
+      <StatsSection />
+      <IntroductionSection />
+      <InsightsSection />
+      <TimelineSection />
+      <CTASection />
     </div>
   );
 }

@@ -32,15 +32,14 @@ describe("useLocalStorage", () => {
       localStorage.setItem("test-key", JSON.stringify("stored"));
       const { result } = renderHook(() => useLocalStorage("test-key", "initial"));
 
-      // Initial render returns initialValue, then effect updates to stored
-      expect(result.current[0]).toBe("initial");
-
+      // In test environment with happy-dom, effects run synchronously
+      // so the stored value is available after effects run
       act(() => {
         vi.runAllTimers();
       });
 
       // After effect runs, should have stored value
-      // Note: Due to async nature, the stored value loads after mount
+      expect(result.current[0]).toBe("stored");
     });
 
     it("handles complex objects as initial value", () => {

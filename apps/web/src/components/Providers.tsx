@@ -2,7 +2,7 @@
 
 import { ThemeProvider } from "./theme-provider";
 import { SpotlightSearch } from "./SpotlightSearch";
-import { Toaster } from "@/components/ui/toast";
+import { ToastProvider, Toaster } from "@/components/ui/toast";
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -11,9 +11,11 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   return (
     <ThemeProvider defaultTheme="system">
-      {children}
-      <SpotlightSearch />
-      <Toaster />
+      <ToastProvider>
+        {children}
+        <SpotlightSearch />
+        <Toaster />
+      </ToastProvider>
     </ThemeProvider>
   );
 }

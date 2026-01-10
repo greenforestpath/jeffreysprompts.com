@@ -10,6 +10,7 @@ import { renderCommand } from "./commands/render";
 import { copyCommand } from "./commands/copy";
 import { installedCommand } from "./commands/installed";
 import { updateCommand } from "./commands/update";
+import { suggestCommand } from "./commands/suggest";
 
 export const cli = cac("jfp");
 
@@ -82,6 +83,12 @@ cli
   .option("--force", "Overwrite even if user modified skills")
   .option("--json", "Output JSON")
   .action(updateCommand);
+
+cli
+  .command("suggest <task>", "Suggest prompts for a task")
+  .option("--json", "Output JSON")
+  .option("--limit <n>", "Max suggestions (default: 5)")
+  .action(suggestCommand);
 
 cli.help();
 cli.version(version);
