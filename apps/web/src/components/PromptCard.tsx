@@ -174,22 +174,23 @@ export function PromptCard({ prompt, index = 0, onCopy, onClick }: PromptCardPro
                   <span>~{prompt.estimatedTokens} tokens</span>
                 )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-8 px-3 text-xs"
+                  className="h-11 sm:h-8 px-3 text-xs touch-manipulation"
                   onClick={handleCopy}
+                  aria-label={copied ? "Copied to clipboard" : "Copy prompt to clipboard"}
                 >
                   {copied ? (
                     <>
-                      <Check className="w-3 h-3 mr-1 text-green-500" />
-                      Copied
+                      <Check className="w-4 h-4 sm:w-3 sm:h-3 mr-1 text-green-500" />
+                      <span className="hidden sm:inline">Copied</span>
                     </>
                   ) : (
                     <>
-                      <Copy className="w-3 h-3 mr-1" />
-                      Copy
+                      <Copy className="w-4 h-4 sm:w-3 sm:h-3 sm:mr-1" />
+                      <span className="hidden sm:inline">Copy</span>
                     </>
                   )}
                 </Button>
@@ -197,25 +198,27 @@ export function PromptCard({ prompt, index = 0, onCopy, onClick }: PromptCardPro
                   size="sm"
                   variant={inBasket ? "default" : "ghost"}
                   className={cn(
-                    "h-8 px-3 text-xs",
+                    "h-11 sm:h-8 px-3 text-xs touch-manipulation",
                     inBasket && "bg-indigo-600 hover:bg-indigo-700 text-white"
                   )}
                   onClick={handleBasketToggle}
+                  aria-label={inBasket ? "Remove from basket" : "Add to basket"}
                 >
-                  <ShoppingBag className="w-3 h-3 mr-1" />
-                  {inBasket ? "Added" : "Add"}
+                  <ShoppingBag className="w-4 h-4 sm:w-3 sm:h-3 sm:mr-1" />
+                  <span className="hidden sm:inline">{inBasket ? "Added" : "Add"}</span>
                 </Button>
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-8 px-3 text-xs"
+                  className="h-11 sm:h-8 px-3 text-xs touch-manipulation"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleClick();
                   }}
+                  aria-label="View prompt details"
                 >
-                  View
-                  <ExternalLink className="w-3 h-3 ml-1" />
+                  <span className="hidden sm:inline">View</span>
+                  <ExternalLink className="w-4 h-4 sm:w-3 sm:h-3 sm:ml-1" />
                 </Button>
               </div>
             </div>

@@ -131,23 +131,43 @@ export function Hero({
           </form>
 
           {/* Category filter pills */}
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <Badge
-              variant={selectedCategory === null ? "default" : "outline"}
-              className="cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
+          <div
+            role="group"
+            aria-label="Filter by category"
+            className="flex flex-wrap items-center justify-center gap-2"
+          >
+            <button
+              type="button"
+              aria-pressed={selectedCategory === null}
+              className={cn(
+                "inline-flex items-center rounded-full px-4 py-2 min-h-[44px] text-sm font-medium",
+                "transition-all touch-manipulation",
+                "focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500",
+                selectedCategory === null
+                  ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+                  : "border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+              )}
               onClick={() => onCategorySelect?.(null)}
             >
               All
-            </Badge>
+            </button>
             {categories.map((category) => (
-              <Badge
+              <button
                 key={category}
-                variant={selectedCategory === category ? "default" : "outline"}
-                className="cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors capitalize"
+                type="button"
+                aria-pressed={selectedCategory === category}
+                className={cn(
+                  "inline-flex items-center rounded-full px-4 py-2 min-h-[44px] text-sm font-medium capitalize",
+                  "transition-all touch-manipulation",
+                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500",
+                  selectedCategory === category
+                    ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+                    : "border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                )}
                 onClick={() => onCategorySelect?.(category)}
               >
                 {category}
-              </Badge>
+              </button>
             ))}
           </div>
         </div>
