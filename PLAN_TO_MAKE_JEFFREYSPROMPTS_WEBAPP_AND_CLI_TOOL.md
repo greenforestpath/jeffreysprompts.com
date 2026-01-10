@@ -196,7 +196,9 @@ This design allows skills to bundle unlimited context without bloating the initi
 #### Skill Update Manifest (NEW)
 
 Maintain a `manifest.json` **inside each skills directory** (personal + project) that records:
-`{ promptId, version, updatedAt, hash }` (hash = SHA256 of the installed SKILL.md content)
+`{ id, kind, version, updatedAt, hash }` (hash = SHA256 of the installed SKILL.md content)
+
+- `kind` is `"prompt"` or `"bundle"` so both installs are tracked.
 
 The CLI uses this to make `jfp update` deterministic, detect user edits, and avoid unnecessary rewrites.
 Only overwrite skills that include `x_jfp_generated: true` (unless `--force` is provided).
@@ -1269,6 +1271,7 @@ export function buildRegistryPayload() {
     workflows,
     meta: {
       promptCount: prompts.length,
+      totalPromptCount: prompts.length,
       bundleCount: bundles.length,
       workflowCount: workflows.length,
       categories,
@@ -1551,8 +1554,9 @@ function deriveDynamicDefaults(): Record<string, string> {
 
 function expandPath(value?: string): string | undefined {
   if (!value) return value;
-  if (value.startsWith("~")) return join(homedir(), value.slice(1));
-  return value.replace("$HOME", homedir());
+  // Avoid path.join on absolute fragments ("/.config") which would drop homedir.
+  const withHome = value.replace(/^~(?=\/|$)/, homedir());
+  return withHome.replace(/\$\{HOME\}|\$HOME/g, homedir());
 }
 
 function loadConfig(): Partial<JfpConfig> {
@@ -1578,11 +1582,16 @@ function loadConfig(): Partial<JfpConfig> {
   }
 }
 
-function formatRegistryStatus(status: { version: string; updatedAt?: string; cachedAt?: string; cachePresent: boolean }) {
+function formatRegistryStatus(
+  status: { version: string; updatedAt?: string; cachedAt?: string; cachePresent: boolean },
+  opts?: { autoRefresh?: boolean; registryUrl?: string }
+) {
   return [
     `Registry version: ${status.version}`,
     status.updatedAt ? `Updated: ${status.updatedAt}` : null,
     status.cachedAt ? `Cached: ${status.cachedAt}` : null,
+    opts?.registryUrl ? `Remote: ${opts.registryUrl}` : null,
+    opts?.autoRefresh === false ? "Auto refresh: disabled" : "Auto refresh: enabled",
     status.cachePresent ? null : "Cache: missing",
   ].filter(Boolean).join("\n");
 }
@@ -1654,7 +1663,8 @@ function printCompletion(shell: string) {
 }
 
 type SkillsManifestEntry = {
-  promptId: string;
+  id: string;
+  kind: "prompt" | "bundle";
   version: string;
   updatedAt?: string;
   hash: string;
@@ -1666,8 +1676,11 @@ function hashContent(content: string) {
 
 function updateSkillsManifest(
   skillsDir: string,
-  updated: Prompt[] = [],
-  removed: string[] = []
+  opts: {
+    prompts?: Prompt[];
+    bundles?: Bundle[];
+    removed?: { id: string; kind: "prompt" | "bundle" }[];
+  } = {}
 ) {
   if (!existsSync(skillsDir)) return;
   const manifestPath = join(skillsDir, "manifest.json");
@@ -1675,17 +1688,33 @@ function updateSkillsManifest(
     ? JSON.parse(readFileSync(manifestPath, "utf-8"))
     : { entries: [] as SkillsManifestEntry[] };
 
-  const byId = new Map((existing.entries ?? []).map((e: SkillsManifestEntry) => [e.promptId, e]));
-  for (const id of removed) byId.delete(id);
+  const byId = new Map(
+    (existing.entries ?? []).map((e: SkillsManifestEntry) => [`${e.kind}:${e.id}`, e])
+  );
+  for (const item of opts.removed ?? []) byId.delete(`${item.kind}:${item.id}`);
 
-  for (const prompt of updated) {
+  for (const prompt of opts.prompts ?? []) {
     const skillPath = join(skillsDir, prompt.id, "SKILL.md");
     if (!existsSync(skillPath)) continue;
     const content = readFileSync(skillPath, "utf-8");
-    byId.set(prompt.id, {
-      promptId: prompt.id,
+    byId.set(`prompt:${prompt.id}`, {
+      id: prompt.id,
+      kind: "prompt",
       version: prompt.version,
       updatedAt: prompt.updatedAt ?? prompt.created,
+      hash: hashContent(content),
+    });
+  }
+
+  for (const bundle of opts.bundles ?? []) {
+    const skillPath = join(skillsDir, bundle.id, "SKILL.md");
+    if (!existsSync(skillPath)) continue;
+    const content = readFileSync(skillPath, "utf-8");
+    byId.set(`bundle:${bundle.id}`, {
+      id: bundle.id,
+      kind: "bundle",
+      version: bundle.version,
+      updatedAt: bundle.updatedAt,
       hash: hashContent(content),
     });
   }
@@ -1703,6 +1732,8 @@ cli
   .option("--json", "machine-readable output (auto when piped)", { default: !process.stdout.isTTY })
   .option("--pretty", "pretty-print JSON (larger output)", { default: false })
   .option("--no-color", "disable ANSI colors", { default: false });
+// Allow --VAR=value passthrough for prompt variables (parsed separately by parseVarFlags).
+cli.allowUnknownOptions();
 
 // $HOME/.config/jfp/config.json
 interface JfpConfig {
@@ -1982,7 +2013,13 @@ async function openCommand(id: string) {
 async function registryStatusCommand(flags: Flags) {
   const paths = getRegistryPaths();
   const status = await getRegistryStatus(paths.cachePath, paths.metaPath);
-  flags.json ? printJson(status, flags) : console.log(formatRegistryStatus(status));
+  const config = loadConfig();
+  const registry = config.registry ?? {};
+  const output = formatRegistryStatus(status, {
+    registryUrl: registry.remote ?? "https://jeffreysprompts.com/api/prompts",
+    autoRefresh: registry.autoRefresh,
+  });
+  flags.json ? printJson(status, flags) : console.log(output);
 }
 
 async function registryRefreshCommand(flags: Flags) {
@@ -2230,7 +2267,7 @@ async function installCommand(args: string[], flags: Flags) {
     installed.push(prompt);
   }
 
-  updateSkillsManifest(targetDir, installed);
+  updateSkillsManifest(targetDir, { prompts: installed });
   console.log();
   console.log(chalk.cyan("Restart Claude Code to load the new skills."));
 }
@@ -2267,7 +2304,7 @@ async function uninstallCommand(args: string[], flags: Flags) {
     }
   }
 
-  updateSkillsManifest(targetDir, [], toRemove);
+  updateSkillsManifest(targetDir, { removed: toRemove.map((id) => ({ id, kind: "prompt" })) });
 }
 
 // jfp installed — List installed skills
@@ -2329,7 +2366,7 @@ function readSkillsManifest(skillsDir: string) {
   const path = join(skillsDir, "manifest.json");
   if (!existsSync(path)) return new Map<string, SkillsManifestEntry>();
   const data = JSON.parse(readFileSync(path, "utf-8"));
-  return new Map((data.entries ?? []).map((e: SkillsManifestEntry) => [e.promptId, e]));
+  return new Map((data.entries ?? []).map((e: SkillsManifestEntry) => [`${e.kind}:${e.id}`, e]));
 }
 
 async function updateCommand(flags: Flags) {
@@ -2355,7 +2392,7 @@ async function updateCommand(flags: Flags) {
     if (existsSync(personalPath)) {
       const existing = readFileSync(personalPath, "utf-8");
       const existingHash = hashContent(existing);
-      const entry = personalManifest.get(prompt.id);
+      const entry = personalManifest.get(`prompt:${prompt.id}`);
       const isGenerated = existing.includes("x_jfp_generated: true");
       const isModified = entry?.hash && entry.hash !== existingHash;
       if (!isGenerated && !flags.force) {
@@ -2386,7 +2423,7 @@ async function updateCommand(flags: Flags) {
     if (existsSync(projectPath)) {
       const existing = readFileSync(projectPath, "utf-8");
       const existingHash = hashContent(existing);
-      const entry = projectManifest.get(prompt.id);
+      const entry = projectManifest.get(`prompt:${prompt.id}`);
       const isGenerated = existing.includes("x_jfp_generated: true");
       const isModified = entry?.hash && entry.hash !== existingHash;
       if (!isGenerated && !flags.force) {
@@ -2424,8 +2461,8 @@ async function updateCommand(flags: Flags) {
   }
 
   if (!flags.dryRun) {
-    updateSkillsManifest(personalDir, updatedPersonal);
-    updateSkillsManifest(projectDir, updatedProject);
+    updateSkillsManifest(personalDir, { prompts: updatedPersonal });
+    updateSkillsManifest(projectDir, { prompts: updatedProject });
   }
 }
 
@@ -2833,12 +2870,33 @@ export function InstallAllSkillsButton() {
 import { buildRegistryPayload } from "@jeffreysprompts/core/export/json";
 import { NextResponse } from "next/server";
 import { createHash } from "crypto";
+import { readFileSync } from "fs";
+import { join } from "path";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const category = searchParams.get("category");
   const tag = searchParams.get("tag");
   const featured = searchParams.get("featured");
+
+  const isFilteredRequest = Boolean(category || tag || featured === "true");
+
+  // If unfiltered, serve the exact registry.json bytes (byte-for-byte match).
+  if (!isFilteredRequest) {
+    const registryPath = join(process.cwd(), "public", "registry.json");
+    const json = readFileSync(registryPath, "utf-8");
+    const etag = `"${createHash("sha256").update(json).digest("hex")}"`;
+    if (request.headers.get("if-none-match") === etag) {
+      return new Response(null, { status: 304, headers: { ETag: etag } });
+    }
+    return new Response(json, {
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        ETag: etag,
+        "Cache-Control": "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
+      },
+    });
+  }
 
   const base = buildRegistryPayload();
   let filteredPrompts = base.prompts;
@@ -2861,6 +2919,7 @@ export async function GET(request: Request) {
     meta: {
       ...base.meta,
       promptCount: filteredPrompts.length,
+      totalPromptCount: base.meta.totalPromptCount ?? base.meta.promptCount,
     },
   };
 
@@ -2883,6 +2942,7 @@ Note:
 - `/registry.json` is a static snapshot for CDN/offline/CLI use and integrity checks.
 - `/api/prompts` supports filtering (`?category=...&tag=...`) for web UI.
 - Unfiltered `/api/prompts` should match `/registry.json` byte-for-byte (enables checksum verification).
+- In the unfiltered case, return the exact `registry.json` bytes to guarantee the match.
 
 **API endpoint for single skill (SKILL.md):**
 
@@ -4222,8 +4282,12 @@ async function refreshRegistry({
   clearTimeout(timeout);
 
   if (res.status === 304) return { updated: false, version: meta.version ?? "unknown" };
+  if (!res.ok) {
+    return { updated: false, version: meta.version ?? "unknown", error: res.status };
+  }
   const payload = await res.json();
-  const isFiltered = payload?.meta?.promptCount && payload.meta.promptCount !== payload.prompts?.length;
+  const total = payload?.meta?.totalPromptCount ?? payload?.meta?.promptCount;
+  const isFiltered = typeof total === "number" && total !== payload.prompts?.length;
 
   // Optional manifest verification
   const derivedManifestUrl = manifestUrl
@@ -4377,7 +4441,7 @@ export default async function HomePage() {
   const registry = await fetchRegistry();
   return (
     <>
-      <SpotlightSearch source={registry.prompts} />
+      <SpotlightSearch />
       <PromptGrid prompts={registry.prompts} />
     </>
   );
@@ -4614,12 +4678,13 @@ import { cn } from "@/lib/utils";
 import { type Prompt } from "@jeffreysprompts/core/prompts";
 type SearchResult = import("@/lib/search/engine").SearchResult;
 
-export function SpotlightSearch({ source }: { source: Prompt[] }) {
+export function SpotlightSearch() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [source, setSource] = useState<Prompt[]>([]);
 
   // Handle selection - copy prompt content
   const handleSelect = useCallback((result: SearchResult) => {
@@ -4650,6 +4715,15 @@ export function SpotlightSearch({ source }: { source: Prompt[] }) {
       inputRef.current?.focus();
     }
   }, [open]);
+
+  // Lazy-load registry only when Spotlight opens (keeps initial payload small)
+  useEffect(() => {
+    if (!open || source.length) return;
+    fetch("/registry.json")
+      .then((res) => res.json())
+      .then((payload) => setSource(payload.prompts ?? []))
+      .catch(() => {});
+  }, [open, source.length]);
 
   // Search on query change (debounced, lazy-loaded only when open)
   useEffect(() => {
@@ -4844,6 +4918,7 @@ Add a PWA manifest + service worker:
 - use SWR-style client fetch to revalidate in background
 - optional runtime cache for `/api/prompts` (unfiltered) with `/registry.json` as offline fallback
 - keep BM25 search in-browser so offline search still works
+- version caches by registry version (e.g., `jfp-registry-${version}`) and purge old caches on activate
 
 ### 7.10 Error Boundaries + Privacy Analytics
 
@@ -6661,6 +6736,12 @@ export interface Bundle {
   /** One-line description */
   description: string;
 
+  /** Semantic version for bundle updates */
+  version: string;
+
+  /** Last update date (ISO 8601) */
+  updatedAt: string;
+
   /** Prompt IDs included in this bundle */
   promptIds: string[];
 
@@ -6688,6 +6769,8 @@ export const bundles: Bundle[] = [
     id: "getting-started",
     title: "Getting Started Bundle",
     description: "Jeffrey's three essential meta-prompts for any project",
+    version: "1.0.0",
+    updatedAt: "2025-01-10",
     promptIds: ["idea-wizard", "readme-reviser", "robot-mode-maker"],
     workflow: `
 ## Recommended Workflow
@@ -6728,6 +6811,8 @@ Use these prompts in sequence for maximum impact:
     id: "documentation-suite",
     title: "Documentation Suite",
     description: "Documentation prompts (growing collection)",
+    version: "0.1.0",
+    updatedAt: "2025-01-10",
     promptIds: ["readme-reviser"],
     workflow: `
 ## Documentation Workflow
@@ -6793,6 +6878,8 @@ ${p.content}
   return `---
 name: ${q(bundle.id)}
 description: ${q(bundle.description)}
+version: ${q(bundle.version)}
+updatedAt: ${q(bundle.updatedAt)}
 author: ${q(bundle.author)}
 source: ${q(`https://jeffreysprompts.com/bundles/${bundle.id}`)}
 x_jfp_generated: true
@@ -6952,6 +7039,8 @@ async function installBundleCommand(bundleId: string, flags: Flags) {
   console.log(chalk.dim(`   Includes: ${bundle.promptIds.join(", ")}`));
   console.log();
   console.log(chalk.cyan("Restart Claude Code to load the new skill."));
+
+  updateSkillsManifest(targetDir, { bundles: [bundle] });
 }
 ```
 
@@ -7059,6 +7148,7 @@ This phase upgrades “suggest a prompt” beyond pure lexical matching without 
 - **Optional**: semantic rerank with MiniLM via Transformers.js.
 - **Fallback**: if the semantic model isn’t available, use lightweight hash embeddings for approximate rerank.
 - **Two-stage pipeline**: BM25 → optional semantic rerank on top N.
+- **Model UX**: on first `--semantic`, download/caches the model in `$HOME/.config/jfp/models`; show a one-time progress message and allow manual purge by deleting that directory.
 
 ### 14.2 CLI Integration
 
