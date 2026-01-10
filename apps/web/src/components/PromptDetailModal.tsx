@@ -59,6 +59,17 @@ interface PromptDetailModalProps {
 
 type VariableValues = Record<string, string>;
 
+function buildInstallCommand(prompt: Prompt): string {
+  const skillContent = generateSkillMd(prompt);
+  let delimiter = "JFP_SKILL";
+  let counter = 0;
+  while (skillContent.includes(delimiter)) {
+    counter += 1;
+    delimiter = `JFP_SKILL_${counter}`;
+  }
+  return `mkdir -p ~/.config/claude/skills/${prompt.id} && cat > ~/.config/claude/skills/${prompt.id}/SKILL.md << '${delimiter}'\n${skillContent}\n${delimiter}`;
+}
+
 export function PromptDetailModal({
   prompt,
   open,
@@ -138,10 +149,7 @@ export function PromptDetailModal({
   // Generate install command and copy
   const handleInstall = useCallback(async () => {
     if (!prompt) return;
-
-    const skillContent = generateSkillMd(prompt);
-    // Using quoted heredoc (<<'EOF') so content doesn't need escaping
-    const command = `mkdir -p ~/.config/claude/skills/${prompt.id} && cat > ~/.config/claude/skills/${prompt.id}/SKILL.md << 'EOF'\n${skillContent}\nEOF`;
+    const command = buildInstallCommand(prompt);
 
     try {
       await navigator.clipboard.writeText(command);

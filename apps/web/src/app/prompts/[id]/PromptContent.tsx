@@ -48,6 +48,17 @@ interface PromptContentProps {
 
 type VariableValues = Record<string, string>;
 
+function buildInstallCommand(prompt: Prompt): string {
+  const skillContent = generateSkillMd(prompt);
+  let delimiter = "JFP_SKILL";
+  let counter = 0;
+  while (skillContent.includes(delimiter)) {
+    counter += 1;
+    delimiter = `JFP_SKILL_${counter}`;
+  }
+  return `mkdir -p ~/.config/claude/skills/${prompt.id} && cat > ~/.config/claude/skills/${prompt.id}/SKILL.md << '${delimiter}'\n${skillContent}\n${delimiter}`;
+}
+
 export function PromptContent({ prompt }: PromptContentProps) {
   const { success, error } = useToast();
   const [copied, setCopied] = useState(false);
@@ -102,7 +113,7 @@ export function PromptContent({ prompt }: PromptContentProps) {
   }, [renderedContent, success, error]);
 
   const handleInstall = useCallback(async () => {
-    const command = `mkdir -p ~/.config/claude/skills/${prompt.id} && cat > ~/.config/claude/skills/${prompt.id}/SKILL.md << 'SKILL_EOF'\n${generateSkillMd(prompt)}\nSKILL_EOF`;
+    const command = buildInstallCommand(prompt);
     try {
       await navigator.clipboard.writeText(command);
       success("Install command copied - paste in terminal");
