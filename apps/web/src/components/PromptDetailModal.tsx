@@ -41,6 +41,7 @@ import { useToast } from "@/components/ui/toast";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/analytics";
 import {
   renderPrompt,
   extractVariables,
@@ -125,6 +126,9 @@ export function PromptDetailModal({
       await navigator.clipboard.writeText(renderedContent);
       setCopied(true);
       success("Copied to clipboard", prompt?.title ?? "Prompt");
+      if (prompt) {
+        trackEvent("prompt_copy", { id: prompt.id, source: "modal" });
+      }
       setTimeout(() => setCopied(false), 2000);
     } catch {
       error("Failed to copy", "Please try again");
@@ -142,6 +146,7 @@ export function PromptDetailModal({
     try {
       await navigator.clipboard.writeText(command);
       success("Install command copied", `Paste in terminal to install "${prompt.title}"`);
+      trackEvent("skill_install", { id: prompt.id, source: "modal" });
     } catch {
       error("Failed to copy", "Please try again");
     }
@@ -161,6 +166,7 @@ export function PromptDetailModal({
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     success("Downloaded", `${prompt.id}.md`);
+    trackEvent("export", { id: prompt.id, format: "md", source: "modal" });
   }, [prompt, renderedContent, success]);
 
   // Reset state when modal closes
@@ -170,6 +176,12 @@ export function PromptDetailModal({
       setContext("");
     }
   }, [open]);
+
+  useEffect(() => {
+    if (open && prompt) {
+      trackEvent("prompt_view", { id: prompt.id, source: "modal" });
+    }
+  }, [open, prompt]);
 
   if (!prompt) return null;
 

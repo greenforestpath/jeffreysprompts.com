@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useMemo, useCallback, useState } from "react";
+import { Suspense, useMemo, useCallback, useState, useEffect } from "react";
 import { AlertTriangle } from "lucide-react";
 import { prompts, categories, tags } from "@jeffreysprompts/core/prompts/registry";
 import { searchPrompts } from "@jeffreysprompts/core/search/engine";
@@ -12,6 +12,7 @@ import { PromptDetailModal } from "@/components/PromptDetailModal";
 import { Button } from "@/components/ui/button";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { useFilterState } from "@/hooks/useFilterState";
+import { trackEvent } from "@/lib/analytics";
 import type { Prompt, PromptCategory } from "@jeffreysprompts/core/prompts/types";
 
 function PromptGridFallback({ onRefresh }: { onRefresh: () => void }) {
@@ -87,6 +88,19 @@ function HomeContent() {
     return results;
   }, [filters]);
 
+  useEffect(() => {
+    const query = filters.query.trim();
+    if (!query) return;
+    const timer = setTimeout(() => {
+      trackEvent("search", {
+        queryLength: query.length,
+        resultCount: filteredPrompts.length,
+        source: "homepage",
+      });
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [filters.query, filteredPrompts.length]);
+
   const handlePromptClick = useCallback((prompt: Prompt) => {
     setSelectedPrompt(prompt);
     setIsModalOpen(true);
@@ -101,6 +115,7 @@ function HomeContent() {
   const handlePromptCopy = useCallback((prompt: Prompt) => {
     // TODO: Show toast notification
     console.log("Copied prompt:", prompt.id);
+    trackEvent("prompt_copy", { id: prompt.id, source: "grid" });
   }, []);
 
   const handleRefresh = useCallback(() => {

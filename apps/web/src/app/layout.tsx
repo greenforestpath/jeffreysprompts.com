@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "@/components/Providers";
 import { Nav } from "@/components/Nav";
@@ -15,6 +16,10 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+const plausibleDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
+const plausibleSrc =
+  process.env.NEXT_PUBLIC_PLAUSIBLE_SRC ?? "https://plausible.io/js/script.js";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://jeffreysprompts.com"),
@@ -95,6 +100,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {plausibleDomain && (
+          <Script
+            data-domain={plausibleDomain}
+            data-respect-dnt="true"
+            src={plausibleSrc}
+            strategy="afterInteractive"
+          />
+        )}
         <Providers>
           <Nav />
           <main className="min-h-screen">{children}</main>

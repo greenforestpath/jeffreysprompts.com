@@ -9,7 +9,7 @@
  * - Copy, install, download buttons
  */
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
   Copy,
@@ -32,6 +32,7 @@ import { useToast } from "@/components/ui/toast";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { RelatedPrompts } from "@/components/RelatedPrompts";
 import { ChangelogAccordion } from "@/components/ChangelogAccordion";
+import { trackEvent } from "@/lib/analytics";
 import {
   renderPrompt,
   extractVariables,
@@ -84,11 +85,16 @@ export function PromptContent({ prompt }: PromptContentProps) {
     return content;
   }, [prompt, variableValues, context]);
 
+  useEffect(() => {
+    trackEvent("prompt_view", { id: prompt.id, source: "prompt_page" });
+  }, [prompt.id]);
+
   const handleCopy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(renderedContent);
       setCopied(true);
       success("Copied to clipboard");
+      trackEvent("prompt_copy", { id: prompt.id, source: "prompt_page" });
       setTimeout(() => setCopied(false), 2000);
     } catch {
       error("Failed to copy to clipboard");
@@ -100,6 +106,7 @@ export function PromptContent({ prompt }: PromptContentProps) {
     try {
       await navigator.clipboard.writeText(command);
       success("Install command copied - paste in terminal");
+      trackEvent("skill_install", { id: prompt.id, source: "prompt_page" });
     } catch {
       error("Failed to copy install command");
     }
@@ -116,6 +123,7 @@ export function PromptContent({ prompt }: PromptContentProps) {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     success("Downloaded SKILL.md");
+    trackEvent("export", { id: prompt.id, format: "skill" });
   }, [prompt, success]);
 
   const updateVariable = useCallback(

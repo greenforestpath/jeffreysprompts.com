@@ -16,6 +16,7 @@ import { useBasket } from "@/hooks/use-basket";
 import { Button } from "./ui/button";
 import { useToast } from "./ui/toast";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/analytics";
 import {
   prompts,
   getPrompt,
@@ -64,6 +65,7 @@ export function BasketSidebar({ isOpen, onClose }: BasketSidebarProps) {
         title: "Downloaded",
         message: `${basketPrompts.length} prompt${basketPrompts.length > 1 ? "s" : ""} exported as Markdown`,
       });
+      trackEvent("export", { format: "md", count: basketPrompts.length, source: "basket" });
     } catch (error) {
       toast({
         title: "Export failed",
@@ -93,6 +95,7 @@ export function BasketSidebar({ isOpen, onClose }: BasketSidebarProps) {
         title: "Downloaded",
         message: `${basketPrompts.length} skill${basketPrompts.length > 1 ? "s" : ""} ready to install`,
       });
+      trackEvent("export", { format: "skill", count: basketPrompts.length, source: "basket" });
     } catch (error) {
       toast({
         title: "Export failed",
@@ -118,6 +121,7 @@ export function BasketSidebar({ isOpen, onClose }: BasketSidebarProps) {
         title: "Copied",
         message: "Install command copied to clipboard",
       });
+      trackEvent("skill_install", { count: basketPrompts.length, source: "basket" });
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
       toast({

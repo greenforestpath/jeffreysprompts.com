@@ -3,6 +3,7 @@
 import * as React from "react"
 import { createPortal } from "react-dom"
 import { cn } from "@/lib/utils"
+import { trackEvent } from "@/lib/analytics"
 import { searchPrompts, semanticRerank, type SearchResult, type RankedResult } from "@jeffreysprompts/core/search"
 import { Badge } from "./ui/badge"
 import { useToast } from "@/components/ui/toast"
@@ -145,6 +146,12 @@ export function SpotlightSearch({
             .slice(0, 10)
 
           setResults(rerankedResults)
+          trackEvent("search", {
+            queryLength: debouncedQuery.length,
+            resultCount: rerankedResults.length,
+            source: "spotlight",
+            semantic: true,
+          })
         } catch (err) {
           console.warn("[SpotlightSearch] Semantic rerank failed, using BM25:", err)
           // Keep BM25 results on failure
@@ -152,7 +159,14 @@ export function SpotlightSearch({
           if (!cancelled) setIsReranking(false)
         }
       } else {
-        setResults(searchResults.slice(0, 10))
+        const nextResults = searchResults.slice(0, 10)
+        setResults(nextResults)
+        trackEvent("search", {
+          queryLength: debouncedQuery.length,
+          resultCount: nextResults.length,
+          source: "spotlight",
+          semantic: false,
+        })
       }
 
       if (!cancelled) setSelectedIndex(0)
