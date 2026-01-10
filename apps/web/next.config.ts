@@ -7,8 +7,10 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Strict mode for better debugging
   reactStrictMode: true,
-  // Use webpack for builds (turbopack has issues)
-  experimental: {},
+  // Turbopack config for monorepo - use relative path from apps/web
+  turbopack: {
+    root: "../..",
+  },
 };
 
 export default nextConfig;
