@@ -29,8 +29,15 @@ export {
 } from "./registry";
 
 // Bundles
-export type { Bundle } from "./bundles";
-export { bundles, getBundle, getBundlePrompts } from "./bundles";
+export type { Bundle, BundleIcon } from "./bundles";
+export {
+  bundles,
+  getBundle,
+  getBundlePrompts,
+  generateBundleSkillMd,
+  featuredBundles,
+  bundlesById,
+} from "./bundles";
 
 // Workflows
 export type { Workflow, WorkflowStep } from "./workflows";
