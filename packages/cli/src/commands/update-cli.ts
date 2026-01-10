@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import { version } from "../../package.json";
 import { chmodSync, createWriteStream, existsSync, readFileSync, renameSync, unlinkSync } from "fs";
-import { createHash } from "crypto";
+import { createHash, randomBytes } from "crypto";
 import { spawn } from "child_process";
 import { loadConfig, saveConfig } from "../lib/config";
 import { shouldOutputJson } from "../lib/utils";
@@ -389,7 +389,9 @@ export async function updateCliCommand(options: UpdateCliOptions = {}) {
       return;
     }
 
-    tempPath = `${currentPath}.new`;
+    // Use random suffix to prevent predictable temp file attacks (TOCTOU mitigation)
+    const randomSuffix = randomBytes(8).toString("hex");
+    tempPath = `${currentPath}.update-${randomSuffix}`;
     if (!jsonOutput) {
       console.log(chalk.dim("Downloading " + asset.name + "..."));
     }
