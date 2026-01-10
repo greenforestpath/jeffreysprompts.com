@@ -88,9 +88,13 @@ export class CliRunner {
         env: this.env,
       });
 
-      // Set up timeout
+      // Set up timeout that kills the process
+      let timeoutId: ReturnType<typeof setTimeout> | null = null;
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error(`Command timed out after ${this.timeout}ms`)), this.timeout);
+        timeoutId = setTimeout(() => {
+          proc.kill();
+          reject(new Error(`Command timed out after ${this.timeout}ms`));
+        }, this.timeout);
       });
 
       // Wait for process with timeout
@@ -102,6 +106,9 @@ export class CliRunner {
         ]),
         timeoutPromise,
       ]);
+
+      // Clear timeout if process completed
+      if (timeoutId) clearTimeout(timeoutId);
 
       const durationMs = Math.round(performance.now() - startTime);
 
@@ -250,7 +257,7 @@ export class CliRunner {
  * Create a pre-configured CLI runner for E2E tests
  */
 export function createCliRunner(testName: string, options?: Partial<CliRunnerOptions>): CliRunner {
-  const { TestLogger } = require("./test-logger");
+  // Use the already-imported TestLogger instead of require()
   const logger = new TestLogger(`cli:${testName}`, {
     logFile: process.env.E2E_LOG_FILE ?? `/tmp/e2e-logs/cli-${testName}.jsonl`,
   });

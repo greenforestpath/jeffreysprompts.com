@@ -58,7 +58,8 @@ const LEVEL_COLORS: Record<LogLevel, string> = {
 };
 
 const RESET = "\x1b[0m";
-const BOLD = "\x1b[1m";
+
+const VALID_LOG_LEVELS = new Set<LogLevel>(["debug", "info", "step", "error"]);
 
 export class TestLogger {
   private context: string;
@@ -79,7 +80,8 @@ export class TestLogger {
     } else if (process.env.E2E_VERBOSE === "1") {
       this.minLevel = "debug";
     } else {
-      this.minLevel = (process.env.E2E_LOG_LEVEL as LogLevel) || "step";
+      const envLevel = process.env.E2E_LOG_LEVEL as LogLevel | undefined;
+      this.minLevel = envLevel && VALID_LOG_LEVELS.has(envLevel) ? envLevel : "step";
     }
 
     // Determine log file from options or environment

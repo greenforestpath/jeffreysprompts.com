@@ -19,8 +19,8 @@
 
 import { test as base, Page, TestInfo } from "@playwright/test";
 import { TestLogger } from "./test-logger";
-import { existsSync, mkdirSync, writeFileSync } from "fs";
-import { join, dirname } from "path";
+import { existsSync, mkdirSync } from "fs";
+import { join } from "path";
 
 export interface StepOptions {
   /** Take a screenshot after this step */
@@ -229,10 +229,10 @@ export const test = base.extend<{ logger: PlaywrightLogger }>({
       });
     }
 
-    // Save logs as test artifact
+    // Save logs as test artifact (JSONL = newline-delimited JSON)
     const logPath = join(testInfo.outputDir, "test-log.jsonl");
     logger.writeToFile(logPath);
-    await testInfo.attach("test-log", { path: logPath, contentType: "application/json" });
+    await testInfo.attach("test-log", { path: logPath, contentType: "application/x-ndjson" });
   },
 });
 
