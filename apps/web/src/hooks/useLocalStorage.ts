@@ -39,6 +39,8 @@ export function useLocalStorage<T>(
   const initialValueRef = useRef<T>(initialValue);
   // Track latest value for use in cleanup (avoids stale closure bug)
   const latestValueRef: MutableRefObject<T | null> = useRef<T | null>(null);
+  // Track previous key to flush pending writes on key change
+  const prevKeyRef = useRef<string>(key);
 
   // Initialize state with initialValue to avoid hydration mismatch
   const [storedValue, setStoredValue] = useState<T>(initialValue);
@@ -49,7 +51,25 @@ export function useLocalStorage<T>(
   }, [initialValue]);
 
   // Read from localStorage on mount or key change
+  // Flush any pending debounced writes for the PREVIOUS key before switching
   useEffect(() => {
+    const oldKey = prevKeyRef.current;
+    prevKeyRef.current = key;
+
+    // Flush pending write to OLD key before reading new key
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = null;
+      // Write latest value to the OLD key (not current mount/initial load)
+      if (latestValueRef.current !== null && oldKey !== key) {
+        try {
+          window.localStorage.setItem(oldKey, JSON.stringify(latestValueRef.current));
+        } catch {
+          // Ignore errors on key-change flush
+        }
+      }
+    }
+
     try {
       const item = window.localStorage.getItem(key);
       if (item !== null) {

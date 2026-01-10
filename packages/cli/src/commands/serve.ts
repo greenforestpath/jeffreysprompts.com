@@ -181,7 +181,7 @@ export async function serveCommand(options: ServeOptions): Promise<void> {
       const query = (args?.query as string) || "";
       const category = args?.category as string | undefined;
       const tags = args?.tags as string[] | undefined;
-      const limit = (args?.limit as number) || 5;
+      const limit = (args?.limit as number) ?? 5;
 
       // Get all prompts and filter
       let results = searchPrompts(query || "", { limit: 50 });

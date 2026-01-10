@@ -32,12 +32,20 @@ export function useServiceWorker(): ServiceWorkerState {
       return;
     }
 
+    // Track cleanup functions for event listeners
+    let updateFoundHandler: (() => void) | null = null;
+    let stateChangeHandler: (() => void) | null = null;
+    let currentRegistration: ServiceWorkerRegistration | null = null;
+    let installingWorker: ServiceWorker | null = null;
+
     // Register service worker
     const registerSW = async () => {
       try {
         const registration = await navigator.serviceWorker.register("/sw.js", {
           scope: "/",
         });
+
+        currentRegistration = registration;
 
         setState((prev) => ({
           ...prev,
@@ -46,17 +54,20 @@ export function useServiceWorker(): ServiceWorkerState {
         }));
 
         // Check for updates periodically
-        registration.addEventListener("updatefound", () => {
+        updateFoundHandler = () => {
           const newWorker = registration.installing;
           if (newWorker) {
-            newWorker.addEventListener("statechange", () => {
+            installingWorker = newWorker;
+            stateChangeHandler = () => {
               if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
                 // New version available - could prompt user to refresh
                 console.log("[SW] New version available");
               }
-            });
+            };
+            newWorker.addEventListener("statechange", stateChangeHandler);
           }
-        });
+        };
+        registration.addEventListener("updatefound", updateFoundHandler);
 
         console.log("[SW] Service Worker registered successfully");
       } catch (error) {
@@ -83,6 +94,13 @@ export function useServiceWorker(): ServiceWorkerState {
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
+      // Clean up service worker event listeners to prevent memory leaks
+      if (currentRegistration && updateFoundHandler) {
+        currentRegistration.removeEventListener("updatefound", updateFoundHandler);
+      }
+      if (installingWorker && stateChangeHandler) {
+        installingWorker.removeEventListener("statechange", stateChangeHandler);
+      }
     };
   }, []);
 

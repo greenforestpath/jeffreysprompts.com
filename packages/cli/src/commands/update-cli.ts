@@ -227,7 +227,14 @@ async function verifyBinary(path: string): Promise<boolean> {
 
     child.on("close", (code) => {
       clearTimeout(timeout);
-      resolve(!timedOut && code === 0 && output.includes("jfp"));
+      const trimmed = output.trim();
+      const hasSemver = /\b\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?\b/.test(trimmed);
+      resolve(
+        !timedOut &&
+          code === 0 &&
+          trimmed.length > 0 &&
+          (hasSemver || trimmed.toLowerCase().includes("jfp"))
+      );
     });
 
     child.on("error", () => {

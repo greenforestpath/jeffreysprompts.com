@@ -1,9 +1,23 @@
 // Skills manifest management for tracking installed JFP skills
 
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
-import { join, dirname } from "path";
+import { join, dirname, resolve, sep } from "path";
 import type { SkillManifest, SkillManifestEntry } from "@jeffreysprompts/core/export";
 import { computeSkillHash } from "@jeffreysprompts/core/export";
+
+/**
+ * Safely resolve a child path within a root directory.
+ * Throws if the resolved path escapes the root.
+ * Defense-in-depth against path traversal.
+ */
+function safePath(root: string, child: string): string {
+  const resolvedRoot = resolve(root);
+  const resolvedChild = resolve(resolvedRoot, child);
+  if (!resolvedChild.startsWith(resolvedRoot + sep)) {
+    throw new Error(`Unsafe path: ${child}`);
+  }
+  return resolvedChild;
+}
 
 const MANIFEST_FILENAME = "manifest.json";
 
@@ -163,7 +177,22 @@ export function checkSkillModification(
   id: string,
   manifest: FullSkillManifest | null
 ): SkillModificationCheck {
-  const skillDir = join(skillsDir, id);
+  // Defense-in-depth: validate the ID doesn't escape the skills directory
+  let skillDir: string;
+  try {
+    skillDir = safePath(skillsDir, id);
+  } catch {
+    // Invalid ID - return as non-existent/non-modifiable
+    return {
+      id,
+      exists: false,
+      isJfpGenerated: false,
+      manifestEntry: null,
+      currentHash: null,
+      wasModified: false,
+      canOverwrite: false,
+    };
+  }
   const skillMdPath = join(skillDir, "SKILL.md");
   const exists = existsSync(skillMdPath);
   const isGenerated = exists ? isJfpGenerated(skillMdPath) : false;

@@ -304,23 +304,23 @@ export function PromptDetailModal({
       </div>
 
       {/* When to use / Tips */}
-      {(prompt.whenToUse?.length || prompt.tips?.length) && (
+      {((prompt.whenToUse?.length ?? 0) > 0 || (prompt.tips?.length ?? 0) > 0) && (
         <div className="grid gap-4 sm:grid-cols-2 text-sm">
-          {prompt.whenToUse?.length && (
+          {(prompt.whenToUse?.length ?? 0) > 0 && (
             <div className="space-y-2">
               <h4 className="font-medium">When to Use</h4>
               <ul className="list-disc list-inside text-muted-foreground space-y-1">
-                {prompt.whenToUse.map((item, i) => (
+                {prompt.whenToUse?.map((item, i) => (
                   <li key={i}>{item}</li>
                 ))}
               </ul>
             </div>
           )}
-          {prompt.tips?.length && (
+          {(prompt.tips?.length ?? 0) > 0 && (
             <div className="space-y-2">
               <h4 className="font-medium">Tips</h4>
               <ul className="list-disc list-inside text-muted-foreground space-y-1">
-                {prompt.tips.map((item, i) => (
+                {prompt.tips?.map((item, i) => (
                   <li key={i}>{item}</li>
                 ))}
               </ul>
