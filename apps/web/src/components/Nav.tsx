@@ -49,11 +49,11 @@ export function Nav() {
         </div>
 
         {/* Right side actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 relative"
+            className="h-11 w-11 relative touch-manipulation"
             onClick={() => setBasketOpen(true)}
             aria-label={`Open basket (${items.length} items)`}
           >
@@ -65,7 +65,7 @@ export function Nav() {
             )}
           </Button>
           <ThemeToggle />
-          <Button variant="ghost" size="icon" asChild className="h-9 w-9">
+          <Button variant="ghost" size="icon" asChild className="h-11 w-11 touch-manipulation">
             <a
               href="https://github.com/Dicklesworthstone/jeffreysprompts.com"
               target="_blank"
@@ -80,9 +80,10 @@ export function Nav() {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden h-9 w-9"
+            className="md:hidden h-11 w-11 touch-manipulation"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? (
               <X className="h-5 w-5" />
@@ -97,21 +98,21 @@ export function Nav() {
       <div
         className={cn(
           "md:hidden overflow-hidden transition-all duration-300 ease-in-out",
-          mobileMenuOpen ? "max-h-48" : "max-h-0"
+          mobileMenuOpen ? "max-h-96" : "max-h-0"
         )}
       >
-        <div className="container mx-auto px-4 py-3 space-y-1 border-t border-border/40">
+        <nav className="container mx-auto px-4 py-2 border-t border-border/40" aria-label="Mobile navigation">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="block py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="block min-h-[44px] py-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground touch-manipulation"
               onClick={() => setMobileMenuOpen(false)}
             >
               {link.label}
             </Link>
           ))}
-        </div>
+        </nav>
       </div>
 
       {/* Basket Sidebar */}

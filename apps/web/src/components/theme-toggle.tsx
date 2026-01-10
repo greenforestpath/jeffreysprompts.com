@@ -39,7 +39,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
       variant="ghost"
       size="icon"
       onClick={handleClick}
-      className={cn("relative h-9 w-9", className)}
+      className={cn("relative h-11 w-11 touch-manipulation", className)}
       aria-label={`Current: ${getThemeLabel(theme)}. Click to change.`}
       title={getThemeLabel(theme)}
     >
