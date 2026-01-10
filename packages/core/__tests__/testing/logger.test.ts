@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { TestLogger, type LogLevel } from "../../src/testing/logger";
+import { TestLogger } from "../../src/testing/logger";
 import { existsSync, readFileSync, rmSync, mkdirSync } from "fs";
 import { join } from "path";
 

@@ -13,7 +13,7 @@
 import { describe, it, expect, beforeAll, afterAll } from "bun:test";
 import { TestLogger } from "@jeffreysprompts/core/testing";
 import { spawnCli } from "@jeffreysprompts/core/testing";
-import { mkdirSync, rmSync } from "fs";
+import { mkdirSync } from "fs";
 import { join } from "path";
 
 const TEST_LOG_DIR = "/tmp/jfp-e2e-tests";
