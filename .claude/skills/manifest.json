@@ -1,0 +1,13 @@
+{
+  "generatedAt": "2026-01-10T07:05:11.660Z",
+  "jfpVersion": "1.0.0",
+  "entries": [
+    {
+      "id": "idea-wizard",
+      "kind": "prompt",
+      "version": "1.0.0",
+      "hash": "4a44623fe387f04a686f9ad887f58352b12ae30a7509af39128aaf9eaa5e38e7",
+      "updatedAt": "2026-01-10T07:05:11.660Z"
+    }
+  ]
+}

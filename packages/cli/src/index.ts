@@ -8,6 +8,7 @@ import { uninstallCommand } from "./commands/uninstall";
 import { exportCommand } from "./commands/export";
 import { renderCommand } from "./commands/render";
 import { copyCommand } from "./commands/copy";
+import { installedCommand } from "./commands/installed";
 
 export const cli = cac("jfp");
 
@@ -63,6 +64,13 @@ cli
 cli
   .command("copy <id>", "Copy prompt to clipboard")
   .action(copyCommand);
+
+cli
+  .command("installed", "List installed Claude Code skills")
+  .option("--personal", "Only show personal skills (~/.config/claude/skills)")
+  .option("--project", "Only show project skills (.claude/skills)")
+  .option("--json", "Output JSON")
+  .action(installedCommand);
 
 cli.help();
 cli.version(version);

@@ -2,9 +2,9 @@
 // Curated workflows - sequences of prompts for specific tasks
 
 export interface WorkflowStep {
+  id: string;
   promptId: string;
-  description: string;
-  optional?: boolean;
+  note: string;
 }
 
 export interface Workflow {
@@ -12,8 +12,7 @@ export interface Workflow {
   title: string;
   description: string;
   steps: WorkflowStep[];
-  author: string;
-  created: string;
+  whenToUse: string[];
 }
 
 export const workflows: Workflow[] = [
@@ -21,18 +20,22 @@ export const workflows: Workflow[] = [
     id: "new-feature",
     title: "New Feature Development",
     description: "End-to-end workflow for implementing a new feature",
+    whenToUse: [
+      "When planning a new product feature",
+      "When you need a repeatable prompt chain for delivery",
+    ],
     steps: [
       {
+        id: "ideate",
         promptId: "idea-wizard",
-        description: "Generate and evaluate improvement ideas",
+        note: "Generate and evaluate improvement ideas",
       },
       {
+        id: "document",
         promptId: "readme-reviser",
-        description: "Update documentation for new feature",
+        note: "Update documentation for new feature",
       },
     ],
-    author: "Jeffrey Emanuel",
-    created: "2025-01-09",
   },
 ];
 
