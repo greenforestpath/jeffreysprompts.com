@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useId } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { PromptChange } from "@jeffreysprompts/core/prompts/types";
 import { ChevronRight, Sparkles, Wrench, AlertTriangle } from "lucide-react";
@@ -13,7 +13,11 @@ interface ChangelogAccordionProps {
   className?: string;
 }
 
-const typeConfig = {
+const typeConfig: Record<string, {
+  label: string;
+  icon: typeof Sparkles;
+  className: string;
+}> = {
   improvement: {
     label: "Improvement",
     icon: Sparkles,
@@ -29,7 +33,14 @@ const typeConfig = {
     icon: AlertTriangle,
     className: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
   },
-} as const;
+};
+
+// Fallback for unknown types (defensive)
+const defaultConfig = {
+  label: "Update",
+  icon: Sparkles,
+  className: "bg-zinc-500/10 text-zinc-600 dark:text-zinc-400",
+};
 
 /**
  * Format ISO date string for display.
@@ -62,15 +73,19 @@ function formatDate(isoDate: string): string {
  */
 export function ChangelogAccordion({ changelog, className }: ChangelogAccordionProps) {
   const [expanded, setExpanded] = useState(false);
-
-  if (!changelog || changelog.length === 0) {
-    return null;
-  }
+  const contentId = useId();
 
   // Sort newest first by version (semantic versioning aware)
-  const sortedChangelog = [...changelog].sort((a, b) => {
-    return b.version.localeCompare(a.version, undefined, { numeric: true });
-  });
+  const sortedChangelog = useMemo(() => {
+    if (!changelog || changelog.length === 0) return [];
+    return [...changelog].sort((a, b) => {
+      return b.version.localeCompare(a.version, undefined, { numeric: true });
+    });
+  }, [changelog]);
+
+  if (sortedChangelog.length === 0) {
+    return null;
+  }
 
   return (
     <Card className={cn("mb-6", className)}>
@@ -84,7 +99,9 @@ export function ChangelogAccordion({ changelog, className }: ChangelogAccordionP
             "transition-colors duration-200",
             "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           )}
+          id={`${contentId}-button`}
           aria-expanded={expanded}
+          aria-controls={contentId}
         >
           <ChevronRight
             className={cn(
@@ -94,7 +111,7 @@ export function ChangelogAccordion({ changelog, className }: ChangelogAccordionP
           />
           <CardTitle className="text-lg">Changelog</CardTitle>
           <Badge variant="secondary" className="ml-2">
-            {changelog.length} {changelog.length === 1 ? "version" : "versions"}
+            {sortedChangelog.length} {sortedChangelog.length === 1 ? "version" : "versions"}
           </Badge>
         </button>
       </CardHeader>
@@ -102,6 +119,9 @@ export function ChangelogAccordion({ changelog, className }: ChangelogAccordionP
       <AnimatePresence>
         {expanded && (
           <motion.div
+            id={contentId}
+            role="region"
+            aria-labelledby={`${contentId}-button`}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -111,7 +131,7 @@ export function ChangelogAccordion({ changelog, className }: ChangelogAccordionP
             <CardContent className="pt-0">
               <ul className="space-y-4">
                 {sortedChangelog.map((entry) => {
-                  const config = typeConfig[entry.type];
+                  const config = typeConfig[entry.type] ?? defaultConfig;
                   const Icon = config.icon;
 
                   return (
