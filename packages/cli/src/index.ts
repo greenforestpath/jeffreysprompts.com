@@ -14,6 +14,13 @@ import { suggestCommand } from "./commands/suggest";
 import { interactiveCommand } from "./commands/interactive";
 import { bundlesCommand, bundleShowCommand } from "./commands/bundles";
 import { statusCommand, refreshCommand } from "./commands/registry";
+import {
+  categoriesCommand,
+  tagsCommand,
+  openCommand,
+  doctorCommand,
+  aboutCommand,
+} from "./commands/utilities";
 
 export const cli = cac("jfp");
 
@@ -121,6 +128,30 @@ cli
   .command("i", "Interactive mode - fzf-style prompt picker")
   .alias("interactive")
   .action(interactiveCommand);
+
+cli
+  .command("categories", "List all categories with counts")
+  .option("--json", "Output JSON")
+  .action(categoriesCommand);
+
+cli
+  .command("tags", "List all tags with counts")
+  .option("--json", "Output JSON")
+  .action(tagsCommand);
+
+cli
+  .command("open <id>", "Open prompt in browser")
+  .action(openCommand);
+
+cli
+  .command("doctor", "Check environment for issues")
+  .option("--json", "Output JSON")
+  .action(doctorCommand);
+
+cli
+  .command("about", "About JeffreysPrompts CLI")
+  .option("--json", "Output JSON")
+  .action(aboutCommand);
 
 cli.help();
 cli.version(version);
