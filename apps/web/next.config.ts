@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Strict mode for better debugging
   reactStrictMode: true,
+  // Use webpack for builds (turbopack has issues)
+  experimental: {},
 };
 
 export default nextConfig;
