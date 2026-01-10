@@ -101,6 +101,10 @@ next-env.d.ts
 # ------------------------------------------------------------------------------
 generated/
 
+# Generated registry files (built by build-data.ts)
+apps/web/public/registry.json
+apps/web/public/registry.manifest.json
+
 # ------------------------------------------------------------------------------
 # Beads (tracked separately by bd)
 # ------------------------------------------------------------------------------
