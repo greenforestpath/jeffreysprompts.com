@@ -37,11 +37,12 @@ const COMMANDS = [
   "about",
   "help",
   "completion",
+  "serve",
 ] as const;
 
 const COMMAND_OPTIONS: Record<string, string[]> = {
   list: ["--category", "--tag", "--json"],
-  search: ["--json"],
+  search: ["--limit", "--json"],
   show: ["--json", "--raw"],
   install: ["--project", "--all", "--bundle", "--force", "--json"],
   uninstall: ["--project", "--confirm", "--json"],
@@ -64,6 +65,7 @@ const COMMAND_OPTIONS: Record<string, string[]> = {
   about: ["--json"],
   help: ["--json"],
   completion: ["--shell"],
+  serve: ["--config"],
 };
 
 const GLOBAL_OPTIONS = ["--help", "--version"];

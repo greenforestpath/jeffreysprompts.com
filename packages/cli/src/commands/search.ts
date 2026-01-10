@@ -4,10 +4,17 @@ import { shouldOutputJson } from "../lib/utils";
 
 interface SearchOptions {
   json?: boolean;
+  limit?: string | number;
 }
 
 export function searchCommand(query: string, options: SearchOptions) {
-  const results = searchPrompts(query, { limit: 10 });
+  const limit = options.limit !== undefined ? Number(options.limit) : 10;
+  if (!Number.isFinite(limit) || limit <= 0) {
+    console.error(chalk.red("Invalid --limit value. Provide a positive number."));
+    process.exit(1);
+  }
+
+  const results = searchPrompts(query, { limit });
 
   if (shouldOutputJson(options)) {
     console.log(JSON.stringify(results, null, 2));

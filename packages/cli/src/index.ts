@@ -36,6 +36,7 @@ cli
 
 cli
   .command("search <query>", "Fuzzy search prompts")
+  .option("--limit <n>", "Max results (default: 10)")
   .option("--json", "Output JSON")
   .action(searchCommand);
 
