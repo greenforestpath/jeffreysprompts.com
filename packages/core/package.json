@@ -53,6 +53,10 @@
     "./template": {
       "types": "./src/template/index.ts",
       "import": "./src/template/index.ts"
+    },
+    "./testing": {
+      "types": "./src/testing/index.ts",
+      "import": "./src/testing/index.ts"
     }
   },
   "main": "./src/index.ts",
