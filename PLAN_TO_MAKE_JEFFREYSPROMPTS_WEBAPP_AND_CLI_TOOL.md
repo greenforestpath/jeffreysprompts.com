@@ -2,6 +2,11 @@
 
 ---
 
+## Plan Preservation (No-Delete Rule Safe)
+
+When making major revisions, **copy** this file to a versioned snapshot (e.g., `PLAN_TO_MAKE_JEFFREYSPROMPTS_WEBAPP_AND_CLI_TOOL_V1.md`) before rewriting.  
+Do **not** delete or rename the existing file (preserves AGENTS.md invariants).
+
 ## Background Context
 
 This section provides all the context needed to understand this project from first principles. It is designed to make this plan completely self-contained so that any developer or AI agent can pick it up and execute without additional context.
@@ -141,6 +146,7 @@ This design allows skills to bundle unlimited context without bloating the initi
 
 - **Personal Skills**: `~/.config/claude/skills/` — Available in all projects
 - **Project Skills**: `.claude/skills/` — Shared via git with team members
+  - Paths are configurable via `skills.personalDir` / `skills.projectDir` in `~/.config/jfp/config.json`
 
 #### Skill Update Manifest (NEW)
 
@@ -543,12 +549,12 @@ Copy these keyframe animations verbatim:
 
 **No markdown files. No parsing. Pure TypeScript.**
 
-Create a shared package `@jfp/core` in `packages/core/` with a simple `src/index.ts` that re-exports
+Create a shared package `@jeffreysprompts/core` in `packages/core/` with a simple `src/index.ts` that re-exports
 `prompts`, `bundles`, `workflows`, `export`, `search`, and `template` modules. Both the CLI and web app import from this package (no cross-app paths).
 
 Add workspace wiring:
 - Root `package.json` uses workspaces including `packages/*` and `apps/*`
-- `apps/web/package.json` and the CLI package use `@jfp/core` as a workspace dependency
+- `apps/web/package.json` and the CLI package use `@jeffreysprompts/core` as a workspace dependency
 
 ### 2.1 Prompt Type Definitions
 
@@ -690,7 +696,7 @@ The web UI and CLI both use this for “prompt compilation” (see Part 6.7).
 
 #### 2.2.1 Core Package Barrel Exports
 
-Keep `packages/core/src/index.ts` explicit so consumers can import from `@jfp/core` safely:
+Keep `packages/core/src/index.ts` explicit so consumers can import from `@jeffreysprompts/core` safely:
 
 ```typescript
 // packages/core/src/index.ts
@@ -706,6 +712,8 @@ export * from "./export/json";
 
 export * from "./search/engine";
 export * from "./search/synonyms";
+export * from "./search/hash-embedder";
+export * from "./search/semantic";
 
 export * from "./template/render";
 ```
@@ -922,7 +930,10 @@ Benefits:
 
 Each prompt can include a `version`, `updatedAt`, and `changelog` entry. The web UI can surface
 “What changed” on prompt pages, and the CLI can implement `jfp update --dry-run` to show exactly
-which prompts would be updated and why (version bump + changelog summaries, or a short diff hash).
+which prompts would be updated and why (version bump + changelog summaries).
+
+Add `jfp update --dry-run --diff` to show a short unified diff between the installed `SKILL.md`
+and the newly generated version (truncate to a safe max, e.g., 200 lines).
 
 ---
 
@@ -975,7 +986,7 @@ description: Clear description of what this skill does and when to use it
 ```typescript
 // packages/core/src/export/skills.ts
 
-import { type Prompt } from "@jfp/core/prompts";
+import { type Prompt } from "@jeffreysprompts/core/prompts";
 import JSZip from "jszip";
 
 /**
@@ -1119,7 +1130,7 @@ For users who want plain markdown without the Claude Code skill structure:
 ```typescript
 // packages/core/src/export/markdown.ts
 
-import { type Prompt } from "@jfp/core/prompts";
+import { type Prompt } from "@jeffreysprompts/core/prompts";
 
 /**
  * Generate markdown for a single prompt.
@@ -1349,11 +1360,11 @@ import { join, dirname } from "path";
 import { homedir, tmpdir } from "os";
 import chalk from "chalk";
 import { createHash } from "crypto";
-import { type Prompt } from "@jfp/core/prompts";
-import { searchPrompts } from "@jfp/core/search/engine";
-import { generateSkillMd } from "@jfp/core/export/skills";
-import { generatePromptMarkdown } from "@jfp/core/export/markdown";
-import { renderPrompt } from "@jfp/core/template/render";
+import { type Prompt } from "@jeffreysprompts/core/prompts";
+import { searchPrompts } from "@jeffreysprompts/core/search/engine";
+import { generateSkillMd } from "@jeffreysprompts/core/export/skills";
+import { generatePromptMarkdown } from "@jeffreysprompts/core/export/markdown";
+import { renderPrompt } from "@jeffreysprompts/core/template/render";
 import { cac } from "cac";
 import { loadRegistry } from "./lib/registry-loader";
 import { input, select, confirm } from "@inquirer/prompts";
@@ -1373,6 +1384,7 @@ interface Flags {
   project: boolean;
   force: boolean;
   dryRun?: boolean;
+  diff?: boolean;
   semantic?: boolean;
   fill?: boolean;
   context?: string;
@@ -1440,13 +1452,13 @@ function readContextFile(path: string, maxBytes = 200000): string {
   const data = readFileSync(path);
   if (data.length <= maxBytes) return data.toString("utf-8");
   const truncated = data.subarray(0, maxBytes).toString("utf-8");
-  return `${truncated}\n\n[Context truncated to ${maxBytes} bytes]`;
+  return `${truncated}\n\n[Context truncated to ${maxBytes} bytes from ${path}]`;
 }
 
 async function readStdin(maxBytes = 200000): Promise<string> {
   const text = await new Response(Bun.stdin).text();
   if (text.length <= maxBytes) return text;
-  return `${text.slice(0, maxBytes)}\n\n[Context truncated to ${maxBytes} bytes]`;
+  return `${text.slice(0, maxBytes)}\n\n[Context truncated to ${maxBytes} bytes from stdin]`;
 }
 
 function normalizeVars(prompt: Prompt, vars: Record<string, string>): Record<string, string> {
@@ -1489,12 +1501,12 @@ function formatRegistryRefresh(result: { updated: boolean; version: string }) {
 
 function getRegistryPaths() {
   const config = loadConfig();
-  const cachePath = config.registryCachePath ?? join(homedir(), ".config", "jfp", "registry.json");
-  const metaPath = config.registryMetaPath ?? join(dirname(cachePath), "registry.meta.json");
-  const registryUrl = config.registryUrl ?? "https://jeffreysprompts.com/registry.json";
-  const manifestUrl = config.registryManifestUrl
-    ?? (registryUrl.endsWith("registry.json") ? registryUrl.replace(/registry\\.json$/, "registry.manifest.json") : undefined);
-  const timeoutMs = config.registryRefreshTimeoutMs ?? 2000;
+  const registry = config.registry ?? {};
+  const cachePath = registry.cachePath ?? join(homedir(), ".config", "jfp", "registry.json");
+  const metaPath = registry.metaPath ?? join(dirname(cachePath), "registry.meta.json");
+  const registryUrl = registry.remote ?? "https://jeffreysprompts.com/api/prompts";
+  const manifestUrl = registry.manifestUrl ?? "https://jeffreysprompts.com/registry.manifest.json";
+  const timeoutMs = registry.timeoutMs ?? 2000;
   return {
     cachePath,
     metaPath,
@@ -1528,6 +1540,7 @@ function printCompletion(shell: string) {
     "export", "install", "uninstall", "installed", "update",
     "bundles", "bundle", "categories", "tags",
     "registry", "open", "serve", "completion", "about", "update-cli",
+    "skill", "doctor",
   ];
 
   if (shell === "bash") {
@@ -1594,19 +1607,63 @@ cli
 
 // ~/.config/jfp/config.json
 interface JfpConfig {
-  skillsDir: string;           // Default: ~/.config/claude/skills
-  projectSkillsDir: string;    // Default: .claude/skills
-  registryUrl: string;         // Default: https://jeffreysprompts.com/registry.json
-  registryCachePath: string;   // Default: ~/.config/jfp/registry.json
-  registryMetaPath: string;    // Default: ~/.config/jfp/registry.meta.json
-  registryManifestUrl: string; // Default: https://jeffreysprompts.com/registry.manifest.json
-  registryRefreshTimeoutMs: number; // Default: 2000
-  autoRefreshRegistry: boolean;
-  autoUpdate: boolean;         // Check for CLI updates on startup (opt-in)
-  lastUpdateCheck: string;     // ISO timestamp
-  localPromptsDir: string;     // Default: ~/.config/jfp/local
-  analyticsEnabled: boolean;   // Default: false (privacy-first)
+  registry?: {
+    remote?: string;            // Default: https://jeffreysprompts.com/api/prompts
+    manifestUrl?: string;       // Default: https://jeffreysprompts.com/registry.manifest.json
+    cachePath?: string;          // Default: ~/.config/jfp/registry.json
+    metaPath?: string;           // Default: ~/.config/jfp/registry.meta.json
+    autoRefresh?: boolean;       // Default: true
+    timeoutMs?: number;          // Default: 2000
+  };
+  updates?: {
+    autoUpdate?: boolean;        // Default: false (opt-in)
+    channel?: "stable" | "beta";
+    lastCheck?: string;          // ISO timestamp
+  };
+  skills?: {
+    personalDir?: string;        // Default: ~/.config/claude/skills
+    projectDir?: string;         // Default: .claude/skills
+  };
+  localPrompts?: {
+    enabled?: boolean;           // Default: true
+    dir?: string;                // Default: ~/.config/jfp/local
+  };
+  analytics?: {
+    enabled?: boolean;           // Default: false
+  };
 }
+
+Example config:
+
+```json
+{
+  "registry": {
+    "remote": "https://jeffreysprompts.com/api/prompts",
+    "manifestUrl": "https://jeffreysprompts.com/registry.manifest.json",
+    "cachePath": "~/.config/jfp/registry.json",
+    "metaPath": "~/.config/jfp/registry.meta.json",
+    "autoRefresh": true,
+    "timeoutMs": 2000
+  },
+  "updates": {
+    "autoUpdate": false,
+    "channel": "stable"
+  },
+  "skills": {
+    "personalDir": "~/.config/claude/skills",
+    "projectDir": ".claude/skills"
+  },
+  "localPrompts": {
+    "enabled": true,
+    "dir": "~/.config/jfp/local"
+  },
+  "analytics": {
+    "enabled": false
+  }
+}
+```
+
+Note: prefer absolute paths. If you want to allow `~`/`$HOME`, add a small expansion helper in `loadConfig`.
 
 // jfp list — List all prompts
 async function listCommand(flags: Flags) {
@@ -1841,6 +1898,32 @@ async function registryRefreshCommand(flags: Flags) {
   flags.json ? printJson(result, flags) : console.log(formatRegistryRefresh(result));
 }
 
+// jfp doctor — Environment + registry health checks
+async function doctorCommand(flags: Flags) {
+  const paths = getRegistryPaths();
+  const status = getRegistryStatus(paths.cachePath, paths.metaPath);
+  const config = loadConfig();
+  const skills = config.skills ?? {};
+  const personalDir = skills.personalDir ?? join(homedir(), ".config", "claude", "skills");
+  const projectDir = skills.projectDir ?? join(process.cwd(), ".claude", "skills");
+  const checks = [
+    { name: "Registry cache", ok: status.cachePresent },
+    { name: "Registry version", ok: status.version !== "none" },
+    { name: "Skills dir (personal)", ok: existsSync(personalDir) },
+    { name: "Skills dir (project)", ok: existsSync(projectDir) },
+  ];
+
+  if (flags.json) {
+    printJson({ checks, registry: status }, flags);
+    return;
+  }
+
+  console.log(chalk.bold("Doctor Report"));
+  for (const check of checks) {
+    console.log(`${check.ok ? "✓" : "✗"} ${check.name}`);
+  }
+}
+
 // jfp serve — MCP server mode
 async function serveCommand() {
   await startMcpServer();
@@ -1936,6 +2019,11 @@ COMMANDS:
     --project             Install to .claude/skills (project-local)
     --force               Overwrite existing skills
 
+  skill install <id>...   Alias for install (explicit namespace)
+  skill update            Alias for update
+  skill uninstall <id>... Alias for uninstall
+  skill installed         Alias for installed
+
   uninstall <id>...       Remove installed skills
     --all                 Remove all installed skills
     --project             Remove from .claude/skills
@@ -1946,10 +2034,13 @@ COMMANDS:
 
   update                  Update all installed skills
     --dry-run             Show changes without writing
+    --diff                Show unified diff (dry-run only)
 
   registry status         Show registry cache status
   registry refresh        Refresh cached registry
   update-cli              Self-update the CLI (opt-in)
+
+  doctor                  Environment + registry health checks
 
   bundles                 List prompt bundles (NEW)
     --json                Output as JSON
@@ -2004,9 +2095,11 @@ async function installCommand(args: string[], flags: Flags) {
   const project = flags.project;  // Install to .claude/skills instead of ~/.config
   const force = flags.force;      // Overwrite existing
 
-  const targetDir = project
-    ? join(process.cwd(), ".claude", "skills")
-    : join(homedir(), ".config", "claude", "skills");
+  const config = loadConfig();
+  const skills = config.skills ?? {};
+  const personalDir = skills.personalDir ?? join(homedir(), ".config", "claude", "skills");
+  const projectDir = skills.projectDir ?? join(process.cwd(), ".claude", "skills");
+  const targetDir = project ? projectDir : personalDir;
 
   // Ensure target directory exists
   mkdirSync(targetDir, { recursive: true });
@@ -2049,9 +2142,11 @@ async function uninstallCommand(args: string[], flags: Flags) {
   const all = flags.all;
   const project = flags.project;
 
-  const targetDir = project
-    ? join(process.cwd(), ".claude", "skills")
-    : join(homedir(), ".config", "claude", "skills");
+  const config = loadConfig();
+  const skills = config.skills ?? {};
+  const personalDir = skills.personalDir ?? join(homedir(), ".config", "claude", "skills");
+  const projectDir = skills.projectDir ?? join(process.cwd(), ".claude", "skills");
+  const targetDir = project ? projectDir : personalDir;
 
   const registry = await loadRegistry();
   const toRemove = all
@@ -2078,8 +2173,10 @@ async function uninstallCommand(args: string[], flags: Flags) {
 
 // jfp installed — List installed skills
 async function installedCommand(flags: Flags) {
-  const personalDir = join(homedir(), ".config", "claude", "skills");
-  const projectDir = join(process.cwd(), ".claude", "skills");
+  const config = loadConfig();
+  const skills = config.skills ?? {};
+  const personalDir = skills.personalDir ?? join(homedir(), ".config", "claude", "skills");
+  const projectDir = skills.projectDir ?? join(process.cwd(), ".claude", "skills");
 
   const installed: { id: string; location: "personal" | "project" }[] = [];
   const registry = await loadRegistry();
@@ -2124,6 +2221,11 @@ function extractSkillVersion(content: string): string {
   return match?.[1]?.replace(/\"/g, "") ?? "unknown";
 }
 
+function renderUnifiedDiff(before: string, after: string, opts: { maxLines: number }) {
+  // Use a small diff library (e.g., "diff") or generate a minimal unified diff; truncate to opts.maxLines.
+  return diffAsText(before, after).split("\n").slice(0, opts.maxLines).join("\n");
+}
+
 function readSkillsManifest(skillsDir: string) {
   const path = join(skillsDir, "manifest.json");
   if (!existsSync(path)) return new Map<string, SkillsManifestEntry>();
@@ -2133,8 +2235,10 @@ function readSkillsManifest(skillsDir: string) {
 
 async function updateCommand(flags: Flags) {
   // Re-install all installed skills with --force
-  const personalDir = join(homedir(), ".config", "claude", "skills");
-  const projectDir = join(process.cwd(), ".claude", "skills");
+  const config = loadConfig();
+  const skills = config.skills ?? {};
+  const personalDir = skills.personalDir ?? join(homedir(), ".config", "claude", "skills");
+  const projectDir = skills.projectDir ?? join(process.cwd(), ".claude", "skills");
 
   let updated = 0;
   const updatedPersonal: Prompt[] = [];
@@ -2167,6 +2271,9 @@ async function updateCommand(flags: Flags) {
         const note = prompt.changelog?.[0]?.summary;
         console.log(chalk.cyan(`• Would update ${prompt.id} ${currentVersion} → ${nextVersion} (personal)`));
         if (note) console.log(chalk.dim(`  - ${note}`));
+        if (flags.diff) {
+          console.log(renderUnifiedDiff(existing, nextSkill, { maxLines: 200 }));
+        }
         updated++;
       } else {
         const tmp = `${personalPath}.tmp`;
@@ -2195,6 +2302,9 @@ async function updateCommand(flags: Flags) {
         const note = prompt.changelog?.[0]?.summary;
         console.log(chalk.cyan(`• Would update ${prompt.id} ${currentVersion} → ${nextVersion} (project)`));
         if (note) console.log(chalk.dim(`  - ${note}`));
+        if (flags.diff) {
+          console.log(renderUnifiedDiff(existing, nextSkill, { maxLines: 200 }));
+        }
         updated++;
       } else {
         const tmp = `${projectPath}.tmp`;
@@ -2238,8 +2348,11 @@ async function updateCliCommand(flags: Flags) {
   // 4) Atomically replace current binary
   const installPath = resolveExecutablePath(); // e.g., process.execPath
   const nextPath = `${installPath}.new`;
+  const backupPath = `${installPath}.bak`;
   renameSync(binPath, nextPath);
+  renameSync(installPath, backupPath);
   renameSync(nextPath, installPath);
+  // If the new binary fails to execute, restore backupPath → installPath.
 
   if (flags.json) {
     printJson({ updated: true, path: installPath }, flags);
@@ -2300,7 +2413,7 @@ async function tagsCommand(flags: Flags) {
 // jfp bundles — List all bundles
 async function bundlesCommand(flags: Flags) {
   // Import bundles from the bundles module
-  const { bundles } = await import("@jfp/core/prompts");
+  const { bundles } = await import("@jeffreysprompts/core/prompts");
 
   if (flags.json) {
     printJson({
@@ -2331,7 +2444,7 @@ async function bundleShowCommand(id: string, flags: Flags) {
     process.exit(2);
   }
 
-  const { getBundle, bundles } = await import("@jfp/core/prompts");
+  const { getBundle, bundles } = await import("@jeffreysprompts/core/prompts");
   const bundle = getBundle(id);
 
   if (!bundle) {
@@ -2436,7 +2549,20 @@ cli.command("install <id...>", "install skills")
   .option("--force", "overwrite existing")
   .action((ids, opts) => installCommand(ids, { ...opts, json: cli.options.json, pretty: cli.options.pretty }));
 
+// Explicit namespace aliases
+cli.command("skill install <id...>", "install skills (alias)")
+  .option("--all", "install all prompts")
+  .option("--project", "install to .claude/skills")
+  .option("--force", "overwrite existing")
+  .action((ids, opts) => installCommand(ids, { ...opts, json: cli.options.json, pretty: cli.options.pretty }));
+
 cli.command("uninstall <id...>", "remove installed skills")
+  .option("--all", "remove all skills")
+  .option("--project", "remove from .claude/skills")
+  .option("--confirm", "confirm destructive uninstall")
+  .action((ids, opts) => uninstallCommand(ids, { ...opts, json: cli.options.json, pretty: cli.options.pretty }));
+
+cli.command("skill uninstall <id...>", "remove installed skills (alias)")
   .option("--all", "remove all skills")
   .option("--project", "remove from .claude/skills")
   .option("--confirm", "confirm destructive uninstall")
@@ -2445,9 +2571,19 @@ cli.command("uninstall <id...>", "remove installed skills")
 cli.command("installed", "list installed skills")
   .action((opts) => installedCommand({ ...opts, json: cli.options.json, pretty: cli.options.pretty }));
 
+cli.command("skill installed", "list installed skills (alias)")
+  .action((opts) => installedCommand({ ...opts, json: cli.options.json, pretty: cli.options.pretty }));
+
 cli.command("update", "update installed skills")
   .option("--force", "overwrite modified skills")
   .option("--dry-run", "show updates without writing")
+  .option("--diff", "show unified diff in dry-run mode")
+  .action((opts) => updateCommand({ ...opts, json: cli.options.json, pretty: cli.options.pretty }));
+
+cli.command("skill update", "update installed skills (alias)")
+  .option("--force", "overwrite modified skills")
+  .option("--dry-run", "show updates without writing")
+  .option("--diff", "show unified diff in dry-run mode")
   .action((opts) => updateCommand({ ...opts, json: cli.options.json, pretty: cli.options.pretty }));
 
 cli.command("update-cli", "self-update the CLI")
@@ -2470,6 +2606,9 @@ cli.command("registry status", "show registry cache status")
 
 cli.command("registry refresh", "refresh registry cache")
   .action((opts) => registryRefreshCommand({ ...opts, json: cli.options.json, pretty: cli.options.pretty }));
+
+cli.command("doctor", "run environment and registry health checks")
+  .action((opts) => doctorCommand({ ...opts, json: cli.options.json, pretty: cli.options.pretty }));
 
 cli.command("open <id>", "open prompt permalink in browser")
   .action((id, opts) => openCommand(id, { ...opts, json: cli.options.json, pretty: cli.options.pretty }));
@@ -2505,8 +2644,8 @@ import { useState } from "react";
 import { Check, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
-import { type Prompt } from "@jfp/core/prompts";
-import { generateSkillMd } from "@jfp/core/export/skills";
+import { type Prompt } from "@jeffreysprompts/core/prompts";
+import { generateSkillMd } from "@jeffreysprompts/core/export/skills";
 
 interface InstallSkillButtonProps {
   prompt: Prompt;
@@ -2592,7 +2731,7 @@ export function InstallAllSkillsButton() {
 ```typescript
 // apps/web/src/app/api/prompts/route.ts
 
-import { buildRegistryPayload } from "@jfp/core/export/json";
+import { buildRegistryPayload } from "@jeffreysprompts/core/export/json";
 import { NextResponse } from "next/server";
 import { createHash } from "crypto";
 
@@ -2641,16 +2780,18 @@ export async function GET(request: Request) {
 ```
 
 Note:
-- `/registry.json` is the canonical full registry payload (static, cacheable).
+- `/api/prompts` is the canonical, cacheable registry endpoint (unfiltered = full payload).
+- `/registry.json` is a static snapshot for CDN/offline/CLI use and integrity checks.
 - `/api/prompts` supports filtering (`?category=...&tag=...`) for web UI.
+- Unfiltered `/api/prompts` should match `/registry.json` byte-for-byte (enables checksum verification).
 
 **API endpoint for single skill (SKILL.md):**
 
 ```typescript
 // apps/web/src/app/api/skills/[id]/route.ts
 
-import { getPrompt } from "@jfp/core/prompts";
-import { generateSkillMd } from "@jfp/core/export/skills";
+import { getPrompt } from "@jeffreysprompts/core/prompts";
+import { generateSkillMd } from "@jeffreysprompts/core/export/skills";
 import { NextResponse } from "next/server";
 
 export async function GET(
@@ -2688,8 +2829,8 @@ export async function GET(
 ```typescript
 // apps/web/src/app/install.sh/route.ts
 
-import { prompts } from "@jfp/core/prompts";
-import { generateInstallScript } from "@jfp/core/export/skills";
+import { prompts } from "@jeffreysprompts/core/prompts";
+import { generateInstallScript } from "@jeffreysprompts/core/export/skills";
 
 export async function GET() {
   const script = generateInstallScript(prompts);
@@ -3152,6 +3293,7 @@ jeffreysprompts.com/
 │   │       │   ├── bm25.ts                # BM25 engine
 │   │       │   ├── tokenize.ts            # Tokenizer + stopwords
 │   │       │   ├── synonyms.ts            # Synonyms/boosting map
+│   │       │   ├── hash-embedder.ts       # Lightweight hash embeddings (fallback)
 │   │       │   └── semantic.ts            # Optional semantic rerank hooks
 │   │       └── template/
 │   │           ├── render.ts              # Variable rendering
@@ -3239,7 +3381,7 @@ jeffreysprompts.com/
 │       │   │       └── stats-dashboard.tsx # Session statistics
 │       │   │
 │       │   ├── lib/
-│       │   │   ├── registry-client.ts   # SWR fetch + cache registry.json
+│       │   │   ├── registry-client.ts   # SWR fetch /api/prompts + fallback to registry.json
 │       │   │   ├── search/
 │       │   │   │   ├── engine.ts         # Thin wrapper / worker bridge to core BM25
 │       │   │   │   └── types.ts          # Search types
@@ -3709,7 +3851,7 @@ ${chalk.dim("https://jeffreysprompts.com")}
 
 ```typescript
 import { search, select, confirm } from "@inquirer/prompts";
-import { generatePromptMarkdown } from "@jfp/core/export/markdown";
+import { generatePromptMarkdown } from "@jeffreysprompts/core/export/markdown";
 
 // Helper: Copy text to clipboard (cross-platform, using Bun.spawn)
 async function copyToClipboard(text: string): Promise<void> {
@@ -3898,9 +4040,10 @@ Prompts are content, and content changes faster than binaries. The CLI should lo
 
 - Ship with an embedded snapshot (offline-first).
 - Read cache from `~/.config/jfp/registry.json` if present.
-- In the background (2s timeout by default, configurable), fetch `/registry.json` with `If-None-Match` and update cache for next run.
+- In the background (2s timeout by default, configurable), fetch `/api/prompts` (unfiltered) with `If-None-Match` and update cache for next run.
 - Store the latest `ETag` and timestamps in `~/.config/jfp/registry.meta.json` to avoid unnecessary downloads.
-- Respect `autoRefreshRegistry: false` in config to disable background refresh.
+- Respect `registry.autoRefresh: false` in config to disable background refresh.
+- Set `registry.remote` to `/registry.json` if you prefer a purely static CDN snapshot.
 
 ```typescript
 // packages/cli/src/lib/registry-loader.ts
@@ -3908,25 +4051,26 @@ Prompts are content, and content changes faster than binaries. The CLI should lo
 export async function loadRegistry(): Promise<Prompt[]> {
   const embedded = prompts; // bundled snapshot
   const config = loadConfig();
-  const cachePath = config.registryCachePath ?? join(homedir(), ".config", "jfp", "registry.json");
-  const metaPath = config.registryMetaPath ?? join(dirname(cachePath), "registry.meta.json");
-  const localDir = config.localPromptsDir ?? join(homedir(), ".config", "jfp", "local");
-  const registryUrl = config.registryUrl ?? "https://jeffreysprompts.com/registry.json";
-  const manifestUrl = config.registryManifestUrl
-    ?? (registryUrl.endsWith("registry.json") ? registryUrl.replace(/registry\\.json$/, "registry.manifest.json") : undefined);
-  const timeoutMs = config.registryRefreshTimeoutMs ?? 2000;
+  const registry = config.registry ?? {};
+  const localPrompts = config.localPrompts ?? {};
+  const cachePath = registry.cachePath ?? join(homedir(), ".config", "jfp", "registry.json");
+  const metaPath = registry.metaPath ?? join(dirname(cachePath), "registry.meta.json");
+  const localDir = localPrompts.dir ?? join(homedir(), ".config", "jfp", "local");
+  const registryUrl = registry.remote ?? "https://jeffreysprompts.com/api/prompts";
+  const manifestUrl = registry.manifestUrl ?? "https://jeffreysprompts.com/registry.manifest.json";
+  const timeoutMs = registry.timeoutMs ?? 2000;
 
   const cached = existsSync(cachePath)
     ? JSON.parse(readFileSync(cachePath, "utf-8"))
     : null;
 
   // Fire-and-forget refresh (configurable timeout)
-  if (config.autoRefreshRegistry !== false) {
+  if (registry.autoRefresh !== false) {
     refreshRegistry({ cachePath, metaPath, registryUrl, manifestUrl, timeoutMs }).catch(() => {});
   }
 
   const base = cached?.prompts ?? embedded;
-  const local = loadLocalPrompts(localDir);
+  const local = localPrompts.enabled === false ? [] : loadLocalPrompts(localDir);
   return mergeLocalPrompts(base, local);
 }
 ```
@@ -3958,7 +4102,7 @@ import { createHash } from "crypto";
 async function refreshRegistry({
   cachePath,
   metaPath,
-  registryUrl = "https://jeffreysprompts.com/registry.json",
+  registryUrl = "https://jeffreysprompts.com/api/prompts",
   manifestUrl,
   timeoutMs = 2000,
 }: {
@@ -3979,11 +4123,12 @@ async function refreshRegistry({
 
   if (res.status === 304) return { updated: false, version: meta.version ?? "unknown" };
   const payload = await res.json();
+  const isFiltered = payload?.meta?.total && payload.meta.total !== payload.prompts?.length;
 
   // Optional manifest verification
   const derivedManifestUrl = manifestUrl
     ?? (registryUrl.endsWith("registry.json") ? registryUrl.replace(/registry\\.json$/, "registry.manifest.json") : undefined);
-  if (derivedManifestUrl) {
+  if (derivedManifestUrl && !isFiltered) {
     const manifestRes = await fetch(derivedManifestUrl);
     if (manifestRes.ok) {
       const manifest = await manifestRes.json();
@@ -4023,8 +4168,9 @@ The CLI verifies the checksum **before** writing cache:
 
 This adds tamper-resistance without adding heavy signing infrastructure.
 
-Note: checksum verification applies to `/registry.json` only (filtered `/api/prompts` responses are not checksummed).
-If you host the registry at a custom URL, set `registryManifestUrl` in config.
+Note: checksum verification applies to `/registry.json`. If `/api/prompts` is unfiltered, its payload
+should match `/registry.json` and can be verified; if filters are applied, skip verification.
+If you host the registry at a custom URL, set `registry.manifestUrl` in config.
 
 ### 6.7 Prompt Rendering + Context Injection
 
@@ -4039,7 +4185,7 @@ jfp render idea-wizard --stdin       # read context from stdin
 
 Guardrails:
 - default max context size (e.g., 200KB)
-- show truncation note if clipped
+- show truncation note with filename if clipped
 - `file` variable type reads file contents (size-capped)
 - `path` variable type passes raw path string
 
@@ -4058,15 +4204,21 @@ Local prompts live in `~/.config/jfp/local/`:
 
 Provide a copy-paste MCP config snippet for Claude Desktop.
 
+Tool schemas (JSON-ish):
+- `search_prompts` input: `{ query: string, category?: string, tags?: string[], limit?: number }`
+  output: `{ results: [{ id, title, score, category, tags }] }`
+- `render_prompt` input: `{ id: string, variables?: Record<string,string>, context?: string }`
+  output: `{ id, rendered }`
+
 ### 6.10 CLI Auto-Update (Opt-In)
 
 Add an optional self-update flow (disabled by default):
-- `autoUpdate: false` in config
+- `updates.autoUpdate: false` in config
 - check weekly (or `jfp update-cli` on demand)
 - download from GitHub releases
 - verify checksum (`SHA256SUMS.txt`)
 - atomic replace (download → verify → rename)
-- rollback on failure
+- rollback on failure (keep `jfp.bak`, restore if new binary fails to exec)
 
 This avoids “stale binary” drift for users who want it, without forcing network checks on every run.
 
@@ -4076,23 +4228,43 @@ This avoids “stale binary” drift for users who want it, without forcing netw
 
 ### 7.0 Registry Data Loading (SWR-Style)
 
-Use `/registry.json` as the canonical data source for the web UI. Server components can
+Use `/api/prompts` (unfiltered) as the canonical data source for the web UI. Server components can
 fetch with revalidation; client components can revalidate in the background (SWR-style).
 
 ```typescript
 // apps/web/src/lib/registry-client.ts
-import type { RegistryPayload } from "@jfp/core/export/json";
+import type { RegistryPayload } from "@jeffreysprompts/core/export/json";
 
 export async function fetchRegistry(): Promise<RegistryPayload> {
-  const res = await fetch("/registry.json", { cache: "force-cache" });
-  if (!res.ok) throw new Error("Failed to load registry");
-  return res.json();
+  const res = await fetch("/api/prompts", { cache: "force-cache" });
+  if (res.ok) return res.json();
+  // Offline fallback (PWA caches registry.json)
+  const fallback = await fetch("/registry.json", { cache: "force-cache" });
+  if (!fallback.ok) throw new Error("Failed to load registry");
+  return fallback.json();
 }
 ```
 
 Notes:
 - For live revalidation on the client, wrap `fetchRegistry` in SWR or a lightweight `useEffect` hook.
-- The PWA service worker should cache `/registry.json` for offline use.
+- The PWA service worker should cache `/registry.json` for offline fallback.
+
+```tsx
+// apps/web/src/app/page.tsx
+import { fetchRegistry } from "@/lib/registry-client";
+import { PromptGrid } from "@/components/prompt-grid";
+import { SpotlightSearch } from "@/components/spotlight-search";
+
+export default async function HomePage() {
+  const registry = await fetchRegistry();
+  return (
+    <>
+      <SpotlightSearch source={registry.prompts} />
+      <PromptGrid prompts={registry.prompts} />
+    </>
+  );
+}
+```
 
 ### 7.1 PromptCard Component
 
@@ -4105,7 +4277,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Check, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { type Prompt } from "@jfp/core/prompts";
+import { type Prompt } from "@jeffreysprompts/core/prompts";
 import { CopyButton } from "@/components/ui/copy-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -4269,7 +4441,7 @@ Key UX requirements:
 
 ```tsx
 // apps/web/src/components/prompt-detail.tsx (excerpt)
-import { renderPrompt } from "@jfp/core/template/render";
+import { renderPrompt } from "@jeffreysprompts/core/template/render";
 
 const storageKey = `jfp-vars:${prompt.id}`;
 const defaults = Object.fromEntries((prompt.variables ?? []).map((v) => [v.name, v.default ?? ""]));
@@ -4321,9 +4493,10 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { type Prompt } from "@jeffreysprompts/core/prompts";
 type SearchResult = import("@/lib/search/engine").SearchResult;
 
-export function SpotlightSearch() {
+export function SpotlightSearch({ source }: { source: Prompt[] }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -4364,10 +4537,10 @@ export function SpotlightSearch() {
   useEffect(() => {
     let cancelled = false;
     const timer = setTimeout(() => {
-      if (query.trim()) {
+      if (query.trim() && source.length) {
         import("@/lib/search/engine").then(({ searchPrompts }) => {
           if (cancelled) return;
-          setResults(searchPrompts(query));
+          setResults(searchPrompts(query, 20, source));
           setSelectedIndex(0);
         });
       } else {
@@ -4520,6 +4693,8 @@ Add `/bundles/[id]` with:
 - included prompts
 - one-click “Download as Skill Bundle”
 
+Use `generateStaticParams` for pre-rendered bundle pages.
+
 ### 7.6 Workflow Builder (Differentiator)
 
 Let users assemble multi-step workflows:
@@ -4541,6 +4716,7 @@ Add a PWA manifest + service worker:
 - cache `/registry.json`, `/registry.manifest.json`, and static assets
 - show an offline banner when using cached data
 - use SWR-style client fetch to revalidate in background
+- optional runtime cache for `/api/prompts` (unfiltered) with `/registry.json` as offline fallback
 - keep BM25 search in-browser so offline search still works
 
 ### 7.9 Error Boundaries + Privacy Analytics
@@ -4548,8 +4724,9 @@ Add a PWA manifest + service worker:
 - Error boundaries around search + prompt grid with fallback UI
 - Optional, privacy-respecting analytics (e.g., Plausible) for:
   - prompt_view, prompt_copy
-  - search (query length + result count; optionally hash query to detect zero-results)
+  - search (query length + result count; emit zero_results when count == 0; optionally hash query)
   - export and skill_install
+  - workflow_copy
 
 ### 7.10 Health Endpoint
 
@@ -4558,6 +4735,7 @@ Add `GET /api/health` returning:
 - prompt count
 - build/version
 - timestamp
+- responseTimeMs
 
 Used for uptime checks and deployment verification.
 
@@ -4649,6 +4827,8 @@ Used for uptime checks and deployment verification.
    - `list`, `search`, `suggest`, `show`, `copy`
    - `render`, `open`, `registry status/refresh`
    - `install`, `uninstall`, `installed`, `update`
+   - `skill install|uninstall|installed|update` (aliases)
+   - `doctor`
    - `interactive`, `completion`
 
 3. **Build and test**
@@ -6108,31 +6288,12 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: release/**
-```
-yaml
+```yaml
 # .github/dependabot.yml
 version: 2
 updates:
-  - package-ecosystem: npm
-    directory: /
-    schedule:
-      interval: weekly
-    commit-message:
-      prefix: "deps"
-    groups:
-      development:
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"
-
-  - package-ecosystem: npm
-    directory: /apps/web
-    schedule:
-      interval: weekly
-    commit-message:
-      prefix: "deps(web)"
+  # Bun uses bun.lock; Dependabot doesn't support it yet.
+  # Use Renovate or manual updates for JS dependencies.
 
   - package-ecosystem: github-actions
     directory: /
@@ -6330,6 +6491,7 @@ Expose prompts to agents via MCP:
 - Tools: `search_prompts`, `render_prompt`
 
 Provide a copy-paste snippet for Claude Desktop configuration.
+Tool schemas are defined in Part 6.9.
 
 ---
 
@@ -6622,9 +6784,11 @@ async function installBundleCommand(bundleId: string, flags: Flags) {
     process.exit(1);
   }
 
-  const targetDir = flags.project
-    ? join(process.cwd(), ".claude", "skills")
-    : join(homedir(), ".config", "claude", "skills");
+  const config = loadConfig();
+  const skills = config.skills ?? {};
+  const personalDir = skills.personalDir ?? join(homedir(), ".config", "claude", "skills");
+  const projectDir = skills.projectDir ?? join(process.cwd(), ".claude", "skills");
+  const targetDir = flags.project ? projectDir : personalDir;
 
   const skillDir = join(targetDir, bundle.id);
   const skillPath = join(skillDir, "SKILL.md");
@@ -6653,7 +6817,7 @@ async function installBundleCommand(bundleId: string, flags: Flags) {
 import { motion } from "framer-motion";
 import * as Icons from "lucide-react";
 import { cn } from "@/lib/utils";
-import { type Bundle } from "@jfp/core/prompts";
+import { type Bundle } from "@jeffreysprompts/core/prompts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -6729,6 +6893,7 @@ This phase upgrades “suggest a prompt” beyond pure lexical matching without 
 
 - **Default**: BM25 (fast, tiny, deterministic).
 - **Optional**: semantic rerank with MiniLM via Transformers.js.
+- **Fallback**: if the semantic model isn’t available, use lightweight hash embeddings for approximate rerank.
 - **Two-stage pipeline**: BM25 → optional semantic rerank on top N.
 
 ### 14.2 CLI Integration
@@ -6736,8 +6901,8 @@ This phase upgrades “suggest a prompt” beyond pure lexical matching without 
 ```typescript
 // packages/cli/src/commands/suggest.ts
 
-import { searchPrompts } from "@jfp/core/search/engine";
-import { semanticRerank } from "@jfp/core/search/semantic";
+import { searchPrompts } from "@jeffreysprompts/core/search/engine";
+import { semanticRerank } from "@jeffreysprompts/core/search/semantic";
 import { loadRegistry } from "../lib/registry-loader";
 
 async function suggestCommand(task: string, flags: Flags) {
@@ -6750,7 +6915,7 @@ async function suggestCommand(task: string, flags: Flags) {
   const baseline = searchPrompts(task, flags.limit ?? 10, registry);
 
   const results = flags.semantic
-    ? await semanticRerank(task, baseline)
+    ? await semanticRerank(task, baseline, { fallback: "hash" })
     : baseline;
 
   if (flags.json) {
@@ -6762,8 +6927,24 @@ async function suggestCommand(task: string, flags: Flags) {
 }
 ```
 
+Fallback embedding helper (deterministic, no model download):
+
+```typescript
+// packages/core/src/search/hash-embedder.ts
+export function hashEmbed(input: string, dims = 128): number[] {
+  // Deterministic hashing into a fixed-length vector.
+  // Good enough for lightweight fallback similarity.
+  // Use a fast non-crypto hash (xxhash/murmur) for `hash`.
+  return new Array(dims).fill(0).map((_, i) => hash(input + i) % 1000 / 1000);
+}
+```
+
+Implementation note: `semanticRerank` should catch model load errors/timeouts and fall back
+to hash embeddings without failing the command.
+
 **Note:** The CLI does **not** require a `prompt_embeddings.json` file. For this scale, in-memory
-embeddings are fast enough, and model assets can be cached in `~/.config/jfp/models`.
+hash embeddings are fast enough as a fallback, and optional model assets can be cached in
+`~/.config/jfp/models`.
 
 ### 14.3 Web Integration
 
@@ -6784,6 +6965,7 @@ packages/core/src/search/
   bm25.ts
   tokenize.ts
   synonyms.ts
+  hash-embedder.ts
   semantic.ts
 ```
 
@@ -6832,12 +7014,17 @@ jfp install <id>...           # Install as Claude Code skills
 jfp install --all             # Install all prompts
 jfp install --project         # Install to .claude/skills
 jfp install --bundle <id>     # Install bundle as single skill (NEW)
+jfp skill install <id>...     # Alias
 
 # Managing Skills
 jfp uninstall <id>...         # Remove installed skills
+jfp skill uninstall <id>...   # Alias
 jfp installed                 # List installed skills
+jfp skill installed           # Alias
 jfp update                    # Update all installed skills
 jfp update --dry-run          # Show changes without writing
+jfp update --dry-run --diff   # Show unified diff
+jfp skill update              # Alias
 
 # Bundles (NEW)
 jfp bundles                   # List available bundles
@@ -6852,6 +7039,7 @@ jfp open <id>                 # Open prompt permalink in browser
 jfp serve                     # MCP server mode (agent-native)
 jfp completion --shell zsh    # Shell completions
 jfp update-cli                # Self-update the CLI (opt-in)
+jfp doctor                    # Environment + registry checks
 
 # Metadata
 jfp categories                # List categories
