@@ -15,6 +15,9 @@
     "lint": "bun run --cwd apps/web lint",
     "test": "bun run --cwd apps/web test",
     "test:cli": "bun test jfp.test.ts",
+    "test:e2e:cli": "bun test e2e/cli-workflow.test.ts",
+    "test:e2e:web": "bunx playwright test --config e2e/playwright.config.ts",
+    "test:e2e:web:ui": "bunx playwright test --config e2e/playwright.config.ts --ui",
     "jfp": "bun run jfp.ts",
     "build:cli": "./scripts/build-cli.sh",
     "build:releases": "./scripts/build-releases.sh",
@@ -22,6 +25,7 @@
     "validate": "bun run scripts/validate-prompts.ts"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "typescript": "^5.7.0"
   },
   "dependencies": {
