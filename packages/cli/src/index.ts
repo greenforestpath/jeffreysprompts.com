@@ -13,6 +13,7 @@ import { updateCommand } from "./commands/update";
 import { suggestCommand } from "./commands/suggest";
 import { interactiveCommand } from "./commands/interactive";
 import { bundlesCommand, bundleShowCommand } from "./commands/bundles";
+import { statusCommand, refreshCommand } from "./commands/registry";
 
 export const cli = cac("jfp");
 
@@ -105,6 +106,16 @@ cli
   .command("bundle <id>", "Show bundle details")
   .option("--json", "Output JSON")
   .action(bundleShowCommand);
+
+cli
+  .command("status", "Show registry cache status and settings")
+  .option("--json", "Output JSON")
+  .action(statusCommand);
+
+cli
+  .command("refresh", "Refresh registry cache from remote")
+  .option("--json", "Output JSON")
+  .action(refreshCommand);
 
 cli
   .command("i", "Interactive mode - fzf-style prompt picker")
