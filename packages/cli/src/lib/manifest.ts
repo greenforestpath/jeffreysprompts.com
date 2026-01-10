@@ -50,8 +50,37 @@ export function getManifestPath(skillsDir: string): string {
 }
 
 /**
+ * Validate manifest structure at runtime
+ * Returns the manifest if valid, null if invalid
+ */
+function validateManifest(data: unknown): FullSkillManifest | null {
+  if (typeof data !== "object" || data === null) {
+    return null;
+  }
+  const obj = data as Record<string, unknown>;
+
+  // Required fields
+  if (typeof obj.generatedAt !== "string") return null;
+  if (typeof obj.jfpVersion !== "string") return null;
+  if (!Array.isArray(obj.entries)) return null;
+
+  // Validate each entry has required fields
+  for (const entry of obj.entries) {
+    if (typeof entry !== "object" || entry === null) return null;
+    const e = entry as Record<string, unknown>;
+    if (typeof e.id !== "string") return null;
+    if (typeof e.kind !== "string") return null;
+    if (typeof e.version !== "string") return null;
+    if (typeof e.hash !== "string") return null;
+    if (typeof e.updatedAt !== "string") return null;
+  }
+
+  return data as FullSkillManifest;
+}
+
+/**
  * Read manifest from a skills directory
- * Returns null if manifest doesn't exist
+ * Returns null if manifest doesn't exist or is invalid
  */
 export function readManifest(skillsDir: string): FullSkillManifest | null {
   const manifestPath = getManifestPath(skillsDir);
@@ -60,7 +89,8 @@ export function readManifest(skillsDir: string): FullSkillManifest | null {
   }
   try {
     const raw = readFileSync(manifestPath, "utf-8");
-    return JSON.parse(raw) as FullSkillManifest;
+    const parsed = JSON.parse(raw);
+    return validateManifest(parsed);
   } catch {
     return null;
   }
