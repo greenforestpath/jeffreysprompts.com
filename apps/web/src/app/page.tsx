@@ -1,18 +1,23 @@
 "use client";
 
-import { Suspense, useMemo, useCallback } from "react";
+import { Suspense, useMemo, useCallback, useState } from "react";
 import { prompts, categories, tags } from "@jeffreysprompts/core/prompts/registry";
 import { searchPrompts } from "@jeffreysprompts/core/search/engine";
 import { Hero } from "@/components/Hero";
 import { PromptGrid } from "@/components/PromptGrid";
 import { CategoryFilter } from "@/components/CategoryFilter";
 import { TagFilter } from "@/components/TagFilter";
+import { PromptDetailModal } from "@/components/PromptDetailModal";
 import { useFilterState } from "@/hooks/useFilterState";
 import type { Prompt, PromptCategory } from "@jeffreysprompts/core/prompts/types";
 
 function HomeContent() {
   const { filters, setQuery, setCategory, setTags, clearFilters, hasActiveFilters } =
     useFilterState();
+
+  // Modal state for viewing prompt details
+  const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Compute category counts
   const categoryCounts = useMemo(() => {
@@ -63,8 +68,14 @@ function HomeContent() {
   }, [filters]);
 
   const handlePromptClick = useCallback((prompt: Prompt) => {
-    // TODO: Open prompt detail modal
-    console.log("Clicked prompt:", prompt.id);
+    setSelectedPrompt(prompt);
+    setIsModalOpen(true);
+  }, []);
+
+  const handleModalClose = useCallback(() => {
+    setIsModalOpen(false);
+    // Delay clearing selected prompt for exit animation
+    setTimeout(() => setSelectedPrompt(null), 200);
   }, []);
 
   const handlePromptCopy = useCallback((prompt: Prompt) => {
@@ -187,6 +198,13 @@ function HomeContent() {
           </div>
         </div>
       </footer>
+
+      {/* Prompt Detail Modal */}
+      <PromptDetailModal
+        prompt={selectedPrompt}
+        open={isModalOpen}
+        onClose={handleModalClose}
+      />
     </div>
   );
 }
