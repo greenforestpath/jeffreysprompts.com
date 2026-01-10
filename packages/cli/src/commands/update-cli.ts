@@ -133,7 +133,10 @@ async function downloadFile(url: string, destPath: string, expectedSize?: number
     }
   } finally {
     fileStream.end();
-    await new Promise<void>((resolve) => fileStream.on("finish", resolve));
+    await new Promise<void>((resolve, reject) => {
+      fileStream.on("finish", resolve);
+      fileStream.on("error", reject);
+    });
   }
 }
 
@@ -182,7 +185,7 @@ async function fetchChecksumForAsset(
   return null;
 }
 
-function recordUpdateCheck(configUpdates: { autoCheck: boolean; autoUpdate: boolean; channel: string; lastCheck: string | null }) {
+function recordUpdateCheck(configUpdates: { autoCheck: boolean; autoUpdate: boolean; channel: "stable" | "beta"; lastCheck: string | null }) {
   const next = {
     ...configUpdates,
     lastCheck: new Date().toISOString(),
@@ -192,8 +195,10 @@ function recordUpdateCheck(configUpdates: { autoCheck: boolean; autoUpdate: bool
 
 function getCurrentBinaryPath(): string {
   const execPath = process.execPath;
+  const basename = execPath.split(/[/\\]/).pop() || "";
 
-  if (execPath.includes("bun") || execPath.includes("node")) {
+  // Check if running via bun or node runtime (not compiled)
+  if (/^(bun|node)(\.\w+)?$/i.test(basename)) {
     throw new Error(
       "Self-update is only available for compiled binaries.\n" +
         "When running via bun/node, update by pulling the latest code and rebuilding."
