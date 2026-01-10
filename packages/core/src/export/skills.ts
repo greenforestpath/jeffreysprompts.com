@@ -2,6 +2,7 @@
  * SKILL.md export for Claude Code skills integration
  */
 
+import { createHash } from "crypto";
 import type { Prompt } from "../prompts/types";
 
 /**
@@ -169,16 +170,10 @@ export interface SkillManifest {
 }
 
 /**
- * Compute hash of content (for manifest tracking)
- * Uses a simple djb2 hash - fast and deterministic
+ * Compute SHA256 hash of content (for manifest tracking)
  */
 export function computeSkillHash(content: string): string {
-  let hash = 5381;
-  for (let i = 0; i < content.length; i++) {
-    hash = ((hash << 5) + hash) ^ content.charCodeAt(i);
-    hash = hash >>> 0; // Convert to unsigned 32-bit
-  }
-  return hash.toString(16).padStart(8, "0");
+  return createHash("sha256").update(content).digest("hex");
 }
 
 /**

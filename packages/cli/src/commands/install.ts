@@ -12,7 +12,7 @@ import {
   checkSkillModification,
 } from "../lib/manifest";
 import type { SkillManifestEntry } from "@jeffreysprompts/core/export";
-import { shouldOutputJson } from "../lib/utils";
+import { isSafeSkillId, resolveSafeChildPath, shouldOutputJson } from "../lib/utils";
 
 interface InstallOptions {
   project?: boolean;
@@ -50,6 +50,13 @@ export function installCommand(ids: string[], options: InstallOptions) {
       failed.push(id);
       continue;
     }
+    if (!isSafeSkillId(prompt.id)) {
+      console.error(
+        chalk.red(`Error: Unsafe prompt id "${prompt.id}". Refusing to write files.`)
+      );
+      failed.push(id);
+      continue;
+    }
 
     // Check if this skill has been modified by the user
     const modCheck = checkSkillModification(targetRoot, prompt.id, manifest);
@@ -67,7 +74,7 @@ export function installCommand(ids: string[], options: InstallOptions) {
 
     try {
       const skillContent = generateSkillMd(prompt);
-      const skillDir = join(targetRoot, prompt.id);
+      const skillDir = resolveSafeChildPath(targetRoot, prompt.id);
       const skillPath = join(skillDir, "SKILL.md");
 
       if (!existsSync(skillDir)) {
