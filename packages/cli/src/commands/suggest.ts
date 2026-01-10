@@ -31,7 +31,7 @@ interface SuggestOutput {
  * Returns scored results with explanations of why they match.
  */
 export async function suggestCommand(task: string, options: SuggestOptions) {
-  const limit = options.limit || 3;
+  const limit = options.limit ?? 3;
 
   if (!task.trim()) {
     if (shouldOutputJson(options)) {

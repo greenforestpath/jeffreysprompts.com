@@ -48,7 +48,15 @@ interface PromptContentProps {
 
 type VariableValues = Record<string, string>;
 
+// Safe prompt ID pattern (kebab-case: lowercase letters, numbers, hyphens)
+const SAFE_PROMPT_ID = /^[a-z0-9-]+$/;
+
 function buildInstallCommand(prompt: Prompt): string {
+  // Validate prompt ID to prevent shell injection
+  if (!SAFE_PROMPT_ID.test(prompt.id)) {
+    throw new Error(`Invalid prompt ID: ${prompt.id}`);
+  }
+
   const skillContent = generateSkillMd(prompt);
   let delimiter = "JFP_SKILL";
   let counter = 0;
@@ -110,7 +118,7 @@ export function PromptContent({ prompt }: PromptContentProps) {
     } catch {
       error("Failed to copy to clipboard");
     }
-  }, [renderedContent, success, error]);
+  }, [renderedContent, prompt.id, success, error]);
 
   const handleInstall = useCallback(async () => {
     const command = buildInstallCommand(prompt);

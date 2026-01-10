@@ -34,8 +34,10 @@ export async function GET(request: Request): Promise<NextResponse> {
   }
 
   if (idsParam && promptsToInstall.length === 0) {
+    // Sanitize idsParam to prevent command injection - only allow safe characters
+    const sanitizedIds = idsParam.replace(/[^a-zA-Z0-9,_-]/g, "");
     const script = `#!/usr/bin/env bash
-echo "No matching prompts found for ids: ${idsParam}" >&2
+echo "No matching prompts found for ids: ${sanitizedIds}" >&2
 exit 1
 `;
     return new NextResponse(script, {
