@@ -44,7 +44,18 @@ async function copyToClipboard(text: string): Promise<boolean> {
       // pbcopy not available
     }
 
-    // Try xclip (Linux)
+    // Try wl-copy (Wayland)
+    try {
+      const proc = spawn(["wl-copy"], { stdin: "pipe" });
+      proc.stdin.write(text);
+      proc.stdin.end();
+      await proc.exited;
+      if (proc.exitCode === 0) return true;
+    } catch {
+      // wl-copy not available
+    }
+
+    // Try xclip (X11)
     try {
       const proc = spawn(["xclip", "-selection", "clipboard"], { stdin: "pipe" });
       proc.stdin.write(text);
@@ -149,51 +160,50 @@ async function exportToMd(prompt: Prompt): Promise<void> {
 }
 
 async function promptAction(prompt: Prompt): Promise<"back" | "exit"> {
-  const action = await select({
-    message: `${chalk.cyan(prompt.title)} - Choose an action:`,
-    choices: [
-      { name: "📋 Copy to clipboard", value: "copy" },
-      { name: "👁️  View full prompt", value: "view" },
-      { name: "📥 Install to personal skills", value: "install-personal" },
-      { name: "📥 Install to project skills", value: "install-project" },
-      { name: "📄 Export as markdown", value: "export-md" },
-      new Separator(),
-      { name: "← Back to search", value: "back" },
-      { name: "✕ Exit", value: "exit" },
-    ],
-  });
+  while (true) {
+    const action = await select({
+      message: `${chalk.cyan(prompt.title)} - Choose an action:`,
+      choices: [
+        { name: "📋 Copy to clipboard", value: "copy" },
+        { name: "👁️  View full prompt", value: "view" },
+        { name: "📥 Install to personal skills", value: "install-personal" },
+        { name: "📥 Install to project skills", value: "install-project" },
+        { name: "📄 Export as markdown", value: "export-md" },
+        new Separator(),
+        { name: "← Back to search", value: "back" },
+        { name: "✕ Exit", value: "exit" },
+      ],
+    });
 
-  switch (action) {
-    case "copy": {
-      const copied = await copyToClipboard(prompt.content);
-      if (copied) {
-        console.log(chalk.green("✓ Copied to clipboard"));
-      } else {
-        console.log(chalk.yellow("Could not copy to clipboard. Content:"));
-        console.log(prompt.content);
+    switch (action) {
+      case "copy": {
+        const copied = await copyToClipboard(prompt.content);
+        if (copied) {
+          console.log(chalk.green("✓ Copied to clipboard"));
+        } else {
+          console.log(chalk.yellow("Could not copy to clipboard. Content:"));
+          console.log(prompt.content);
+        }
+        break;
       }
-      break;
+      case "view":
+        displayPrompt(prompt);
+        break;
+      case "install-personal":
+        await installPrompt(prompt, false);
+        break;
+      case "install-project":
+        await installPrompt(prompt, true);
+        break;
+      case "export-md":
+        await exportToMd(prompt);
+        break;
+      case "back":
+        return "back";
+      case "exit":
+        return "exit";
     }
-    case "view":
-      displayPrompt(prompt);
-      break;
-    case "install-personal":
-      await installPrompt(prompt, false);
-      break;
-    case "install-project":
-      await installPrompt(prompt, true);
-      break;
-    case "export-md":
-      await exportToMd(prompt);
-      break;
-    case "back":
-      return "back";
-    case "exit":
-      return "exit";
   }
-
-  // Continue with same prompt actions
-  return promptAction(prompt);
 }
 
 export async function interactiveCommand(_options: InteractiveOptions): Promise<void> {

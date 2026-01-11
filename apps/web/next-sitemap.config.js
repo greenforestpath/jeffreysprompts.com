@@ -6,14 +6,14 @@ module.exports = {
   changefreq: 'weekly',
   priority: 0.7,
   sitemapSize: 7000,
-  exclude: ['/api/*', '/_next/*'],
+  exclude: ['/api/*', '/_next/*', '/admin', '/admin/*', '/admin/**'],
   robotsTxtOptions: {
     additionalSitemaps: [],
     policies: [
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/_next/'],
+        disallow: ['/api/', '/_next/', '/admin/'],
       },
     ],
   },
