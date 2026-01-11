@@ -35,7 +35,6 @@ export function useCountUp({
 
   useEffect(() => {
     if (!enabled) {
-      setCount(start);
       return;
     }
 
@@ -66,7 +65,8 @@ export function useCountUp({
     };
   }, [start, end, duration, delay, decimals, easing, enabled]);
 
-  return count;
+  const displayCount = enabled ? count : Number(start.toFixed(decimals));
+  return displayCount;
 }
 
 export { easings };

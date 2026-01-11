@@ -19,7 +19,13 @@
  * @see @/hooks/useReadingPosition for the TanStack Store-based pattern
  */
 
-import { useCallback, useEffect, useRef, useState, type MutableRefObject } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useSyncExternalStore,
+  type MutableRefObject,
+} from "react";
 
 /**
  * Hook for persisting state to localStorage with SSR safety.
@@ -37,32 +43,24 @@ export function useLocalStorage<T>(
   const { debounceMs = 300 } = options;
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialValueRef = useRef<T>(initialValue);
-  // Track latest value for use in cleanup (avoids stale closure bug)
   const latestValueRef: MutableRefObject<T> = useRef<T>(initialValue);
+  const latestKeyRef = useRef<string>(key);
   const hasLatestValueRef = useRef(false);
-  // Track previous key to flush pending writes on key change
   const prevKeyRef = useRef<string>(key);
-
-  // Initialize state with initialValue to avoid hydration mismatch
-  const [storedValue, setStoredValue] = useState<T>(initialValue);
+  const listenersRef = useRef(new Set<() => void>());
 
   // Keep initialValueRef updated for resets without re-running effects every render
   useEffect(() => {
     initialValueRef.current = initialValue;
   }, [initialValue]);
 
-  // Read from localStorage on mount or key change
-  // Flush any pending debounced writes for the PREVIOUS key before switching
+  // Flush pending writes when switching keys
   useEffect(() => {
     const oldKey = prevKeyRef.current;
-    prevKeyRef.current = key;
-
-    // Flush pending write to OLD key before reading new key
-    if (debounceRef.current) {
+    if (oldKey !== key && debounceRef.current) {
       clearTimeout(debounceRef.current);
       debounceRef.current = null;
-      // Write latest value to the OLD key (not current mount/initial load)
-      if (hasLatestValueRef.current && oldKey !== key) {
+      if (hasLatestValueRef.current) {
         try {
           window.localStorage.setItem(oldKey, JSON.stringify(latestValueRef.current));
         } catch {
@@ -70,43 +68,82 @@ export function useLocalStorage<T>(
         }
       }
     }
+    prevKeyRef.current = key;
+    latestKeyRef.current = key;
+    hasLatestValueRef.current = false;
+  }, [key]);
 
+  const notifyListeners = useCallback(() => {
+    listenersRef.current.forEach((listener) => listener());
+  }, []);
+
+  const readValue = useCallback((): T => {
+    if (hasLatestValueRef.current && latestKeyRef.current === key) {
+      return latestValueRef.current;
+    }
+    if (typeof window === "undefined") return initialValueRef.current;
     try {
       const item = window.localStorage.getItem(key);
       if (item !== null) {
-        setStoredValue(JSON.parse(item) as T);
-        return;
+        return JSON.parse(item) as T;
       }
-      setStoredValue(initialValueRef.current);
+      return initialValueRef.current;
     } catch (error) {
       console.warn(`Error reading localStorage key "${key}":`, error);
-      setStoredValue(initialValueRef.current);
+      return initialValueRef.current;
     }
   }, [key]);
+
+  const subscribe = useCallback(
+    (listener: () => void) => {
+      listenersRef.current.add(listener);
+      if (typeof window === "undefined") {
+        return () => listenersRef.current.delete(listener);
+      }
+      const handleStorage = (event: StorageEvent) => {
+        if (event.key === key) {
+          hasLatestValueRef.current = false;
+          listener();
+        }
+      };
+      window.addEventListener("storage", handleStorage);
+      return () => {
+        listenersRef.current.delete(listener);
+        window.removeEventListener("storage", handleStorage);
+      };
+    },
+    [key]
+  );
+
+  const storedValue = useSyncExternalStore(
+    subscribe,
+    readValue,
+    () => initialValueRef.current
+  );
 
   // Setter with debounced persistence
   const setValue = useCallback(
     (value: T | ((prev: T) => T)) => {
-      setStoredValue((prev) => {
-        const valueToStore = value instanceof Function ? value(prev) : value;
+      const valueToStore = value instanceof Function ? value(readValue()) : value;
+      latestValueRef.current = valueToStore;
+      latestKeyRef.current = key;
+      hasLatestValueRef.current = true;
 
-        // Debounce the localStorage write
-        if (debounceRef.current) {
-          clearTimeout(debounceRef.current);
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+
+      debounceRef.current = setTimeout(() => {
+        try {
+          window.localStorage.setItem(key, JSON.stringify(valueToStore));
+        } catch (error) {
+          console.warn(`Error setting localStorage key "${key}":`, error);
         }
+      }, debounceMs);
 
-        debounceRef.current = setTimeout(() => {
-          try {
-            window.localStorage.setItem(key, JSON.stringify(valueToStore));
-          } catch (error) {
-            console.warn(`Error setting localStorage key "${key}":`, error);
-          }
-        }, debounceMs);
-
-        return valueToStore;
-      });
+      notifyListeners();
     },
-    [key, debounceMs]
+    [key, debounceMs, readValue, notifyListeners]
   );
 
   // Remove from storage
@@ -116,17 +153,14 @@ export function useLocalStorage<T>(
     }
     try {
       window.localStorage.removeItem(key);
-      setStoredValue(initialValueRef.current);
+      latestValueRef.current = initialValueRef.current;
+      latestKeyRef.current = key;
+      hasLatestValueRef.current = true;
+      notifyListeners();
     } catch (error) {
       console.warn(`Error removing localStorage key "${key}":`, error);
     }
-  }, [key]);
-
-  // Keep latestValueRef in sync (for use in cleanup without stale closure)
-  useEffect(() => {
-    latestValueRef.current = storedValue;
-    hasLatestValueRef.current = true;
-  }, [storedValue]);
+  }, [key, notifyListeners]);
 
   // Persist on unmount if there's a pending debounce
   // NOTE: Only depends on `key`, NOT `storedValue` - we use latestValueRef to avoid
@@ -145,27 +179,6 @@ export function useLocalStorage<T>(
         }
       }
     };
-  }, [key]);
-
-  // Sync across tabs
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === key) {
-        if (e.newValue === null) {
-          // Key was removed in another tab
-          setStoredValue(initialValueRef.current);
-        } else {
-          try {
-            setStoredValue(JSON.parse(e.newValue) as T);
-          } catch {
-            // Ignore parse errors
-          }
-        }
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
   }, [key]);
 
   return [storedValue, setValue, removeValue];

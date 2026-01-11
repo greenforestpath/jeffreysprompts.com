@@ -85,28 +85,23 @@ const patternDurations: Record<HapticPattern, number | number[]> = {
 export function useHaptic(options: HapticOptions = {}) {
   const { enabled = true } = options;
 
-  const [isSupported, setIsSupported] = useState(false);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [isSupported] = useState(
+    () => typeof navigator !== "undefined" && "vibrate" in navigator
+  );
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  });
 
-  // Check for Vibration API support
+  // Watch reduced motion preference changes
   useEffect(() => {
-    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
-      setIsSupported(true);
-    }
-  }, []);
-
-  // Check for reduced motion preference
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-      setPrefersReducedMotion(mediaQuery.matches);
-
-      const handler = (e: MediaQueryListEvent) => {
-        setPrefersReducedMotion(e.matches);
-      };
-      mediaQuery.addEventListener("change", handler);
-      return () => mediaQuery.removeEventListener("change", handler);
-    }
+    if (typeof window === "undefined") return;
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const handler = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches);
+    };
+    mediaQuery.addEventListener("change", handler);
+    return () => mediaQuery.removeEventListener("change", handler);
   }, []);
 
   /**
