@@ -1,18 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-
-// Username validation constants
-const USERNAME_REGEX = /^[a-z][a-z0-9_]{2,19}$/;
-const RESERVED_USERNAMES = [
-  "admin", "api", "help", "support", "about", "settings", "profile",
-  "user", "users", "login", "logout", "signup", "register", "auth",
-  "prompts", "bundles", "workflows", "pricing", "terms", "privacy",
-];
-
-function isValidUsername(username: string): boolean {
-  if (!USERNAME_REGEX.test(username)) return false;
-  if (RESERVED_USERNAMES.includes(username)) return false;
-  return true;
-}
+import { isValidUsername } from "@/lib/username";
 
 // Mock user data - in production, this would come from database
 const MOCK_USERS: Record<string, UserProfile> = {
