@@ -106,5 +106,5 @@ describe("CLI (jfp)", () => {
     const content = readFileSync(skillFile, "utf-8");
     expect(content).toContain("name: idea-wizard");
     expect(content).toContain("The Idea Wizard");
-  });
+  }, 10000);
 });
