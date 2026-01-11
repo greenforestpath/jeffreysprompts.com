@@ -238,6 +238,24 @@ describe("isExpired", () => {
   });
 });
 
+describe("needsRefresh", () => {
+  it("returns same result as isExpired (alias)", () => {
+    const expiredCreds = {
+      ...validCredentials,
+      expires_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+    };
+    const validCreds = {
+      ...validCredentials,
+      expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+    };
+
+    expect(credentials.needsRefresh(expiredCreds)).toBe(credentials.isExpired(expiredCreds));
+    expect(credentials.needsRefresh(validCreds)).toBe(credentials.isExpired(validCreds));
+    expect(credentials.needsRefresh(expiredCreds)).toBe(true);
+    expect(credentials.needsRefresh(validCreds)).toBe(false);
+  });
+});
+
 describe("getAccessToken", () => {
   it("returns null when not logged in", async () => {
     const token = await credentials.getAccessToken();
@@ -363,5 +381,219 @@ describe("XDG_CONFIG_HOME", () => {
 
     const path = credentials.getCredentialsPath();
     expect(path).toBe(join(FAKE_HOME, ".config", "jfp", "credentials.json"));
+  });
+});
+
+describe("authenticatedFetch", () => {
+  // Store original fetch to restore after tests
+  const originalFetch = globalThis.fetch;
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it("returns null when not logged in", async () => {
+    const result = await credentials.authenticatedFetch("https://example.com/api");
+    expect(result).toBeNull();
+  });
+
+  it("adds Authorization header when logged in", async () => {
+    await credentials.saveCredentials(validCredentials);
+
+    let capturedHeaders: Headers | undefined;
+    globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+      capturedHeaders = new Headers(init?.headers);
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    };
+
+    const result = await credentials.authenticatedFetch("https://example.com/api");
+    expect(result).not.toBeNull();
+    expect(capturedHeaders?.get("Authorization")).toBe(`Bearer ${validCredentials.access_token}`);
+  });
+
+  it("preserves existing headers", async () => {
+    await credentials.saveCredentials(validCredentials);
+
+    let capturedHeaders: Headers | undefined;
+    globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+      capturedHeaders = new Headers(init?.headers);
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    };
+
+    const result = await credentials.authenticatedFetch("https://example.com/api", {
+      headers: { "Content-Type": "application/json", "X-Custom": "value" },
+    });
+
+    expect(result).not.toBeNull();
+    expect(capturedHeaders?.get("Authorization")).toBe(`Bearer ${validCredentials.access_token}`);
+    expect(capturedHeaders?.get("Content-Type")).toBe("application/json");
+    expect(capturedHeaders?.get("X-Custom")).toBe("value");
+  });
+
+  it("passes through request options", async () => {
+    await credentials.saveCredentials(validCredentials);
+
+    let capturedMethod: string | undefined;
+    let capturedBody: string | undefined;
+    globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+      capturedMethod = init?.method;
+      capturedBody = init?.body as string;
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    };
+
+    await credentials.authenticatedFetch("https://example.com/api", {
+      method: "POST",
+      body: JSON.stringify({ data: "test" }),
+    });
+
+    expect(capturedMethod).toBe("POST");
+    expect(capturedBody).toBe(JSON.stringify({ data: "test" }));
+  });
+
+  it("returns null for expired credentials without refresh token", async () => {
+    const expiredCreds = {
+      ...validCredentials,
+      expires_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(), // 1 hour ago
+      refresh_token: undefined,
+    };
+    await credentials.saveCredentials(expiredCreds);
+
+    const result = await credentials.authenticatedFetch("https://example.com/api");
+    expect(result).toBeNull();
+  });
+
+  it("uses JFP_TOKEN env var when set", async () => {
+    process.env.JFP_TOKEN = "env-token-for-fetch";
+
+    let capturedHeaders: Headers | undefined;
+    globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+      capturedHeaders = new Headers(init?.headers);
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    };
+
+    const result = await credentials.authenticatedFetch("https://example.com/api");
+    expect(result).not.toBeNull();
+    expect(capturedHeaders?.get("Authorization")).toBe("Bearer env-token-for-fetch");
+  });
+});
+
+describe("getAccessToken with refresh", () => {
+  const originalFetch = globalThis.fetch;
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it("returns current token when not expired", async () => {
+    await credentials.saveCredentials(validCredentials);
+
+    const token = await credentials.getAccessToken();
+    expect(token).toBe(validCredentials.access_token);
+  });
+
+  it("attempts refresh when token is expired and refresh_token exists", async () => {
+    const expiredCreds = {
+      ...validCredentials,
+      expires_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(), // 1 hour ago
+      refresh_token: "test-refresh-token",
+    };
+    await credentials.saveCredentials(expiredCreds);
+
+    let refreshCalled = false;
+    globalThis.fetch = async (input: RequestInfo | URL) => {
+      refreshCalled = true;
+      const url = input.toString();
+      if (url.includes("/api/cli/token/refresh")) {
+        return new Response(JSON.stringify({
+          access_token: "new-access-token",
+          refresh_token: "new-refresh-token",
+          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          email: expiredCreds.email,
+          tier: expiredCreds.tier,
+          user_id: expiredCreds.user_id,
+        }), { status: 200 });
+      }
+      return new Response("Not found", { status: 404 });
+    };
+
+    const token = await credentials.getAccessToken();
+    expect(refreshCalled).toBe(true);
+    expect(token).toBe("new-access-token");
+
+    // Verify new credentials were saved
+    const savedCreds = await credentials.loadCredentials();
+    expect(savedCreds?.access_token).toBe("new-access-token");
+    expect(savedCreds?.refresh_token).toBe("new-refresh-token");
+  });
+
+  it("returns null when refresh fails with non-200 response", async () => {
+    const expiredCreds = {
+      ...validCredentials,
+      expires_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+      refresh_token: "expired-refresh-token",
+    };
+    await credentials.saveCredentials(expiredCreds);
+
+    globalThis.fetch = async () => {
+      return new Response("Unauthorized", { status: 401 });
+    };
+
+    const token = await credentials.getAccessToken();
+    expect(token).toBeNull();
+  });
+
+  it("returns null when refresh fails with network error", async () => {
+    const expiredCreds = {
+      ...validCredentials,
+      expires_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+      refresh_token: "test-refresh-token",
+    };
+    await credentials.saveCredentials(expiredCreds);
+
+    globalThis.fetch = async () => {
+      throw new Error("Network error");
+    };
+
+    const token = await credentials.getAccessToken();
+    expect(token).toBeNull();
+  });
+
+  it("returns null when no refresh_token and token is expired", async () => {
+    const expiredCredsNoRefresh = {
+      ...validCredentials,
+      expires_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+      refresh_token: undefined,
+    };
+    await credentials.saveCredentials(expiredCredsNoRefresh);
+
+    const token = await credentials.getAccessToken();
+    expect(token).toBeNull();
+  });
+
+  it("keeps old refresh token if server doesnt return new one", async () => {
+    const expiredCreds = {
+      ...validCredentials,
+      expires_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+      refresh_token: "original-refresh-token",
+    };
+    await credentials.saveCredentials(expiredCreds);
+
+    globalThis.fetch = async () => {
+      return new Response(JSON.stringify({
+        access_token: "new-access-token",
+        // No refresh_token in response
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        email: expiredCreds.email,
+        tier: expiredCreds.tier,
+        user_id: expiredCreds.user_id,
+      }), { status: 200 });
+    };
+
+    const token = await credentials.getAccessToken();
+    expect(token).toBe("new-access-token");
+
+    // Verify original refresh token was preserved
+    const savedCreds = await credentials.loadCredentials();
+    expect(savedCreds?.refresh_token).toBe("original-refresh-token");
   });
 });

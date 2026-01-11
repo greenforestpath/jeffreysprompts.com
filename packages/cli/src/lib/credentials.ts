@@ -88,6 +88,14 @@ export function isExpired(creds: Credentials): boolean {
 }
 
 /**
+ * Check if credentials need refresh (alias for isExpired)
+ * Returns true if token is expired or about to expire within 5 minutes
+ */
+export function needsRefresh(creds: Credentials): boolean {
+  return isExpired(creds);
+}
+
+/**
  * Save credentials to disk
  * Atomic write with temp file to prevent corruption
  */
