@@ -19,6 +19,56 @@ import { join } from "path";
 const TEST_LOG_DIR = "/tmp/jfp-e2e-tests";
 const PROJECT_ROOT = join(import.meta.dir, "../../../..");
 
+const PROMPT_REQUIRED_KEYS = [
+  "id",
+  "title",
+  "description",
+  "category",
+  "tags",
+  "author",
+  "version",
+  "created",
+  "content",
+];
+
+const PROMPT_OPTIONAL_KEYS = [
+  "twitter",
+  "featured",
+  "difficulty",
+  "estimatedTokens",
+  "updatedAt",
+  "variables",
+  "whenToUse",
+  "tips",
+  "examples",
+  "changelog",
+];
+
+const PROMPT_ALLOWED_KEYS = new Set([...PROMPT_REQUIRED_KEYS, ...PROMPT_OPTIONAL_KEYS]);
+const SEARCH_RESULT_KEYS = ["prompt", "score", "matchedFields"];
+
+const expectPromptSchema = (prompt: Record<string, unknown>) => {
+  for (const key of PROMPT_REQUIRED_KEYS) {
+    expect(prompt).toHaveProperty(key);
+  }
+
+  for (const key of Object.keys(prompt)) {
+    expect(PROMPT_ALLOWED_KEYS.has(key)).toBe(true);
+  }
+};
+
+const expectSearchResultSchema = (result: Record<string, unknown>) => {
+  expect(Object.keys(result).sort()).toEqual([...SEARCH_RESULT_KEYS].sort());
+  expect(typeof result.score).toBe("number");
+  expect(Array.isArray(result.matchedFields)).toBe(true);
+
+  const prompt = result.prompt as Record<string, unknown> | undefined;
+  expect(prompt).toBeDefined();
+  if (prompt) {
+    expectPromptSchema(prompt);
+  }
+};
+
 describe("CLI Discovery Flow E2E", () => {
   let logger: TestLogger;
 
@@ -64,11 +114,7 @@ describe("CLI Discovery Flow E2E", () => {
 
       logger.step("Validating schema");
       for (const prompt of prompts) {
-        expect(prompt).toHaveProperty("id");
-        expect(prompt).toHaveProperty("title");
-        expect(prompt).toHaveProperty("description");
-        expect(prompt).toHaveProperty("category");
-        expect(prompt).toHaveProperty("tags");
+        expectPromptSchema(prompt);
         expect(Array.isArray(prompt.tags)).toBe(true);
       }
 
@@ -159,10 +205,7 @@ describe("CLI Discovery Flow E2E", () => {
 
       // Check search result schema
       const firstResult = results[0];
-      expect(firstResult).toHaveProperty("prompt");
-      expect(firstResult).toHaveProperty("score");
-      expect(firstResult).toHaveProperty("matchedFields");
-      expect(typeof firstResult.score).toBe("number");
+      expectSearchResultSchema(firstResult);
 
       logger.info("Top result", {
         id: firstResult.prompt.id,
@@ -216,6 +259,7 @@ describe("CLI Discovery Flow E2E", () => {
       const prompt = JSON.parse(result.stdout);
 
       logger.step("Validating prompt details");
+      expectPromptSchema(prompt);
       expect(prompt.id).toBe("idea-wizard");
       expect(prompt.title).toBe("The Idea Wizard");
       expect(prompt.category).toBe("ideation");
@@ -248,6 +292,8 @@ describe("CLI Discovery Flow E2E", () => {
       // Should fail with non-zero exit code
       expect(result.success).toBe(false);
       expect(result.exitCode).not.toBe(0);
+      const errorPayload = JSON.parse(result.stdout);
+      expect(errorPayload).toEqual({ error: "not_found" });
 
       logger.info("Error handled correctly", {
         exitCode: result.exitCode,
