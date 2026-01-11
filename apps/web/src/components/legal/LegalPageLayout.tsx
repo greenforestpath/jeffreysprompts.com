@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { FileText, Shield, Users, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
