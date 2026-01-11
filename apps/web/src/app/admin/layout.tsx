@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
 import {
   LayoutDashboard,
   Users,
@@ -9,6 +10,7 @@ import {
   Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getAdminRoleFromHeaders } from "@/lib/admin/permissions";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard | JeffreysPrompts",
@@ -23,11 +25,16 @@ const navItems = [
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const role = getAdminRoleFromHeaders(await headers());
+  const roleLabel = role
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
   return (
     <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950">
       {/* Sidebar */}
@@ -35,9 +42,14 @@ export default function AdminLayout({
         {/* Header */}
         <div className="flex h-16 items-center gap-2 border-b border-zinc-200 px-6 dark:border-zinc-800">
           <Shield className="h-6 w-6 text-violet-600 dark:text-violet-400" />
-          <span className="text-lg font-semibold text-zinc-900 dark:text-white">
-            Admin
-          </span>
+          <div>
+            <span className="text-lg font-semibold text-zinc-900 dark:text-white">
+              Admin
+            </span>
+            <div className="text-xs text-zinc-500 dark:text-zinc-400 capitalize">
+              {roleLabel}
+            </div>
+          </div>
         </div>
 
         {/* Navigation */}
@@ -64,9 +76,14 @@ export default function AdminLayout({
         {/* Mobile header */}
         <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-zinc-200 bg-white px-4 dark:border-zinc-800 dark:bg-zinc-900 lg:hidden">
           <Shield className="h-6 w-6 text-violet-600 dark:text-violet-400" />
-          <span className="text-lg font-semibold text-zinc-900 dark:text-white">
-            Admin
-          </span>
+          <div>
+            <span className="text-lg font-semibold text-zinc-900 dark:text-white">
+              Admin
+            </span>
+            <div className="text-xs text-zinc-500 dark:text-zinc-400 capitalize">
+              {roleLabel}
+            </div>
+          </div>
         </header>
 
         {/* Mobile navigation */}

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkAdminPermission } from "@/lib/admin/permissions";
 
 /**
  * GET /api/admin/users
@@ -16,11 +17,14 @@ import { NextRequest, NextResponse } from "next/server";
  * In production, this would query the database with proper auth.
  */
 export async function GET(request: NextRequest) {
-  // TODO: Add admin authentication check
-  // const session = await getServerSession();
-  // if (!session?.user?.isAdmin) {
-  //   return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-  // }
+  const auth = checkAdminPermission(request, "users.view");
+  if (!auth.ok) {
+    const status = auth.reason === "unauthorized" ? 401 : 403;
+    return NextResponse.json(
+      { error: auth.reason ?? "forbidden" },
+      { status }
+    );
+  }
 
   const searchParams = request.nextUrl.searchParams;
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));

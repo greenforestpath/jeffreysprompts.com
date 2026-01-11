@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkAdminPermission } from "@/lib/admin/permissions";
 
 /**
  * GET /api/admin/reports
@@ -13,11 +14,14 @@ import { NextRequest, NextResponse } from "next/server";
  * In production, this would query the database with proper auth.
  */
 export async function GET(request: NextRequest) {
-  // TODO: Add admin authentication check
-  // const session = await getServerSession();
-  // if (!session?.user?.isAdmin) {
-  //   return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-  // }
+  const auth = checkAdminPermission(request, "content.view_reported");
+  if (!auth.ok) {
+    const status = auth.reason === "unauthorized" ? 401 : 403;
+    return NextResponse.json(
+      { error: auth.reason ?? "forbidden" },
+      { status }
+    );
+  }
 
   const searchParams = request.nextUrl.searchParams;
   const status = searchParams.get("status") ?? "pending";
@@ -141,11 +145,14 @@ export async function GET(request: NextRequest) {
  * - notes: string (optional)
  */
 export async function PUT(request: NextRequest) {
-  // TODO: Add admin authentication check
-  // const session = await getServerSession();
-  // if (!session?.user?.isAdmin) {
-  //   return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-  // }
+  const auth = checkAdminPermission(request, "content.moderate");
+  if (!auth.ok) {
+    const status = auth.reason === "unauthorized" ? 401 : 403;
+    return NextResponse.json(
+      { error: auth.reason ?? "forbidden" },
+      { status }
+    );
+  }
 
   try {
     const body = await request.json();

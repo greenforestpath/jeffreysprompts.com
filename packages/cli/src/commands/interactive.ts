@@ -33,6 +33,19 @@ async function copyToClipboard(text: string): Promise<boolean> {
     // Try pbcopy (macOS) or xclip (Linux) via Bun.spawn
     const { spawn } = await import("bun");
 
+    if (process.platform === "win32") {
+      try {
+        const proc = spawn(["clip"], { stdin: "pipe" });
+        proc.stdin.write(text);
+        proc.stdin.end();
+        await proc.exited;
+        if (proc.exitCode === 0) return true;
+      } catch {
+        // clip not available
+      }
+      return false;
+    }
+
     // Try pbcopy first (macOS)
     try {
       const proc = spawn(["pbcopy"], { stdin: "pipe" });

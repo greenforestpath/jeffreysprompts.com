@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { checkAdminPermission } from "@/lib/admin/permissions";
 
 /**
  * GET /api/admin/stats
@@ -11,12 +12,15 @@ import { NextResponse } from "next/server";
  *
  * For now, returns mock data for UI development.
  */
-export async function GET() {
-  // TODO: Add admin authentication check
-  // const session = await getServerSession();
-  // if (!session?.user?.isAdmin) {
-  //   return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-  // }
+export async function GET(request: NextRequest) {
+  const auth = checkAdminPermission(request, "admins.view");
+  if (!auth.ok) {
+    const status = auth.reason === "unauthorized" ? 401 : 403;
+    return NextResponse.json(
+      { error: auth.reason ?? "forbidden" },
+      { status }
+    );
+  }
 
   const stats = {
     totalUsers: 1234,

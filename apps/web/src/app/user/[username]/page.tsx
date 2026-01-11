@@ -108,9 +108,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
+  const description = user.bio ?? `View ${user.displayName}'s prompts and collections on JeffreysPrompts.`;
+  const title = `${user.displayName} (@${user.username}) | JeffreysPrompts`;
+
   return {
-    title: `${user.displayName} (@${user.username}) | JeffreysPrompts`,
-    description: user.bio ?? `View ${user.displayName}'s prompts and collections on JeffreysPrompts.`,
+    title,
+    description,
+    openGraph: {
+      title: user.displayName,
+      description,
+      type: "profile",
+      url: `https://jeffreysprompts.com/user/${user.username}`,
+      siteName: "JeffreysPrompts",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: user.displayName,
+      description,
+      creator: user.twitter ? `@${user.twitter}` : "@doodlestein",
+    },
   };
 }
 

@@ -1,0 +1,106 @@
+import type { NextRequest } from "next/server";
+
+export type AdminRole = "super_admin" | "admin" | "moderator" | "support";
+
+export type AdminPermission =
+  | "users.view"
+  | "users.edit"
+  | "users.suspend"
+  | "users.delete"
+  | "content.view_reported"
+  | "content.moderate"
+  | "content.delete"
+  | "billing.view"
+  | "billing.refund"
+  | "admins.view"
+  | "admins.manage";
+
+const ROLE_SET = new Set<AdminRole>([
+  "super_admin",
+  "admin",
+  "moderator",
+  "support",
+]);
+
+export const PERMISSIONS: Record<AdminPermission, AdminRole[]> = {
+  // User management
+  "users.view": ["moderator", "support", "admin", "super_admin"],
+  "users.edit": ["admin", "super_admin"],
+  "users.suspend": ["admin", "super_admin"],
+  "users.delete": ["super_admin"],
+
+  // Content moderation
+  "content.view_reported": ["moderator", "support", "admin", "super_admin"],
+  "content.moderate": ["moderator", "admin", "super_admin"],
+  "content.delete": ["admin", "super_admin"],
+
+  // Billing
+  "billing.view": ["support", "admin", "super_admin"],
+  "billing.refund": ["admin", "super_admin"],
+
+  // Admin management
+  "admins.view": ["admin", "super_admin"],
+  "admins.manage": ["super_admin"],
+};
+
+export interface AdminAuthResult {
+  ok: boolean;
+  role: AdminRole;
+  reason?: "unauthorized" | "forbidden" | "admin_token_not_configured";
+}
+
+export type HeaderAccessor = Pick<Headers, "get">;
+
+function getTokenFromRequest(request: NextRequest): string | null {
+  const authHeader = request.headers.get("authorization");
+  if (authHeader?.startsWith("Bearer ")) {
+    return authHeader.slice(7).trim();
+  }
+  return request.headers.get("x-jfp-admin-token");
+}
+
+export function getAdminRoleFromHeaders(headers: HeaderAccessor): AdminRole {
+  const raw = headers.get("x-jfp-admin-role");
+  if (!raw) return "support";
+
+  const normalized = raw.toLowerCase().replace(/-/g, "_");
+  if (ROLE_SET.has(normalized as AdminRole)) {
+    return normalized as AdminRole;
+  }
+  return "support";
+}
+
+/**
+ * Check whether the request has the required admin permission.
+ *
+ * Auth strategy:
+ * - If JFP_ADMIN_TOKEN is unset, allow in non-production, deny in production.
+ * - If token is set, require Bearer or x-jfp-admin-token to match.
+ * - Role is supplied via x-jfp-admin-role header (defaults to support).
+ */
+export function checkAdminPermission(
+  request: NextRequest,
+  permission: AdminPermission
+): AdminAuthResult {
+  const token = process.env.JFP_ADMIN_TOKEN;
+  const role = getAdminRoleFromHeaders(request.headers);
+
+  if (!token) {
+    if (process.env.NODE_ENV !== "production") {
+      return { ok: true, role: "super_admin" };
+    }
+    return { ok: false, role, reason: "admin_token_not_configured" };
+  }
+
+  const providedToken = getTokenFromRequest(request);
+  if (!providedToken || providedToken !== token) {
+    return { ok: false, role, reason: "unauthorized" };
+  }
+
+  const allowedRoles = PERMISSIONS[permission];
+  if (!allowedRoles.includes(role)) {
+    return { ok: false, role, reason: "forbidden" };
+  }
+
+  return { ok: true, role };
+}
