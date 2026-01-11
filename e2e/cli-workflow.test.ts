@@ -1183,12 +1183,12 @@ describe("CLI E2E: Invalid Input and Edge Case Handling", () => {
 
       expect(exitCode).toBe(0);
 
-      // Search returns an array
-      const results = parseJson<Array<{ id: string }>>(stdout);
+      // Search returns wrapped response with results array
+      const response = parseJson<{ results: Array<{ id: string }>; query: string; authenticated: boolean }>(stdout);
 
-      expect(results).not.toBeNull();
+      expect(response).not.toBeNull();
       // Should not crash, just return 0 or some results
-      expect(results!.length).toBeGreaterThanOrEqual(0);
+      expect(response!.results.length).toBeGreaterThanOrEqual(0);
 
       log("special-chars", "Special characters handled safely");
     } catch (error) {
