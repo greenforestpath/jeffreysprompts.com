@@ -11,8 +11,6 @@ import {
   loadCredentials,
   clearCredentials,
   isExpired,
-  getAccessToken,
-  type Credentials,
 } from "../lib/credentials";
 import { apiClient } from "../lib/api-client";
 import { shouldOutputJson } from "../lib/utils";
