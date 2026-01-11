@@ -126,9 +126,11 @@ test.describe("Multi-Tag Filter Combinations", () => {
       await expect(page.getByRole("heading", { name: "The Idea Wizard" })).toBeVisible({ timeout: 10000 });
     });
 
-    await logger.step("count initial prompts", async () => {
-      const initialCount = await page.locator("h3").count();
-      expect(initialCount).toBeGreaterThanOrEqual(3);
+    await logger.step("verify multiple prompts visible initially", async () => {
+      // Verify at least 3 specific prompts are visible before filtering
+      await expect(page.getByRole("heading", { name: "The Idea Wizard" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "The Robot-Mode Maker" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "The README Reviser" })).toBeVisible();
     });
 
     await logger.step("select automation tag", async () => {
@@ -270,8 +272,7 @@ test.describe("Combined Category and Tag Filtering", () => {
       const tagsGroup = page.getByRole("group", { name: "Tags" });
       const tagButton = tagsGroup.getByRole("button", { name: /brainstorming/i });
       await tagButton.click();
-      // Wait for URL to update
-      await page.waitForTimeout(300);
+      await expect(tagButton).toHaveAttribute("aria-pressed", "true");
     });
 
     await logger.step("verify URL has both filters", async () => {

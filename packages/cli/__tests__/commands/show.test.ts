@@ -52,9 +52,13 @@ describe("showCommand", () => {
     expect(exitCode).toBe(1);
   });
 
-  it("prints error and exits for missing prompt in human mode", () => {
+  it("outputs JSON error in non-TTY mode (piped output) when json flag not set", () => {
+    // In non-TTY mode (tests, piped output), shouldOutputJson() returns true
+    // even without --json flag, so error is JSON format
     expect(() => showCommand("missing-prompt", {})).toThrow();
-    expect(errors.join("\n")).toContain("Prompt not found");
+    // In non-TTY, output goes to stdout as JSON
+    const payload = JSON.parse(output.join(""));
+    expect(payload).toEqual({ error: "not_found" });
     expect(exitCode).toBe(1);
   });
 });

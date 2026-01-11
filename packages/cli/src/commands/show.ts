@@ -1,6 +1,7 @@
 import { getPrompt } from "@jeffreysprompts/core/prompts";
 import boxen from "boxen";
 import chalk from "chalk";
+import { shouldOutputJson } from "../lib/utils";
 
 interface ShowOptions {
   json?: boolean;
@@ -11,7 +12,7 @@ export function showCommand(id: string, options: ShowOptions) {
   const prompt = getPrompt(id);
 
   if (!prompt) {
-    if (options.json) {
+    if (shouldOutputJson(options)) {
       // NOTE: Error schema is { error: "not_found" } only - no message field
       // This is a stable API contract (see json-schema-golden.test.ts)
       console.log(JSON.stringify({ error: "not_found" }));
@@ -21,7 +22,7 @@ export function showCommand(id: string, options: ShowOptions) {
     process.exit(1);
   }
 
-  if (options.json) {
+  if (shouldOutputJson(options)) {
     console.log(JSON.stringify(prompt, null, 2));
     return;
   }

@@ -11,6 +11,7 @@ import { existsSync } from "fs";
 import { join } from "path";
 import { platform } from "os";
 import { getHomeDir } from "../lib/config";
+import { shouldOutputJson } from "../lib/utils";
 
 interface JsonOptions {
   json?: boolean;
@@ -26,7 +27,7 @@ export async function categoriesCommand(options: JsonOptions): Promise<void> {
     counts[prompt.category] = (counts[prompt.category] ?? 0) + 1;
   }
 
-  if (options.json) {
+  if (shouldOutputJson(options)) {
     const data = categories.map((cat) => ({
       name: cat,
       count: counts[cat] ?? 0,
@@ -58,7 +59,7 @@ export async function tagsCommand(options: JsonOptions): Promise<void> {
   // Sort tags by count (descending)
   const sortedTags = [...tags].sort((a, b) => (counts[b] ?? 0) - (counts[a] ?? 0));
 
-  if (options.json) {
+  if (shouldOutputJson(options)) {
     const data = sortedTags.map((tag) => ({
       name: tag,
       count: counts[tag] ?? 0,
