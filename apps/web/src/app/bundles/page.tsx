@@ -3,8 +3,21 @@ import { bundles } from "@jeffreysprompts/core/prompts/bundles";
 import { BundleCard } from "@/components/BundleCard";
 
 export const metadata: Metadata = {
-  title: "Bundles | JeffreysPrompts",
-  description: "Curated collections of related prompts for common workflows",
+  title: "Prompt Bundles | Jeffrey's Prompts",
+  description: "Curated collections of related prompts for common workflows. Install all prompts in a bundle with a single command.",
+  openGraph: {
+    title: "Prompt Bundles",
+    description: "Curated collections of related prompts. Install all prompts in a bundle with a single command.",
+    type: "website",
+    url: "https://jeffreysprompts.com/bundles",
+    siteName: "Jeffrey's Prompts",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Prompt Bundles | Jeffrey's Prompts",
+    description: "Curated collections of related prompts for common workflows.",
+    creator: "@doodlestein",
+  },
 };
 
 export default function BundlesPage() {
