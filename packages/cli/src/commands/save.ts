@@ -32,6 +32,14 @@ interface SaveErrorResponse {
   code?: string;
 }
 
+function writeJson(payload: Record<string, unknown>): void {
+  console.log(JSON.stringify(payload));
+}
+
+function writeJsonError(code: string, message: string, extra: Record<string, unknown> = {}): void {
+  writeJson({ error: true, code, message, ...extra });
+}
+
 /**
  * Save a prompt to user's premium account
  */
@@ -43,13 +51,7 @@ export async function saveCommand(
   const prompt = getPrompt(promptId);
   if (!prompt) {
     if (shouldOutputJson(options)) {
-      console.log(
-        JSON.stringify({
-          success: false,
-          error: "not_found",
-          message: `Prompt not found: ${promptId}`,
-        })
-      );
+      writeJsonError("not_found", `Prompt not found: ${promptId}`);
     } else {
       console.error(chalk.red(`Prompt not found: ${promptId}`));
     }
@@ -60,14 +62,9 @@ export async function saveCommand(
   const loggedIn = await isLoggedIn();
   if (!loggedIn) {
     if (shouldOutputJson(options)) {
-      console.log(
-        JSON.stringify({
-          success: false,
-          error: "not_authenticated",
-          message: "Please log in to save prompts",
-          hint: "Run 'jfp login' to sign in",
-        })
-      );
+      writeJsonError("not_authenticated", "Please log in to save prompts", {
+        hint: "Run 'jfp login' to sign in",
+      });
     } else {
       console.error(chalk.yellow("Please log in to save prompts"));
       console.log(chalk.dim("Run 'jfp login' to sign in"));
@@ -79,14 +76,9 @@ export async function saveCommand(
   const user = await getCurrentUser();
   if (user && user.tier !== "premium") {
     if (shouldOutputJson(options)) {
-      console.log(
-        JSON.stringify({
-          success: false,
-          error: "requires_premium",
-          message: "Saving prompts requires a premium subscription",
-          tier: user.tier,
-        })
-      );
+      writeJsonError("requires_premium", "Saving prompts requires a premium subscription", {
+        tier: user.tier,
+      });
     } else {
       console.error(chalk.yellow("Saving prompts requires a premium subscription"));
       console.log(chalk.dim("Visit https://pro.jeffreysprompts.com to upgrade"));
@@ -105,14 +97,9 @@ export async function saveCommand(
     // Auth error (token expired)
     if (isAuthError(response)) {
       if (shouldOutputJson(options)) {
-        console.log(
-          JSON.stringify({
-            success: false,
-            error: "session_expired",
-            message: "Your session has expired. Please log in again.",
-            hint: "Run 'jfp login' to sign in",
-          })
-        );
+        writeJsonError("session_expired", "Your session has expired. Please log in again.", {
+          hint: "Run 'jfp login' to sign in",
+        });
       } else {
         console.error(chalk.yellow("Your session has expired. Please log in again."));
         console.log(chalk.dim("Run 'jfp login' to sign in"));
@@ -123,13 +110,7 @@ export async function saveCommand(
     // Permission error (not premium on server side)
     if (isPermissionError(response)) {
       if (shouldOutputJson(options)) {
-        console.log(
-          JSON.stringify({
-            success: false,
-            error: "requires_premium",
-            message: "Saving prompts requires a premium subscription",
-          })
-        );
+        writeJsonError("requires_premium", "Saving prompts requires a premium subscription");
       } else {
         console.error(chalk.yellow("Saving prompts requires a premium subscription"));
         console.log(chalk.dim("Visit https://pro.jeffreysprompts.com to upgrade"));
@@ -140,13 +121,7 @@ export async function saveCommand(
     // Not found on server (shouldn't happen if local check passed)
     if (isNotFoundError(response)) {
       if (shouldOutputJson(options)) {
-        console.log(
-          JSON.stringify({
-            success: false,
-            error: "not_found",
-            message: `Prompt not found: ${promptId}`,
-          })
-        );
+        writeJsonError("not_found", `Prompt not found: ${promptId}`);
       } else {
         console.error(chalk.red(`Prompt not found: ${promptId}`));
       }
@@ -157,15 +132,13 @@ export async function saveCommand(
     const errorData = response.data as SaveErrorResponse | undefined;
     if (errorData?.code === "already_saved" || response.status === 409) {
       if (shouldOutputJson(options)) {
-        console.log(
-          JSON.stringify({
-            success: true,
-            already_saved: true,
-            prompt_id: promptId,
-            title: prompt.title,
-            message: `Already saved: ${prompt.title}`,
-          })
-        );
+        writeJson({
+          saved: true,
+          already_saved: true,
+          prompt_id: promptId,
+          title: prompt.title,
+          message: `Already saved: ${prompt.title}`,
+        });
       } else {
         console.log(chalk.yellow(`Already saved: ${prompt.title}`));
       }
@@ -174,13 +147,7 @@ export async function saveCommand(
 
     // Other errors
     if (shouldOutputJson(options)) {
-      console.log(
-        JSON.stringify({
-          success: false,
-          error: "save_failed",
-          message: response.error || "Failed to save prompt",
-        })
-      );
+      writeJsonError("save_failed", response.error || "Failed to save prompt");
     } else {
       console.error(chalk.red("Failed to save prompt:"), response.error);
     }
@@ -190,15 +157,12 @@ export async function saveCommand(
   // Success
   const data = response.data as SaveResponse;
   if (shouldOutputJson(options)) {
-    console.log(
-      JSON.stringify({
-        success: true,
-        saved: true,
-        prompt_id: data.prompt_id || promptId,
-        title: data.title || prompt.title,
-        saved_at: data.saved_at || new Date().toISOString(),
-      })
-    );
+    writeJson({
+      saved: true,
+      prompt_id: data.prompt_id || promptId,
+      title: data.title || prompt.title,
+      saved_at: data.saved_at || new Date().toISOString(),
+    });
   } else {
     console.log(chalk.green(`Saved: ${data.title || prompt.title}`));
   }

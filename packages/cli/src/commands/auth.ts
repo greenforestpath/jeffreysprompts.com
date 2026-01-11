@@ -23,6 +23,14 @@ interface LogoutOptions extends AuthCommandOptions {
   revoke?: boolean;
 }
 
+function writeJson(payload: Record<string, unknown>): void {
+  console.log(JSON.stringify(payload));
+}
+
+function writeJsonError(code: string, message: string, extra: Record<string, unknown> = {}): void {
+  writeJson({ error: true, code, message, ...extra });
+}
+
 /**
  * Show current user information
  */
@@ -31,14 +39,12 @@ export async function whoamiCommand(options: AuthCommandOptions = {}): Promise<v
   const envToken = process.env.JFP_TOKEN;
   if (envToken) {
     if (shouldOutputJson(options)) {
-      console.log(
-        JSON.stringify({
-          authenticated: true,
-          source: "environment",
-          message: "Authenticated via JFP_TOKEN environment variable",
-          note: "User details not available with token-based auth",
-        })
-      );
+      writeJson({
+        authenticated: true,
+        source: "environment",
+        message: "Authenticated via JFP_TOKEN environment variable",
+        note: "User details not available with token-based auth",
+      });
     } else {
       console.log(chalk.green("Authenticated via JFP_TOKEN environment variable"));
       console.log(chalk.dim("User details not available with token-based auth"));
@@ -51,12 +57,7 @@ export async function whoamiCommand(options: AuthCommandOptions = {}): Promise<v
 
   if (!creds) {
     if (shouldOutputJson(options)) {
-      console.log(
-        JSON.stringify({
-          authenticated: false,
-          message: "Not logged in",
-        })
-      );
+      writeJsonError("not_authenticated", "Not logged in", { authenticated: false });
     } else {
       console.log(chalk.yellow("Not logged in"));
       console.log(chalk.dim("Run 'jfp login' to sign in to JeffreysPrompts Premium"));
@@ -70,18 +71,27 @@ export async function whoamiCommand(options: AuthCommandOptions = {}): Promise<v
   const expiresIn = expired ? "expired" : formatTimeUntil(expiresAt);
 
   if (shouldOutputJson(options)) {
-    console.log(
-      JSON.stringify({
-        authenticated: !expired,
+    if (expired) {
+      writeJsonError("session_expired", "Session expired. Please run 'jfp login' again.", {
+        authenticated: false,
         email: creds.email,
         tier: creds.tier,
-        userId: creds.user_id,
-        expiresAt: creds.expires_at,
-        expiresIn: expired ? null : Math.floor((expiresAt.getTime() - Date.now()) / 1000),
-        expired,
+        user_id: creds.user_id,
+        expires_at: creds.expires_at,
+        expired: true,
+      });
+    } else {
+      writeJson({
+        authenticated: true,
+        email: creds.email,
+        tier: creds.tier,
+        user_id: creds.user_id,
+        expires_at: creds.expires_at,
+        expires_in: Math.floor((expiresAt.getTime() - Date.now()) / 1000),
+        expired: false,
         source: "credentials_file",
-      })
-    );
+      });
+    }
 
     if (expired) {
       process.exit(1);
@@ -122,14 +132,9 @@ export async function logoutCommand(options: LogoutOptions = {}): Promise<void> 
   const envToken = process.env.JFP_TOKEN;
   if (envToken) {
     if (shouldOutputJson(options)) {
-      console.log(
-        JSON.stringify({
-          success: false,
-          error: "env_token",
-          message: "Cannot logout when using JFP_TOKEN environment variable",
-          hint: "Unset the JFP_TOKEN environment variable to logout",
-        })
-      );
+      writeJsonError("env_token", "Cannot logout when using JFP_TOKEN environment variable", {
+        hint: "Unset the JFP_TOKEN environment variable to logout",
+      });
     } else {
       console.log(chalk.yellow("Cannot logout when using JFP_TOKEN environment variable"));
       console.log(chalk.dim("Unset the JFP_TOKEN environment variable to logout"));
@@ -142,12 +147,10 @@ export async function logoutCommand(options: LogoutOptions = {}): Promise<void> 
 
   if (!creds) {
     if (shouldOutputJson(options)) {
-      console.log(
-        JSON.stringify({
-          success: true,
-          message: "Not logged in (nothing to do)",
-        })
-      );
+      writeJson({
+        logged_out: true,
+        message: "Not logged in (nothing to do)",
+      });
     } else {
       console.log(chalk.dim("Not logged in (nothing to do)"));
     }
@@ -182,13 +185,12 @@ export async function logoutCommand(options: LogoutOptions = {}): Promise<void> 
   await clearCredentials();
 
   if (shouldOutputJson(options)) {
-    console.log(
-      JSON.stringify({
-        success: true,
-        message: `Logged out from ${email}`,
-        revoked: options.revoke ?? false,
-      })
-    );
+    writeJson({
+      logged_out: true,
+      email,
+      revoked: options.revoke ?? false,
+      message: `Logged out from ${email}`,
+    });
   } else {
     console.log(chalk.green(`Logged out from ${email}`));
     if (options.revoke) {

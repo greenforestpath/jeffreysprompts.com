@@ -132,20 +132,28 @@ const EXPECTED_ERROR_SCHEMA = {
 // List Command Golden Tests
 // ============================================================================
 
-describe("list --json golden tests", () => {
-  it("outputs an array of prompts", async () => {
-    await listCommand({ json: true });
-    const json = getJsonOutput<unknown[]>();
+interface ListResponse {
+  prompts: Record<string, unknown>[];
+  count: number;
+}
 
-    expect(Array.isArray(json)).toBe(true);
-    expect(json.length).toBeGreaterThan(0);
+describe("list --json golden tests", () => {
+  it("outputs wrapped response with prompts array", async () => {
+    await listCommand({ json: true });
+    const json = getJsonOutput<ListResponse>();
+
+    expect(json).toHaveProperty("prompts");
+    expect(json).toHaveProperty("count");
+    expect(Array.isArray(json.prompts)).toBe(true);
+    expect(json.prompts.length).toBeGreaterThan(0);
+    expect(json.count).toBe(json.prompts.length);
   });
 
   it("each prompt has all required fields", async () => {
     await listCommand({ json: true });
-    const json = getJsonOutput<Record<string, unknown>[]>();
+    const json = getJsonOutput<ListResponse>();
 
-    for (const prompt of json) {
+    for (const prompt of json.prompts) {
       for (const field of EXPECTED_PROMPT_SCHEMA.requiredFields) {
         expect(prompt).toHaveProperty(field);
       }
@@ -154,8 +162,8 @@ describe("list --json golden tests", () => {
 
   it("required fields have correct types", async () => {
     await listCommand({ json: true });
-    const json = getJsonOutput<Record<string, unknown>[]>();
-    const prompt = json[0];
+    const json = getJsonOutput<ListResponse>();
+    const prompt = json.prompts[0];
 
     // Verify types match expected
     expect(typeof prompt.id).toBe("string");
@@ -171,10 +179,10 @@ describe("list --json golden tests", () => {
 
   it("tags array contains only strings", async () => {
     await listCommand({ json: true });
-    const json = getJsonOutput<{ tags: unknown[] }[]>();
+    const json = getJsonOutput<ListResponse>();
 
-    for (const prompt of json) {
-      for (const tag of prompt.tags) {
+    for (const prompt of json.prompts) {
+      for (const tag of (prompt.tags as unknown[])) {
         expect(typeof tag).toBe("string");
       }
     }
@@ -193,40 +201,40 @@ describe("list --json golden tests", () => {
     ];
 
     await listCommand({ json: true });
-    const json = getJsonOutput<{ category: string }[]>();
+    const json = getJsonOutput<ListResponse>();
 
-    for (const prompt of json) {
+    for (const prompt of json.prompts) {
       expect(validCategories).toContain(prompt.category);
     }
   });
 
   it("version follows semver format", async () => {
     await listCommand({ json: true });
-    const json = getJsonOutput<{ version: string }[]>();
+    const json = getJsonOutput<ListResponse>();
 
     const semverRegex = /^\d+\.\d+\.\d+$/;
-    for (const prompt of json) {
-      expect(prompt.version).toMatch(semverRegex);
+    for (const prompt of json.prompts) {
+      expect(prompt.version as string).toMatch(semverRegex);
     }
   });
 
   it("id follows kebab-case format", async () => {
     await listCommand({ json: true });
-    const json = getJsonOutput<{ id: string }[]>();
+    const json = getJsonOutput<ListResponse>();
 
     const kebabCaseRegex = /^[a-z0-9]+(-[a-z0-9]+)*$/;
-    for (const prompt of json) {
-      expect(prompt.id).toMatch(kebabCaseRegex);
+    for (const prompt of json.prompts) {
+      expect(prompt.id as string).toMatch(kebabCaseRegex);
     }
   });
 
   it("created date is ISO 8601 format", async () => {
     await listCommand({ json: true });
-    const json = getJsonOutput<{ created: string }[]>();
+    const json = getJsonOutput<ListResponse>();
 
-    for (const prompt of json) {
+    for (const prompt of json.prompts) {
       // ISO 8601 date format check
-      const date = new Date(prompt.created);
+      const date = new Date(prompt.created as string);
       expect(date.toString()).not.toBe("Invalid Date");
     }
   });
@@ -234,10 +242,10 @@ describe("list --json golden tests", () => {
   it("filters preserve schema structure", async () => {
     // Test with category filter
     await listCommand({ json: true, category: "documentation" });
-    const filtered = getJsonOutput<Record<string, unknown>[]>();
+    const json = getJsonOutput<ListResponse>();
 
-    expect(filtered.length).toBeGreaterThan(0);
-    for (const prompt of filtered) {
+    expect(json.prompts.length).toBeGreaterThan(0);
+    for (const prompt of json.prompts) {
       for (const field of EXPECTED_PROMPT_SCHEMA.requiredFields) {
         expect(prompt).toHaveProperty(field);
       }
@@ -436,12 +444,14 @@ describe("error payload golden tests", () => {
     expect(json.results).toEqual([]);
   });
 
-  it("list with no matches returns empty array, not error", async () => {
+  it("list with no matches returns wrapped response with empty array", async () => {
     await listCommand({ json: true, category: "nonexistent-category" as never });
-    const json = getJsonOutput<unknown>();
+    const json = getJsonOutput<ListResponse>();
 
-    expect(Array.isArray(json)).toBe(true);
-    expect(json).toEqual([]);
+    expect(json).toHaveProperty("prompts");
+    expect(Array.isArray(json.prompts)).toBe(true);
+    expect(json.prompts).toEqual([]);
+    expect(json.count).toBe(0);
   });
 });
 
