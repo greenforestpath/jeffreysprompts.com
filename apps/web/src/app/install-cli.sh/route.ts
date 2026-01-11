@@ -202,10 +202,10 @@ main() {
         echo "  Add it to your shell config:"
         echo ""
         echo "    # For bash (~/.bashrc):"
-        echo "    export PATH=\"\$PATH:\$install_dir\""
+        printf '    export PATH="$PATH:%s"\\n' "$install_dir"
         echo ""
         echo "    # For zsh (~/.zshrc):"
-        echo "    export PATH=\"\$PATH:\$install_dir\""
+        printf '    export PATH="$PATH:%s"\\n' "$install_dir"
         echo ""
         ;;
     esac
