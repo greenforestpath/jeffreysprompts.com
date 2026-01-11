@@ -265,19 +265,26 @@ test.describe("Safe Area Handling", () => {
     });
 
     await logger.step("check for safe area inset usage", async () => {
-      // Check if bottom tab bar uses safe-area-inset-bottom
-      const hasSafeArea = await page.evaluate(() => {
+      // Verify bottom tab bar exists and is positioned for safe area handling
+      // Note: env(safe-area-inset-bottom) evaluates to 0 in non-iOS test environments,
+      // so we verify the element is present and has bottom positioning
+      const tabBarInfo = await page.evaluate(() => {
         const tabBar = document.querySelector("[data-tab-bar]");
-        if (!tabBar) return false;
+        if (!tabBar) return null;
 
         const style = window.getComputedStyle(tabBar);
-        const paddingBottom = style.paddingBottom;
-
-        // Should have some padding for safe area
-        return true; // The CSS should include env(safe-area-inset-bottom)
+        return {
+          exists: true,
+          position: style.position,
+          bottom: style.bottom,
+          paddingBottom: style.paddingBottom,
+        };
       });
 
-      expect(hasSafeArea).toBe(true);
+      expect(tabBarInfo).not.toBeNull();
+      expect(tabBarInfo!.exists).toBe(true);
+      // Tab bar should be fixed or sticky at the bottom
+      expect(["fixed", "sticky"]).toContain(tabBarInfo!.position);
     });
   });
 });

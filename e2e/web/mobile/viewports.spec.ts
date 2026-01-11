@@ -1,7 +1,6 @@
 import { test, expect } from "../../lib/playwright-logger";
 import {
   VIEWPORTS,
-  setViewport,
   hasHorizontalOverflow,
   areCardsStacked,
   isHamburgerMenuVisible,
