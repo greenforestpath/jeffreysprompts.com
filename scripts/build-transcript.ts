@@ -10,7 +10,7 @@
  */
 
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync, mkdirSync } from "fs";
-import { join, dirname, basename } from "path";
+import { join, dirname } from "path";
 
 // ============================================================================
 // Types (matching lib/transcript/types.ts)
