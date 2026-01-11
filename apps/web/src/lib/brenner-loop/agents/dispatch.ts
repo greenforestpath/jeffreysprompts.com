@@ -32,6 +32,7 @@ export function getFallbackContent(): string {
   return "";
 }
 
-export function getDispatchStatus(_dispatch: AgentDispatch): string {
+export function getDispatchStatus(dispatch: AgentDispatch): string {
+  void dispatch;
   return "";
 }

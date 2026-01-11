@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState, useSyncExternalStore } from "react";
 
 /**
  * Haptic feedback patterns for different interaction types.
@@ -62,6 +62,21 @@ const patternDurations: Record<HapticPattern, number | number[]> = {
   pull_refresh: [10, 30, 15, 30, 20], // Progressive feedback
 };
 
+function getReducedMotionPreference(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function subscribeToReducedMotion(callback: () => void) {
+  if (typeof window === "undefined") {
+    return () => undefined;
+  }
+  const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const handler = () => callback();
+  mediaQuery.addEventListener("change", handler);
+  return () => mediaQuery.removeEventListener("change", handler);
+}
+
 /**
  * useHaptic - Hook for triggering haptic feedback on mobile devices.
  *
@@ -88,21 +103,11 @@ export function useHaptic(options: HapticOptions = {}) {
   const [isSupported] = useState(
     () => typeof navigator !== "undefined" && "vibrate" in navigator
   );
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  });
-
-  // Watch reduced motion preference changes
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const handler = (e: MediaQueryListEvent) => {
-      setPrefersReducedMotion(e.matches);
-    };
-    mediaQuery.addEventListener("change", handler);
-    return () => mediaQuery.removeEventListener("change", handler);
-  }, []);
+  const prefersReducedMotion = useSyncExternalStore(
+    subscribeToReducedMotion,
+    getReducedMotionPreference,
+    () => false
+  );
 
   /**
    * Trigger haptic feedback with the specified pattern.

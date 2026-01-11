@@ -9,7 +9,7 @@
 
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useFilterState, type FilterState } from "./useFilterState";
+import { useFilterState } from "./useFilterState";
 import type { PromptCategory } from "@jeffreysprompts/core/prompts/types";
 
 // Mock Next.js navigation hooks

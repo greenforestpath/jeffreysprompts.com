@@ -7,10 +7,10 @@
  * @see @/components/theme-provider.tsx
  */
 
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ThemeProvider, useTheme, type Theme } from "./theme-provider";
+import { ThemeProvider, useTheme } from "./theme-provider";
 import type { ReactNode } from "react";
 
 // Mock matchMedia

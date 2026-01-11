@@ -20,12 +20,10 @@ import {
   slideInRight,
   slideInLeft,
   blurIn,
-  staggerNormal,
   cardHover,
   buttonHover,
   buttonTap,
   iconHover,
-  viewport,
   transitions,
 } from "./motion-variants";
 import { useReducedMotion, useParallax, useIntersectionAnimation } from "./hooks";

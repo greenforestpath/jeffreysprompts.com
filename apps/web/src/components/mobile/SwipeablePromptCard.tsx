@@ -72,13 +72,13 @@ export function SwipeablePromptCard({
 
   // Cleanup timers on unmount
   useEffect(() => {
+    const timers = actionTimers.current;
     return () => {
       // Clear long-press timer
       if (longPressTimer.current) {
         clearTimeout(longPressTimer.current);
       }
       // Clear all action timers
-      const timers = actionTimers.current;
       timers.forEach((timer) => clearTimeout(timer));
       timers.clear();
     };

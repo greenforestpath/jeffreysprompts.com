@@ -144,6 +144,7 @@ interface PlanningRevisionItem {
   label: string;
   implemented: boolean;
   category: "architecture" | "quality" | "feature";
+  stepId: string;
 }
 
 const planningChanges: PlanningRevisionItem[] = [
@@ -152,24 +153,28 @@ const planningChanges: PlanningRevisionItem[] = [
     label: "Introduce shared core package for registry + search",
     implemented: true,
     category: "architecture",
+    stepId: "section-1",
   },
   {
     id: "bm25-search",
     label: "Replace embeddings with BM25 relevance scoring",
     implemented: true,
     category: "architecture",
+    stepId: "section-2",
   },
   {
     id: "cac-parser",
     label: "Adopt CAC for CLI parsing + help output",
     implemented: true,
     category: "architecture",
+    stepId: "section-4",
   },
   {
     id: "prompt-variables",
     label: "Ship prompt templating + variable fill flow",
     implemented: true,
     category: "feature",
+    stepId: "section-4",
   },
 ];
 
@@ -179,24 +184,28 @@ const planningRevisions: PlanningRevisionItem[] = [
     label: "Hash-based skill manifest to prevent overwrites",
     implemented: true,
     category: "quality",
+    stepId: "section-4",
   },
   {
     id: "yaml-safe",
     label: "YAML-safe frontmatter + generator markers",
     implemented: true,
     category: "quality",
+    stepId: "section-6",
   },
   {
     id: "health-endpoints",
     label: "Health endpoints for monitoring and CI checks",
     implemented: true,
     category: "quality",
+    stepId: "section-6",
   },
   {
     id: "pwa",
     label: "PWA + offline mode as future work",
     implemented: false,
     category: "feature",
+    stepId: "section-5",
   },
 ];
 
@@ -413,23 +422,30 @@ export function MultiModelFeedback() {
             </div>
             <div className="space-y-2">
               {planningChanges.map((item) => (
-                <a
+                <div
                   key={item.id}
-                  href={`#feedback-${item.id}`}
                   className={cn(
-                    "flex items-center gap-2 rounded-xl border px-3 py-2 text-sm",
+                    "flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2 text-sm",
                     item.implemented
                       ? "border-emerald-200 bg-emerald-50/70 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-950/40 dark:text-emerald-200"
                       : "border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-300"
                   )}
                 >
-                  {item.implemented ? (
-                    <CheckCircle2 className="h-4 w-4" />
-                  ) : (
-                    <Circle className="h-4 w-4" />
-                  )}
-                  <span>{item.label}</span>
-                </a>
+                  <a href={`#feedback-${item.id}`} className="flex items-center gap-2">
+                    {item.implemented ? (
+                      <CheckCircle2 className="h-4 w-4" />
+                    ) : (
+                      <Circle className="h-4 w-4" />
+                    )}
+                    <span>{item.label}</span>
+                  </a>
+                  <a
+                    href={`#guide-${item.stepId}`}
+                    className="rounded-full border border-violet-200 px-2 py-0.5 text-xs text-violet-600 dark:border-violet-500/30 dark:text-violet-300"
+                  >
+                    Guide step
+                  </a>
+                </div>
               ))}
             </div>
           </div>
@@ -441,23 +457,30 @@ export function MultiModelFeedback() {
             </div>
             <div className="space-y-2">
               {planningRevisions.map((item) => (
-                <a
+                <div
                   key={item.id}
-                  href={`#feedback-${item.id}`}
                   className={cn(
-                    "flex items-center gap-2 rounded-xl border px-3 py-2 text-sm",
+                    "flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2 text-sm",
                     item.implemented
                       ? "border-blue-200 bg-blue-50/70 text-blue-700 dark:border-blue-500/30 dark:bg-blue-950/40 dark:text-blue-200"
                       : "border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-300"
                   )}
                 >
-                  {item.implemented ? (
-                    <CheckCircle2 className="h-4 w-4" />
-                  ) : (
-                    <Circle className="h-4 w-4" />
-                  )}
-                  <span>{item.label}</span>
-                </a>
+                  <a href={`#feedback-${item.id}`} className="flex items-center gap-2">
+                    {item.implemented ? (
+                      <CheckCircle2 className="h-4 w-4" />
+                    ) : (
+                      <Circle className="h-4 w-4" />
+                    )}
+                    <span>{item.label}</span>
+                  </a>
+                  <a
+                    href={`#guide-${item.stepId}`}
+                    className="rounded-full border border-violet-200 px-2 py-0.5 text-xs text-violet-600 dark:border-violet-500/30 dark:text-violet-300"
+                  >
+                    Guide step
+                  </a>
+                </div>
               ))}
             </div>
           </div>

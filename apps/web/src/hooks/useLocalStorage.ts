@@ -44,6 +44,7 @@ export function useLocalStorage<T>(
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialValueRef = useRef<T>(initialValue);
   const latestValueRef: MutableRefObject<T> = useRef<T>(initialValue);
+  const latestSerializedRef = useRef<string | null>(null);
   const latestKeyRef = useRef<string>(key);
   const hasLatestValueRef = useRef(false);
   const prevKeyRef = useRef<string>(key);
@@ -71,6 +72,7 @@ export function useLocalStorage<T>(
     prevKeyRef.current = key;
     latestKeyRef.current = key;
     hasLatestValueRef.current = false;
+    latestSerializedRef.current = null;
   }, [key]);
 
   const notifyListeners = useCallback(() => {
@@ -84,12 +86,32 @@ export function useLocalStorage<T>(
     if (typeof window === "undefined") return initialValueRef.current;
     try {
       const item = window.localStorage.getItem(key);
-      if (item !== null) {
-        return JSON.parse(item) as T;
+      if (item === null) {
+        latestSerializedRef.current = null;
+        latestValueRef.current = initialValueRef.current;
+        latestKeyRef.current = key;
+        hasLatestValueRef.current = true;
+        return latestValueRef.current;
       }
-      return initialValueRef.current;
+      if (
+        hasLatestValueRef.current &&
+        latestKeyRef.current === key &&
+        latestSerializedRef.current === item
+      ) {
+        return latestValueRef.current;
+      }
+      const parsed = JSON.parse(item) as T;
+      latestSerializedRef.current = item;
+      latestValueRef.current = parsed;
+      latestKeyRef.current = key;
+      hasLatestValueRef.current = true;
+      return parsed;
     } catch (error) {
       console.warn(`Error reading localStorage key "${key}":`, error);
+      latestSerializedRef.current = null;
+      latestValueRef.current = initialValueRef.current;
+      latestKeyRef.current = key;
+      hasLatestValueRef.current = true;
       return initialValueRef.current;
     }
   }, [key]);
@@ -102,7 +124,21 @@ export function useLocalStorage<T>(
       }
       const handleStorage = (event: StorageEvent) => {
         if (event.key === key) {
-          hasLatestValueRef.current = false;
+          if (event.newValue === null) {
+            latestSerializedRef.current = null;
+            latestValueRef.current = initialValueRef.current;
+          } else {
+            try {
+              latestSerializedRef.current = event.newValue;
+              latestValueRef.current = JSON.parse(event.newValue) as T;
+            } catch (error) {
+              console.warn(`Error reading localStorage key "${key}":`, error);
+              latestSerializedRef.current = null;
+              latestValueRef.current = initialValueRef.current;
+            }
+          }
+          latestKeyRef.current = key;
+          hasLatestValueRef.current = true;
           listener();
         }
       };
@@ -125,9 +161,16 @@ export function useLocalStorage<T>(
   const setValue = useCallback(
     (value: T | ((prev: T) => T)) => {
       const valueToStore = value instanceof Function ? value(readValue()) : value;
+      let serializedValue: string | null = null;
+      try {
+        serializedValue = JSON.stringify(valueToStore);
+      } catch (error) {
+        console.warn(`Error setting localStorage key "${key}":`, error);
+      }
       latestValueRef.current = valueToStore;
       latestKeyRef.current = key;
       hasLatestValueRef.current = true;
+      latestSerializedRef.current = serializedValue;
 
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
@@ -135,7 +178,9 @@ export function useLocalStorage<T>(
 
       debounceRef.current = setTimeout(() => {
         try {
-          window.localStorage.setItem(key, JSON.stringify(valueToStore));
+          if (serializedValue !== null) {
+            window.localStorage.setItem(key, serializedValue);
+          }
         } catch (error) {
           console.warn(`Error setting localStorage key "${key}":`, error);
         }
@@ -156,6 +201,7 @@ export function useLocalStorage<T>(
       latestValueRef.current = initialValueRef.current;
       latestKeyRef.current = key;
       hasLatestValueRef.current = true;
+      latestSerializedRef.current = null;
       notifyListeners();
     } catch (error) {
       console.warn(`Error removing localStorage key "${key}":`, error);
@@ -172,7 +218,9 @@ export function useLocalStorage<T>(
         // Use ref to get the actual latest value, not a stale closure
         if (hasLatestValueRef.current) {
           try {
-            window.localStorage.setItem(key, JSON.stringify(latestValueRef.current));
+            const serialized = JSON.stringify(latestValueRef.current);
+            latestSerializedRef.current = serialized;
+            window.localStorage.setItem(key, serialized);
           } catch {
             // Ignore errors on cleanup
           }
