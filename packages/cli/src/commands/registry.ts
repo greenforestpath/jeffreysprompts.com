@@ -4,6 +4,7 @@ import { existsSync, statSync, readFileSync } from "fs";
 import chalk from "chalk";
 import boxen from "boxen";
 import { loadConfig } from "../lib/config";
+import { getAccessToken, isExpired, loadCredentials } from "../lib/credentials";
 import { refreshRegistry, type RegistryMeta } from "../lib/registry-loader";
 import { shouldOutputJson } from "../lib/utils";
 
@@ -42,12 +43,73 @@ function formatTtl(seconds: number): string {
   return `${Math.floor(seconds / 3600)}h`;
 }
 
+interface AuthStatus {
+  authenticated: boolean;
+  source: "credentials_file" | "environment" | "none";
+  email?: string;
+  tier?: string;
+  expiresAt?: string;
+  expiresInSeconds?: number;
+  expired?: boolean;
+}
+
+function formatExpiresIn(expiresAt?: string): string {
+  if (!expiresAt) return "unknown";
+  const date = new Date(expiresAt);
+  if (isNaN(date.getTime())) return "unknown";
+  const diffMs = date.getTime() - Date.now();
+  if (diffMs <= 0) return "expired";
+  const totalMinutes = Math.round(diffMs / 60000);
+  if (totalMinutes < 60) return `${totalMinutes}m`;
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (minutes === 0) return `${hours}h`;
+  return `${hours}h ${minutes}m`;
+}
+
+async function getAuthStatus(): Promise<AuthStatus> {
+  const envToken = process.env.JFP_TOKEN;
+  if (envToken) {
+    return {
+      authenticated: true,
+      source: "environment",
+    };
+  }
+
+  // Trigger refresh if needed (updates credentials file on success)
+  await getAccessToken();
+  const creds = await loadCredentials();
+  if (!creds) {
+    return {
+      authenticated: false,
+      source: "none",
+    };
+  }
+
+  const expired = isExpired(creds);
+  const expiresAt = creds.expires_at;
+  const expiresInSeconds = expiresAt
+    ? Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000))
+    : undefined;
+
+  return {
+    authenticated: !expired,
+    source: "credentials_file",
+    email: creds.email,
+    tier: creds.tier,
+    expiresAt,
+    expiresInSeconds,
+    expired,
+  };
+}
+
 /**
  * Show registry status - cache version, timestamps, settings
  */
-export function statusCommand(options: StatusOptions) {
+export async function statusCommand(options: StatusOptions) {
   const config = loadConfig();
   const meta = readMetaFile(config.registry.metaPath);
+  const authStatus = await getAuthStatus();
 
   // Check cache file existence and size
   let cacheSize = 0;
@@ -68,6 +130,7 @@ export function statusCommand(options: StatusOptions) {
 
   if (shouldOutputJson(options)) {
     console.log(JSON.stringify({
+      auth: authStatus,
       cache: {
         exists: cacheExists,
         path: config.registry.cachePath,
@@ -125,6 +188,26 @@ export function statusCommand(options: StatusOptions) {
   content += "\n" + chalk.green("Local Prompts:") + "\n";
   content += `  Enabled: ${config.localPrompts.enabled ? chalk.green("yes") : chalk.dim("no")}\n`;
   content += `  Directory: ${chalk.dim(config.localPrompts.dir)}\n`;
+
+  content += "\n" + chalk.green("Auth:") + "\n";
+  if (!authStatus.authenticated) {
+    const reason = authStatus.expired ? "Session expired" : "Not logged in";
+    content += `  Status: ${chalk.yellow(reason)}\n`;
+  } else {
+    content += `  Status: ${chalk.green("Authenticated")}\n`;
+    if (authStatus.email) {
+      content += `  Email: ${authStatus.email}\n`;
+    }
+    if (authStatus.tier) {
+      content += `  Tier: ${authStatus.tier}\n`;
+    }
+    if (authStatus.expiresAt) {
+      content += `  Expires: ${formatExpiresIn(authStatus.expiresAt)} (${authStatus.expiresAt})\n`;
+    }
+    if (authStatus.source === "environment") {
+      content += `  Source: ${chalk.dim("JFP_TOKEN")}\n`;
+    }
+  }
 
   console.log(boxen(content, {
     padding: 1,

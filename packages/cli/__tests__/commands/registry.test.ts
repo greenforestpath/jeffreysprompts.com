@@ -103,8 +103,8 @@ afterEach(() => {
 });
 
 describe("statusCommand", () => {
-  it("outputs JSON with cache status when no cache exists", () => {
-    statusCommand({ json: true });
+  it("outputs JSON with cache status when no cache exists", async () => {
+    await statusCommand({ json: true });
     const payload = JSON.parse(output.join(""));
     expect(payload.cache.exists).toBe(false);
     expect(payload.settings).toHaveProperty("remoteUrl");
@@ -112,7 +112,7 @@ describe("statusCommand", () => {
     expect(payload.settings).toHaveProperty("cacheTtl");
   });
 
-  it("outputs JSON with cache info when cache exists", () => {
+  it("outputs JSON with cache info when cache exists", async () => {
     // Create cache directory and files
     const configDir = getConfigDir();
     mkdirSync(configDir, { recursive: true });
@@ -126,7 +126,7 @@ describe("statusCommand", () => {
     writeFileSync(getCachePath(), JSON.stringify({ prompts: [], version: "1.0.0" }));
     writeFileSync(getMetaPath(), JSON.stringify(meta));
 
-    statusCommand({ json: true });
+    await statusCommand({ json: true });
     const payload = JSON.parse(output.join(""));
     expect(payload.cache.exists).toBe(true);
     expect(payload).toHaveProperty("meta");
@@ -134,8 +134,8 @@ describe("statusCommand", () => {
     expect(payload).toHaveProperty("localPrompts");
   });
 
-  it("shows correct cache path", () => {
-    statusCommand({ json: true });
+  it("shows correct cache path", async () => {
+    await statusCommand({ json: true });
     const payload = JSON.parse(output.join(""));
     expect(payload.cache.path).toContain(testDir);
     expect(payload.cache.path).toContain(".config/jfp/registry.json");
