@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronDown,
@@ -34,7 +34,7 @@ function TimelineProgress({
 }) {
   return (
     <div className="hidden lg:flex flex-col items-center gap-1 sticky top-24 mr-6">
-      {sections.map((section, idx) => (
+      {sections.map((section) => (
         <div
           key={section.id}
           className={cn(
@@ -162,13 +162,26 @@ function SectionHeader({
 // Individual message component
 function MessageCard({ message }: { message: TranscriptMessage }) {
   const [copied, setCopied] = useState(false);
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isUser = message.type === "user";
   const hasTools = message.toolCalls && message.toolCalls.length > 0;
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(message.content);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (copyTimeoutRef.current) {
+      clearTimeout(copyTimeoutRef.current);
+    }
+    copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
   };
 
   // Truncate very long content
@@ -324,7 +337,6 @@ export function EnhancedTimeline({
     new Set([sections[0]?.id])
   );
   const [searchQuery, setSearchQuery] = useState("");
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const toggleSection = (id: string) => {
     setExpandedSections((prev) => {
@@ -338,13 +350,32 @@ export function EnhancedTimeline({
     });
   };
 
-  // Get messages for a section
+  // Get messages for a section, filtered by search query
   const getSectionMessages = (section: TranscriptSection) => {
-    return messages.slice(section.startIndex, section.endIndex + 1);
+    const sectionMessages = messages.slice(section.startIndex, section.endIndex + 1);
+
+    if (!searchQuery.trim()) {
+      return sectionMessages;
+    }
+
+    const query = searchQuery.toLowerCase();
+    return sectionMessages.filter((msg) =>
+      msg.content.toLowerCase().includes(query) ||
+      msg.toolCalls?.some((tc) =>
+        tc.name.toLowerCase().includes(query) ||
+        (typeof tc.input?.file_path === "string" && tc.input.file_path.toLowerCase().includes(query))
+      )
+    );
   };
 
+  // Check if any section has matching messages (for UI feedback)
+  const hasSearchResults = useMemo(() => {
+    if (!searchQuery.trim()) return true;
+    return sections.some((section) => getSectionMessages(section).length > 0);
+  }, [searchQuery, sections, messages]);
+
   return (
-    <div ref={containerRef} className="relative" id="timeline">
+    <div className="relative" id="timeline">
       {/* Section title */}
       <div className="text-center mb-10">
         <h2 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-3">
@@ -376,54 +407,70 @@ export function EnhancedTimeline({
         />
       </div>
 
-      {/* Main layout with progress indicator */}
-      <div className="flex">
-        <TimelineProgress
-          sections={sections}
-          expandedSections={expandedSections}
-        />
-
-        {/* Sections */}
-        <div className="flex-1 space-y-4">
-          {sections.map((section, index) => {
-            const sectionMessages = getSectionMessages(section);
-            const isExpanded = expandedSections.has(section.id);
-
-            return (
-              <motion.div
-                key={section.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <SectionHeader
-                  section={section}
-                  index={index}
-                  isExpanded={isExpanded}
-                  onToggle={() => toggleSection(section.id)}
-                  messageCount={sectionMessages.length}
-                />
-
-                <AnimatePresence>
-                  {isExpanded && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="mt-2 ml-6 border-l-2 border-violet-200 dark:border-violet-800">
-                        <MessageList messages={sectionMessages} />
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            );
-          })}
+      {/* No search results message */}
+      {searchQuery.trim() && !hasSearchResults && (
+        <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">
+          <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
+          <p className="text-lg font-medium">No messages found</p>
+          <p className="text-sm">Try a different search term</p>
         </div>
-      </div>
+      )}
+
+      {/* Main layout with progress indicator */}
+      {(hasSearchResults || !searchQuery.trim()) && (
+        <div className="flex">
+          <TimelineProgress
+            sections={sections}
+            expandedSections={expandedSections}
+          />
+
+          {/* Sections */}
+          <div className="flex-1 space-y-4">
+            {sections.map((section, index) => {
+              const sectionMessages = getSectionMessages(section);
+              const isExpanded = expandedSections.has(section.id);
+
+              // Hide sections with no matching messages when searching
+              if (searchQuery.trim() && sectionMessages.length === 0) {
+                return null;
+              }
+
+              return (
+                <motion.div
+                  key={section.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <SectionHeader
+                    section={section}
+                    index={index}
+                    isExpanded={isExpanded}
+                    onToggle={() => toggleSection(section.id)}
+                    messageCount={sectionMessages.length}
+                  />
+
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="mt-2 ml-6 border-l-2 border-violet-200 dark:border-violet-800">
+                          <MessageList messages={sectionMessages} />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

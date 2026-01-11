@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useRef } from "react";
 import { motion, useInView, useMotionValue, useTransform } from "framer-motion";
 import {
   Clock,
@@ -30,6 +30,17 @@ interface AnimatedStatProps {
   glowColor: string;
   index: number;
   inView: boolean;
+}
+
+interface StatItem {
+  icon: typeof Clock;
+  label: string;
+  value: number;
+  suffix?: string;
+  prefix?: string;
+  detail?: string;
+  gradient: string;
+  glowColor: string;
 }
 
 function AnimatedStat({
@@ -184,17 +195,6 @@ export function EnhancedStats({ transcript }: EnhancedStatsProps) {
 
   // Parse duration string to get numeric value
   const durationHours = parseFloat(duration.replace(/[^0-9.]/g, "")) || 8;
-
-  interface StatItem {
-    icon: typeof Clock;
-    label: string;
-    value: number;
-    suffix?: string;
-    prefix?: string;
-    detail?: string;
-    gradient: string;
-    glowColor: string;
-  }
 
   const statItems: StatItem[] = [
     {
