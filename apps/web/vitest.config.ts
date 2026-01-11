@@ -17,5 +17,22 @@ export default defineConfig({
     alias: {
       "framer-motion": path.resolve(__dirname, "./src/__mocks__/framer-motion.tsx"),
     },
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "json", "html"],
+      reportsDirectory: "./coverage",
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: [
+        "src/**/*.test.{ts,tsx}",
+        "src/**/__mocks__/**",
+        "src/types/**",
+      ],
+      thresholds: {
+        lines: 50,
+        branches: 50,
+        functions: 50,
+        statements: 50,
+      },
+    },
   },
 });

@@ -11,7 +11,8 @@
     "lint:ox": "oxlint",
     "lint:all": "eslint && oxlint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@jeffreysprompts/core": "workspace:*",
@@ -48,6 +49,7 @@
     "@types/react-dom": "^19",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@vitejs/plugin-react": "^5.1.2",
+    "@vitest/coverage-v8": "^4.0.16",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
     "happy-dom": "^20.1.0",
