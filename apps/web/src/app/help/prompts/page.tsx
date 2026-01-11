@@ -1,11 +1,8 @@
-import type { Metadata } from "next";
-import { HelpLayout, helpCategories, ArticleCard } from "@/components/help/HelpLayout";
-import { Sparkles } from "lucide-react";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Prompts & Collections - Help Center",
-  description: "Learn how to manage, organize, and export prompts on JeffreysPrompts.com.",
-};
+import { HelpLayout, ArticleCard } from "@/components/help/HelpLayout";
+import { helpCategories } from "@/lib/help-categories";
+import { Sparkles } from "lucide-react";
 
 export default function PromptsPage() {
   const category = helpCategories.find((c) => c.slug === "prompts");

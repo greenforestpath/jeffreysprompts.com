@@ -1,11 +1,8 @@
-import type { Metadata } from "next";
-import { HelpLayout, helpCategories, ArticleCard } from "@/components/help/HelpLayout";
-import { Terminal } from "lucide-react";
+"use client";
 
-export const metadata: Metadata = {
-  title: "CLI Tool - Help Center",
-  description: "Learn how to use the jfp command-line interface for accessing prompts from your terminal.",
-};
+import { HelpLayout, ArticleCard } from "@/components/help/HelpLayout";
+import { helpCategories } from "@/lib/help-categories";
+import { Terminal } from "lucide-react";
 
 export default function CLIPage() {
   const category = helpCategories.find((c) => c.slug === "cli");

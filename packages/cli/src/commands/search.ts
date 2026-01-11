@@ -170,13 +170,14 @@ export async function searchCommand(query: string, options: SearchOptions): Prom
   const isPremium = creds?.tier === "premium";
 
   // Determine search mode
-  const searchMine = options.mine || false;
-  const searchSaved = options.saved || false;
-  const searchAll = options.all || false;
-  const wantsLocalOnly = options.local || false;
+  const searchMine = options.mine === true;
+  const searchSaved = options.saved === true;
+  const wantsLocalOnly = options.local === true;
+  const searchAllExplicit = options.all === true;
+  const searchAll = searchAllExplicit || (isPremium && !searchMine && !searchSaved && !wantsLocalOnly);
 
   // If user requests personal search without being logged in
-  if ((searchMine || searchSaved) && !loggedIn) {
+  if ((searchMine || searchSaved || searchAllExplicit) && !loggedIn) {
     if (shouldOutputJson(options)) {
       writeJsonError("not_authenticated", "You must be logged in to search personal prompts", {
         hint: "Run 'jfp login' to sign in",
@@ -189,7 +190,7 @@ export async function searchCommand(query: string, options: SearchOptions): Prom
   }
 
   // If user requests personal search without premium tier
-  if ((searchMine || searchSaved) && loggedIn && !isPremium) {
+  if ((searchMine || searchSaved || searchAllExplicit) && loggedIn && !isPremium) {
     if (shouldOutputJson(options)) {
       writeJsonError("premium_required", "Personal prompt search requires a premium subscription", {
         hint: "Visit jeffreysprompts.com/premium to upgrade",
@@ -202,7 +203,8 @@ export async function searchCommand(query: string, options: SearchOptions): Prom
   }
 
   // Determine what to search
-  const shouldSearchLocal = wantsLocalOnly || (!searchMine && !searchSaved) || searchAll;
+  const shouldSearchLocal =
+    wantsLocalOnly || searchAll || (!searchMine && !searchSaved && !searchAll);
   const shouldSearchPersonal = isPremium && (searchMine || searchSaved || searchAll) && !wantsLocalOnly;
 
   let localResults: MergedSearchResult[] = [];
@@ -223,6 +225,15 @@ export async function searchCommand(query: string, options: SearchOptions): Prom
     });
     personalResults = results;
     personalError = error;
+  }
+
+  if (personalError === "auth_expired") {
+    if (shouldOutputJson(options)) {
+      writeJsonError("not_authenticated", "Session expired. Please run 'jfp login' again.");
+    } else {
+      console.log(chalk.yellow("Session expired. Please run 'jfp login' again."));
+    }
+    process.exit(1);
   }
 
   // Merge results

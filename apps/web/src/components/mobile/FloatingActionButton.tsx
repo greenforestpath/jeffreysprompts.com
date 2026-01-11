@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Copy, ShoppingBag, Search, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -250,19 +250,36 @@ export function CopyFAB({ onCopy }: { onCopy: () => void }) {
   const haptic = useHaptic();
   const [copied, setCopied] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+    return () => {
+      window.removeEventListener("resize", checkMobile);
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) {
+        clearTimeout(resetTimerRef.current);
+      }
+    };
   }, []);
 
   const handleCopy = useCallback(() => {
     onCopy();
     haptic.success();
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (resetTimerRef.current) {
+      clearTimeout(resetTimerRef.current);
+    }
+    resetTimerRef.current = setTimeout(() => {
+      setCopied(false);
+      resetTimerRef.current = null;
+    }, 2000);
   }, [onCopy, haptic]);
 
   if (!isMobile) return null;

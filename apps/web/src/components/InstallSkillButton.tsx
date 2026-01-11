@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Download, Check, Terminal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
@@ -73,6 +73,15 @@ export function InstallSkillButton({
 }: InstallSkillButtonProps) {
   const [copied, setCopied] = useState(false);
   const { success, error } = useToast();
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) {
+        clearTimeout(resetTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleCopy = useCallback(async () => {
     try {
@@ -85,7 +94,13 @@ export function InstallSkillButton({
         4000
       );
       trackEvent("skill_install", { id: prompt.id, source: "install_button", project });
-      setTimeout(() => setCopied(false), 2000);
+      if (resetTimerRef.current) {
+        clearTimeout(resetTimerRef.current);
+      }
+      resetTimerRef.current = setTimeout(() => {
+        setCopied(false);
+        resetTimerRef.current = null;
+      }, 2000);
     } catch {
       error("Failed to copy", "Please try again");
     }
@@ -135,6 +150,15 @@ export function InstallAllSkillsButton({
 }: InstallAllSkillsButtonProps) {
   const [copied, setCopied] = useState(false);
   const { success, error } = useToast();
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) {
+        clearTimeout(resetTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleCopy = useCallback(async () => {
     try {
@@ -176,7 +200,13 @@ export function InstallAllSkillsButton({
         source: "install_all_button",
         project,
       });
-      setTimeout(() => setCopied(false), 2000);
+      if (resetTimerRef.current) {
+        clearTimeout(resetTimerRef.current);
+      }
+      resetTimerRef.current = setTimeout(() => {
+        setCopied(false);
+        resetTimerRef.current = null;
+      }, 2000);
     } catch {
       error("Failed to copy", "Please try again");
     }

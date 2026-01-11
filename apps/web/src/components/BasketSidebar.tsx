@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import JSZip from "jszip";
 import {
   X,
@@ -30,6 +30,7 @@ export function BasketSidebar({ isOpen, onClose }: BasketSidebarProps) {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const basketPrompts = useMemo(
     () => items.map((id) => getPrompt(id)).filter((p): p is Prompt => p !== undefined),
@@ -45,6 +46,14 @@ export function BasketSidebar({ isOpen, onClose }: BasketSidebarProps) {
       removeItem(id);
     }
   }, [items, basketPrompts.length, removeItem]);
+
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) {
+        clearTimeout(resetTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleDownloadMarkdown = async () => {
       if (basketPrompts.length === 0) return;
@@ -128,7 +137,13 @@ export function BasketSidebar({ isOpen, onClose }: BasketSidebarProps) {
         message: "Install command copied to clipboard",
       });
       trackEvent("skill_install", { count: basketPrompts.length, source: "basket" });
-      setTimeout(() => setCopied(false), 2000);
+      if (resetTimerRef.current) {
+        clearTimeout(resetTimerRef.current);
+      }
+      resetTimerRef.current = setTimeout(() => {
+        setCopied(false);
+        resetTimerRef.current = null;
+      }, 2000);
     } catch {
       toast({
         title: "Copy failed",

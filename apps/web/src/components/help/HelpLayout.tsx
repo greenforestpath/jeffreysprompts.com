@@ -5,59 +5,23 @@ import { usePathname } from "next/navigation";
 import {
   HelpCircle,
   BookOpen,
-  Terminal,
   Sparkles,
-  CreditCard,
-  Settings,
+  Terminal,
   ChevronRight,
   Search,
   ExternalLink,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { helpCategories } from "@/lib/help-categories";
 
-interface HelpCategory {
-  slug: string;
-  title: string;
-  icon: React.ElementType;
-  description: string;
-  articles: { slug: string; title: string }[];
-}
+export { helpCategories };
 
-export const helpCategories: HelpCategory[] = [
-  {
-    slug: "getting-started",
-    title: "Getting Started",
-    icon: BookOpen,
-    description: "Learn the basics and get up and running quickly",
-    articles: [
-      { slug: "introduction", title: "Introduction to JeffreysPrompts" },
-      { slug: "browsing-prompts", title: "Browsing and Finding Prompts" },
-      { slug: "using-prompts", title: "Using Prompts with AI Models" },
-    ],
-  },
-  {
-    slug: "prompts",
-    title: "Prompts & Collections",
-    icon: Sparkles,
-    description: "Managing and organizing your prompts",
-    articles: [
-      { slug: "copying-prompts", title: "Copying Prompts" },
-      { slug: "saving-to-basket", title: "Saving to Your Basket" },
-      { slug: "exporting", title: "Exporting as Markdown or Skills" },
-    ],
-  },
-  {
-    slug: "cli",
-    title: "CLI Tool",
-    icon: Terminal,
-    description: "Using the jfp command-line interface",
-    articles: [
-      { slug: "installation", title: "Installing the CLI" },
-      { slug: "basic-usage", title: "Basic Usage" },
-      { slug: "search-commands", title: "Search Commands" },
-    ],
-  },
-];
+const iconMap: Record<string, LucideIcon> = {
+  BookOpen,
+  Sparkles,
+  Terminal,
+};
 
 interface HelpLayoutProps {
   title: string;
@@ -137,7 +101,7 @@ export function HelpLayout({
               {/* Categories */}
               <nav className="space-y-1">
                 {helpCategories.map((cat) => {
-                  const Icon = cat.icon;
+                  const Icon = iconMap[cat.iconName];
                   const isActive = pathname.startsWith(`/help/${cat.slug}`);
                   return (
                     <Link

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, type ComponentType, type MouseEvent } from "react";
+import { useState, useCallback, useEffect, useRef, type ComponentType, type MouseEvent } from "react";
 import Link from "next/link";
 import { Copy, Check, ExternalLink, Sparkles, Rocket, Code, FileText, Brain, Zap, Package, Star } from "lucide-react";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
@@ -41,6 +41,15 @@ interface BundleCardProps {
 export function BundleCard({ bundle, index = 0 }: BundleCardProps) {
   const [copied, setCopied] = useState(false);
   const { success, error } = useToast();
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) {
+        clearTimeout(resetTimerRef.current);
+      }
+    };
+  }, []);
 
   // Get icon component
   const IconComponent = bundle.icon ? iconMap[bundle.icon] : Package;
@@ -56,7 +65,13 @@ export function BundleCard({ bundle, index = 0 }: BundleCardProps) {
         setCopied(true);
         const preview = command.length > 70 ? `${command.slice(0, 70)}...` : command;
         success("Install command copied", preview, 3000);
-        setTimeout(() => setCopied(false), 2000);
+        if (resetTimerRef.current) {
+          clearTimeout(resetTimerRef.current);
+        }
+        resetTimerRef.current = setTimeout(() => {
+          setCopied(false);
+          resetTimerRef.current = null;
+        }, 2000);
       } catch {
         error("Failed to copy", "Please try again");
       }

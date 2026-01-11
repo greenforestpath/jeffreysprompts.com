@@ -1,16 +1,19 @@
 import type { Metadata } from "next";
-import { HelpLayout, helpCategories, ArticleCard } from "@/components/help/HelpLayout";
+import { HelpLayout, ArticleCard } from "@/components/help/HelpLayout";
+import { helpCategories } from "@/lib/help-categories";
 import { BookOpen, Sparkles, Terminal, Search } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Help Center",
-  description: "Get help with JeffreysPrompts.com - Learn how to browse prompts, use the CLI, and get the most out of the platform.",
+  description:
+    "Get help with JeffreysPrompts.com - Learn how to browse prompts, use the CLI, and get the most out of the platform.",
 };
 
-const iconMap: Record<string, React.ElementType> = {
-  "getting-started": BookOpen,
-  "prompts": Sparkles,
-  "cli": Terminal,
+const iconMap: Record<string, LucideIcon> = {
+  BookOpen,
+  Sparkles,
+  Terminal,
 };
 
 export default function HelpPage() {
@@ -37,7 +40,7 @@ export default function HelpPage() {
       {/* Categories grid */}
       <div className="space-y-10">
         {helpCategories.map((category) => {
-          const Icon = iconMap[category.slug] || BookOpen;
+          const Icon = iconMap[category.iconName] || BookOpen;
           return (
             <section key={category.slug}>
               <div className="flex items-center gap-3 mb-4">
