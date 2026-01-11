@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../lib/playwright-logger";
 
 /**
  * SpotlightSearch E2E Tests
@@ -12,220 +12,227 @@ import { test, expect } from "@playwright/test";
  */
 
 test.describe("SpotlightSearch", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/");
-    await page.waitForLoadState("networkidle");
+  test.beforeEach(async ({ page, logger }) => {
+    await logger.step("navigate to homepage", async () => {
+      await page.goto("/");
+      await page.waitForLoadState("networkidle");
+    });
   });
 
-  test("opens with Cmd+K keyboard shortcut", async ({ page }) => {
-    // Press Cmd+K (or Ctrl+K on non-Mac)
-    await page.keyboard.press("Meta+k");
+  test("opens with Cmd+K keyboard shortcut", async ({ page, logger }) => {
+    await logger.step("open spotlight", async () => {
+      await page.keyboard.press("Meta+k");
+    });
 
-    // Dialog should be visible
-    const dialog = page.getByRole("dialog", { name: /search prompts/i });
-    await expect(dialog).toBeVisible({ timeout: 2000 });
-
-    // Search input within dialog should be focused (use combobox role)
-    const searchInput = dialog.getByRole("combobox");
-    await expect(searchInput).toBeFocused();
+    await logger.step("verify dialog and focus", async () => {
+      const dialog = page.getByRole("dialog", { name: /search prompts/i });
+      await expect(dialog).toBeVisible({ timeout: 2000 });
+      const searchInput = dialog.getByRole("combobox");
+      await expect(searchInput).toBeFocused();
+    });
   });
 
-  test("opens with Ctrl+K on Windows/Linux", async ({ page }) => {
-    // Press Ctrl+K
-    await page.keyboard.press("Control+k");
+  test("opens with Ctrl+K on Windows/Linux", async ({ page, logger }) => {
+    await logger.step("open spotlight (ctrl+k)", async () => {
+      await page.keyboard.press("Control+k");
+    });
 
-    // Dialog should be visible
-    const dialog = page.getByRole("dialog", { name: /search prompts/i });
-    await expect(dialog).toBeVisible({ timeout: 2000 });
+    await logger.step("verify dialog visible", async () => {
+      const dialog = page.getByRole("dialog", { name: /search prompts/i });
+      await expect(dialog).toBeVisible({ timeout: 2000 });
+    });
   });
 
-  test("closes with Escape key", async ({ page }) => {
-    // Open spotlight
-    await page.keyboard.press("Meta+k");
+  test("closes with Escape key", async ({ page, logger }) => {
+    await logger.step("open spotlight", async () => {
+      await page.keyboard.press("Meta+k");
+    });
 
     const dialog = page.getByRole("dialog", { name: /search prompts/i });
-    await expect(dialog).toBeVisible();
+    await logger.step("ensure dialog visible", async () => {
+      await expect(dialog).toBeVisible();
+      const searchInput = dialog.getByRole("combobox");
+      await expect(searchInput).toBeFocused();
+    });
 
-    // Wait for input to be focused (Escape handler is on the input)
-    const searchInput = dialog.getByRole("combobox");
-    await expect(searchInput).toBeFocused();
+    await logger.step("close with escape", async () => {
+      await page.keyboard.press("Escape");
+    });
 
-    // Press Escape to close
-    await page.keyboard.press("Escape");
-
-    // Dialog should be hidden (allow time for close animation)
-    await expect(dialog).not.toBeVisible({ timeout: 2000 });
+    await logger.step("verify dialog closed", async () => {
+      await expect(dialog).not.toBeVisible({ timeout: 2000 });
+    });
   });
 
-  test("closes when clicking backdrop", async ({ page }) => {
-    // Open spotlight
-    await page.keyboard.press("Meta+k");
+  test("closes when clicking backdrop", async ({ page, logger }) => {
+    await logger.step("open spotlight", async () => {
+      await page.keyboard.press("Meta+k");
+    });
 
     const dialog = page.getByRole("dialog", { name: /search prompts/i });
-    await expect(dialog).toBeVisible();
+    await logger.step("dialog visible", async () => {
+      await expect(dialog).toBeVisible();
+    });
 
-    // Click outside dialog (on backdrop)
-    await page.locator("body").click({ position: { x: 10, y: 10 } });
+    await logger.step("click backdrop", async () => {
+      await page.locator("body").click({ position: { x: 10, y: 10 } });
+    });
 
-    // Dialog should be hidden
-    await expect(dialog).not.toBeVisible();
+    await logger.step("dialog closed", async () => {
+      await expect(dialog).not.toBeVisible();
+    });
   });
 
-  test("typing shows search results", async ({ page }) => {
-    // Open spotlight
-    await page.keyboard.press("Meta+k");
+  test("typing shows search results", async ({ page, logger }) => {
+    await logger.step("open spotlight", async () => {
+      await page.keyboard.press("Meta+k");
+    });
 
     const dialog = page.getByRole("dialog", { name: /search prompts/i });
-    await expect(dialog).toBeVisible();
+    await logger.step("type query", async () => {
+      const searchInput = dialog.getByRole("combobox");
+      await expect(searchInput).toBeFocused();
+      await searchInput.fill("wizard");
+    });
 
-    // Get search input within dialog (use combobox role to distinguish from page search)
-    const searchInput = dialog.getByRole("combobox");
-    await expect(searchInput).toBeFocused();
+    await logger.step("wait for debounce", async () => {
+      await page.waitForTimeout(300);
+    });
 
-    // Type search query
-    await searchInput.fill("wizard");
-
-    // Wait for debounced search
-    await page.waitForTimeout(300);
-
-    // Results should appear within dialog
-    const resultsList = dialog.locator("#spotlight-results");
-    await expect(resultsList).toBeVisible();
-
-    // Should find idea-wizard
-    const ideaWizardResult = dialog.getByText("The Idea Wizard");
-    await expect(ideaWizardResult).toBeVisible({ timeout: 2000 });
+    await logger.step("verify results", async () => {
+      const resultsList = dialog.locator("#spotlight-results");
+      await expect(resultsList).toBeVisible();
+      await expect(dialog.getByText("The Idea Wizard")).toBeVisible({ timeout: 2000 });
+    });
   });
 
-  test("arrow keys navigate results", async ({ page }) => {
-    // Open spotlight
-    await page.keyboard.press("Meta+k");
+  test("arrow keys navigate results", async ({ page, logger }) => {
+    await logger.step("open spotlight", async () => {
+      await page.keyboard.press("Meta+k");
+    });
 
     const dialog = page.getByRole("dialog", { name: /search prompts/i });
-    await expect(dialog).toBeVisible();
+    await logger.step("search for wizard", async () => {
+      const searchInput = dialog.getByRole("combobox");
+      await searchInput.fill("wizard");
+      await page.waitForTimeout(300);
+    });
 
-    const searchInput = dialog.getByRole("combobox");
-    // Search for "wizard" which we know returns at least one result
-    await searchInput.fill("wizard");
-
-    // Wait for results
-    await page.waitForTimeout(300);
-
-    // Verify at least one result with selection
-    const selectedItem = dialog.locator('[role="option"][aria-selected="true"]');
-    await expect(selectedItem).toBeVisible({ timeout: 2000 });
-
-    // Press ArrowDown - should keep selection on same item if only one result,
-    // or move to next if multiple results
-    await page.keyboard.press("ArrowDown");
-
-    // An item should still be selected after navigation
-    await expect(dialog.locator('[role="option"][aria-selected="true"]')).toBeVisible();
+    await logger.step("navigate with arrow keys", async () => {
+      const selectedItem = dialog.locator('[role="option"][aria-selected="true"]');
+      await expect(selectedItem).toBeVisible({ timeout: 2000 });
+      await page.keyboard.press("ArrowDown");
+      await expect(dialog.locator('[role="option"][aria-selected="true"]')).toBeVisible();
+    });
   });
 
-  test("Enter key copies selected prompt", async ({ page, context }) => {
-    // Grant clipboard permissions
-    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  test("Enter key copies selected prompt", async ({ page, context, logger }) => {
+    await logger.step("grant clipboard permissions", async () => {
+      await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    });
 
-    // Open spotlight
-    await page.keyboard.press("Meta+k");
+    await logger.step("open spotlight", async () => {
+      await page.keyboard.press("Meta+k");
+    });
 
     const dialog = page.getByRole("dialog", { name: /search prompts/i });
-    await expect(dialog).toBeVisible();
+    await logger.step("search and select", async () => {
+      const searchInput = dialog.getByRole("combobox");
+      await searchInput.fill("idea wizard");
+      await page.waitForTimeout(300);
+      await page.keyboard.press("Enter");
+    });
 
-    const searchInput = dialog.getByRole("combobox");
-    await searchInput.fill("idea wizard");
-
-    // Wait for results
-    await page.waitForTimeout(300);
-
-    // Press Enter to select and copy
-    await page.keyboard.press("Enter");
-
-    // Should show "Copied!" feedback (first match - could be toast or inline text)
-    await expect(page.getByText(/copied/i).first()).toBeVisible({ timeout: 2000 });
+    await logger.step("verify copied feedback", async () => {
+      await expect(page.getByText(/copied/i).first()).toBeVisible({ timeout: 2000 });
+    });
   });
 
-  test("shows 'No results' for empty search", async ({ page }) => {
-    // Open spotlight
-    await page.keyboard.press("Meta+k");
+  test("shows 'No results' for empty search", async ({ page, logger }) => {
+    await logger.step("open spotlight", async () => {
+      await page.keyboard.press("Meta+k");
+    });
 
     const dialog = page.getByRole("dialog", { name: /search prompts/i });
-    await expect(dialog).toBeVisible();
+    await logger.step("type nonsense query", async () => {
+      const searchInput = dialog.getByRole("combobox");
+      await searchInput.fill("xyznonexistent123456789");
+      await page.waitForTimeout(300);
+    });
 
-    const searchInput = dialog.getByRole("combobox");
-    await searchInput.fill("xyznonexistent123456789");
-
-    // Wait for debounced search
-    await page.waitForTimeout(300);
-
-    // Should show no results message within dialog
-    await expect(dialog.getByText(/no results/i)).toBeVisible();
+    await logger.step("verify no results", async () => {
+      await expect(dialog.getByText(/no results/i)).toBeVisible();
+    });
   });
 
-  test("clicking result item selects it", async ({ page, context }) => {
-    // Grant clipboard permissions
-    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  test("clicking result item selects it", async ({ page, context, logger }) => {
+    await logger.step("grant clipboard permissions", async () => {
+      await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    });
 
-    // Open spotlight
-    await page.keyboard.press("Meta+k");
+    await logger.step("open spotlight", async () => {
+      await page.keyboard.press("Meta+k");
+    });
 
     const dialog = page.getByRole("dialog", { name: /search prompts/i });
-    await expect(dialog).toBeVisible();
+    await logger.step("search and click result", async () => {
+      const searchInput = dialog.getByRole("combobox");
+      await searchInput.fill("wizard");
+      await page.waitForTimeout(300);
+      await dialog.locator("[data-result-item]").first().click();
+    });
 
-    const searchInput = dialog.getByRole("combobox");
-    await searchInput.fill("wizard");
-
-    // Wait for results
-    await page.waitForTimeout(300);
-
-    // Click on a result within the dialog
-    const resultItem = dialog.locator("[data-result-item]").first();
-    await resultItem.click();
-
-    // Should show "Copied!" feedback
-    await expect(page.getByText(/copied/i).first()).toBeVisible({ timeout: 2000 });
+    await logger.step("verify copied feedback", async () => {
+      await expect(page.getByText(/copied/i).first()).toBeVisible({ timeout: 2000 });
+    });
   });
 });
 
 test.describe("SpotlightSearch Accessibility", () => {
-  test("has proper ARIA attributes", async ({ page }) => {
-    await page.goto("/");
-    await page.waitForLoadState("networkidle");
+  test("has proper ARIA attributes", async ({ page, logger }) => {
+    await logger.step("navigate to homepage", async () => {
+      await page.goto("/");
+      await page.waitForLoadState("networkidle");
+    });
 
-    // Open spotlight
-    await page.keyboard.press("Meta+k");
+    await logger.step("open spotlight", async () => {
+      await page.keyboard.press("Meta+k");
+    });
 
-    // Check dialog role and label
-    const dialog = page.getByRole("dialog", { name: /search prompts/i });
-    await expect(dialog).toBeVisible();
-    await expect(dialog).toHaveAttribute("aria-modal", "true");
+    await logger.step("verify dialog attributes", async () => {
+      const dialog = page.getByRole("dialog", { name: /search prompts/i });
+      await expect(dialog).toBeVisible();
+      await expect(dialog).toHaveAttribute("aria-modal", "true");
 
-    // Check combobox role on input within dialog
-    const searchInput = dialog.getByRole("combobox");
-    await expect(searchInput).toBeVisible();
-    await expect(searchInput).toHaveAttribute("aria-autocomplete", "list");
+      const searchInput = dialog.getByRole("combobox");
+      await expect(searchInput).toBeVisible();
+      await expect(searchInput).toHaveAttribute("aria-autocomplete", "list");
+    });
   });
 
-  test("listbox has proper structure", async ({ page }) => {
-    await page.goto("/");
-    await page.waitForLoadState("networkidle");
-    await page.keyboard.press("Meta+k");
+  test("listbox has proper structure", async ({ page, logger }) => {
+    await logger.step("navigate to homepage", async () => {
+      await page.goto("/");
+      await page.waitForLoadState("networkidle");
+    });
+
+    await logger.step("open spotlight", async () => {
+      await page.keyboard.press("Meta+k");
+    });
 
     const dialog = page.getByRole("dialog", { name: /search prompts/i });
-    await expect(dialog).toBeVisible({ timeout: 2000 });
+    await logger.step("search for wizard", async () => {
+      const searchInput = dialog.getByRole("combobox");
+      await searchInput.fill("wizard");
+      await page.waitForTimeout(300);
+    });
 
-    const searchInput = dialog.getByRole("combobox");
-    await searchInput.fill("wizard");
-    await page.waitForTimeout(300);
-
-    // Results list should have listbox role within dialog
-    const listbox = dialog.getByRole("listbox");
-    await expect(listbox).toBeVisible();
-
-    // Each result should have option role
-    const options = dialog.locator('[role="option"]');
-    const count = await options.count();
-    expect(count).toBeGreaterThan(0);
+    await logger.step("verify listbox options", async () => {
+      const listbox = dialog.getByRole("listbox");
+      await expect(listbox).toBeVisible();
+      const options = dialog.locator('[role="option"]');
+      const count = await options.count();
+      expect(count).toBeGreaterThan(0);
+    });
   });
 });
