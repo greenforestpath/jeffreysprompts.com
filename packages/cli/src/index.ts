@@ -28,6 +28,7 @@ import { updateCliCommand } from "./commands/update-cli";
 import { loginCommand } from "./commands/login";
 import { logoutCommand, whoamiCommand } from "./commands/auth";
 import { notesCommand } from "./commands/notes";
+import { saveCommand } from "./commands/save";
 
 export const cli = cac("jfp");
 
@@ -150,6 +151,11 @@ cli
   .command("whoami", "Show current logged-in user")
   .option("--json", "Output JSON")
   .action(whoamiCommand);
+
+cli
+  .command("save <prompt-id>", "Save prompt to your premium account")
+  .option("--json", "Output JSON")
+  .action(saveCommand);
 
 cli
   .command("notes <prompt-id>", "Manage personal notes on prompts")
