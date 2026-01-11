@@ -29,29 +29,29 @@ const presetConfigs = {
   typewriter: {
     hidden: { opacity: 0, y: 0 },
     visible: { opacity: 1, y: 0 },
-    transition: { duration: 0.05 },
+    transition: { duration: 0.05 } as const,
   },
   cascade: {
     hidden: { opacity: 0, y: 40, rotateX: -90 },
     visible: { opacity: 1, y: 0, rotateX: 0 },
-    transition: { type: "spring", stiffness: 400, damping: 30 },
+    transition: { type: "spring" as const, stiffness: 400, damping: 30 },
   },
   wave: {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 },
-    transition: { type: "spring", stiffness: 300, damping: 20 },
+    transition: { type: "spring" as const, stiffness: 300, damping: 20 },
   },
   glitch: {
     hidden: { opacity: 0, x: -10, filter: "blur(8px)" },
     visible: { opacity: 1, x: 0, filter: "blur(0px)" },
-    transition: { type: "spring", stiffness: 500, damping: 25 },
+    transition: { type: "spring" as const, stiffness: 500, damping: 25 },
   },
   elastic: {
     hidden: { opacity: 0, scale: 0, rotate: -180 },
     visible: { opacity: 1, scale: 1, rotate: 0 },
-    transition: { type: "spring", stiffness: 260, damping: 20 },
+    transition: { type: "spring" as const, stiffness: 260, damping: 20 },
   },
-};
+} as const;
 
 /**
  * CharacterReveal - Dramatic character-by-character text animation.

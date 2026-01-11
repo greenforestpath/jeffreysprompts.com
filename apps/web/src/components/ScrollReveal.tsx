@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, type ReactNode } from "react";
-import { motion, useInView, type Variants } from "framer-motion";
+import { motion, useInView, type Variants, type Variant } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 type AnimationPreset =
@@ -40,7 +40,7 @@ interface ScrollRevealProps {
   disabled?: boolean;
 }
 
-const presetVariants: Record<AnimationPreset, { hidden: object; visible: object }> = {
+const presetVariants: Record<AnimationPreset, { hidden: Variant; visible: Variant }> = {
   "fade-up": {
     hidden: { opacity: 0, y: 40 },
     visible: { opacity: 1, y: 0 },

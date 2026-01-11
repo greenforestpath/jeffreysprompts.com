@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, type ReactNode, type TouchEvent } from "react";
-import { motion, useSpring, useTransform, AnimatePresence } from "framer-motion";
+import { motion, useSpring, useTransform, AnimatePresence, type MotionValue } from "framer-motion";
 import { useHaptic } from "@/hooks/useHaptic";
 import { cn } from "@/lib/utils";
 
@@ -194,7 +194,7 @@ function RefreshIndicator({
   rotation,
 }: {
   isRefreshing: boolean;
-  rotation: ReturnType<typeof useTransform>;
+  rotation: MotionValue<number>;
 }) {
   return (
     <motion.div
