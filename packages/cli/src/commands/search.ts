@@ -16,6 +16,14 @@ import { shouldOutputJson } from "../lib/utils";
 import { apiClient, isAuthError } from "../lib/api-client";
 import { isLoggedIn, loadCredentials } from "../lib/credentials";
 
+function writeJson(payload: Record<string, unknown>): void {
+  console.log(JSON.stringify(payload, null, 2));
+}
+
+function writeJsonError(code: string, message: string, extra: Record<string, unknown> = {}): void {
+  writeJson({ error: true, code, message, ...extra });
+}
+
 interface SearchOptions {
   json?: boolean;
   limit?: string | number;
@@ -150,7 +158,7 @@ export async function searchCommand(query: string, options: SearchOptions): Prom
   const limit = options.limit !== undefined ? Number(options.limit) : 10;
   if (!Number.isFinite(limit) || limit <= 0) {
     if (shouldOutputJson(options)) {
-      console.log(JSON.stringify({ error: "invalid_limit", message: "Invalid --limit value" }));
+      writeJsonError("invalid_limit", "Invalid --limit value. Provide a positive number.");
     } else {
       console.error(chalk.red("Invalid --limit value. Provide a positive number."));
     }
@@ -170,13 +178,9 @@ export async function searchCommand(query: string, options: SearchOptions): Prom
   // If user requests personal search without being logged in
   if ((searchMine || searchSaved) && !loggedIn) {
     if (shouldOutputJson(options)) {
-      console.log(
-        JSON.stringify({
-          error: "not_authenticated",
-          message: "You must be logged in to search personal prompts",
-          hint: "Run 'jfp login' to sign in",
-        })
-      );
+      writeJsonError("not_authenticated", "You must be logged in to search personal prompts", {
+        hint: "Run 'jfp login' to sign in",
+      });
     } else {
       console.log(chalk.yellow("You must be logged in to search personal prompts"));
       console.log(chalk.dim("Run 'jfp login' to sign in to JeffreysPrompts Premium"));
@@ -187,13 +191,9 @@ export async function searchCommand(query: string, options: SearchOptions): Prom
   // If user requests personal search without premium tier
   if ((searchMine || searchSaved) && loggedIn && !isPremium) {
     if (shouldOutputJson(options)) {
-      console.log(
-        JSON.stringify({
-          error: "premium_required",
-          message: "Personal prompt search requires a premium subscription",
-          hint: "Visit jeffreysprompts.com/premium to upgrade",
-        })
-      );
+      writeJsonError("premium_required", "Personal prompt search requires a premium subscription", {
+        hint: "Visit jeffreysprompts.com/premium to upgrade",
+      });
     } else {
       console.log(chalk.yellow("Personal prompt search requires a premium subscription"));
       console.log(chalk.dim("Visit jeffreysprompts.com/premium to upgrade"));
