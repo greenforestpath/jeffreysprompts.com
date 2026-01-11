@@ -369,10 +369,9 @@ export function EnhancedTimeline({
   }, [messages, searchQuery]);
 
   // Check if any section has matching messages (for UI feedback)
-  const hasSearchResults = useMemo(() => {
-    if (!searchQuery.trim()) return true;
-    return sections.some((section) => getSectionMessages(section).length > 0);
-  }, [searchQuery, sections, getSectionMessages]);
+  const hasSearchResults =
+    !searchQuery.trim() ||
+    sections.some((section) => getSectionMessages(section).length > 0);
 
   return (
     <div className="relative" id="timeline">

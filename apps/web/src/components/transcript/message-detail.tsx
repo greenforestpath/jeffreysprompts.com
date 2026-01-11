@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { createElement, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronDown,
@@ -42,23 +42,13 @@ const toolIcons: Record<string, typeof Code> = {
   WebSearch: Code,
 };
 
-function getToolIcon(toolName: string) {
-  return toolIcons[toolName] || Wrench;
-}
-
-function getMessageIcon(type: TranscriptMessage["type"]) {
-  switch (type) {
-    case "user":
-      return User;
-    case "assistant":
-      return Bot;
-    case "tool_use":
-    case "tool_result":
-      return Wrench;
-    default:
-      return AlertCircle;
-  }
-}
+const messageIcons: Record<TranscriptMessage["type"], typeof User> = {
+  user: User,
+  assistant: Bot,
+  tool_use: Wrench,
+  tool_result: Wrench,
+  system: AlertCircle,
+};
 
 function getMessageLabel(type: TranscriptMessage["type"]) {
   switch (type) {
@@ -91,7 +81,7 @@ export function MessageDetail({ message, highlight }: MessageDetailProps) {
     });
   };
 
-  const Icon = getMessageIcon(message.type);
+  const messageIcon = messageIcons[message.type] ?? AlertCircle;
   const isUser = message.type === "user";
 
   return (
@@ -115,7 +105,7 @@ export function MessageDetail({ message, highlight }: MessageDetailProps) {
               : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
           )}
         >
-          <Icon className="w-4 h-4" />
+          {createElement(messageIcon, { className: "w-4 h-4" })}
         </div>
         <div className="flex-1">
           <div className="font-medium text-sm text-zinc-900 dark:text-zinc-100">
@@ -220,7 +210,7 @@ interface ToolCallDisplayProps {
 }
 
 function ToolCallDisplay({ tool, expanded, onToggle }: ToolCallDisplayProps) {
-  const Icon = getToolIcon(tool.name);
+  const toolIcon = toolIcons[tool.name] ?? Wrench;
   const inputJson = JSON.stringify(tool.input, null, 2);
   const outputLanguage = detectLanguage(tool.output);
 
@@ -247,7 +237,9 @@ function ToolCallDisplay({ tool, expanded, onToggle }: ToolCallDisplayProps) {
         ) : (
           <ChevronRight className="w-4 h-4 text-zinc-500" />
         )}
-        <Icon className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
+        {createElement(toolIcon, {
+          className: "w-4 h-4 text-zinc-600 dark:text-zinc-400",
+        })}
         <span className="font-mono text-sm text-zinc-800 dark:text-zinc-200">
           {tool.name}
         </span>
