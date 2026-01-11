@@ -14,6 +14,7 @@ import {
   Gift,
   Info,
   ShoppingBag,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useHaptic } from "@/hooks/useHaptic";
@@ -43,6 +44,7 @@ interface MoreMenuItem {
 
 const moreMenuItems: MoreMenuItem[] = [
   { label: "Basket", icon: ShoppingBag, action: "basket" },
+  { label: "Pricing", icon: CreditCard, href: "/pricing" },
   { label: "Contribute", icon: Gift, href: "/contribute" },
   { label: "How It's Made", icon: Info, href: "/how_it_was_made" },
 ];

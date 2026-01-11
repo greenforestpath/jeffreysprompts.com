@@ -15,6 +15,7 @@ const PRO_URL = process.env.NEXT_PUBLIC_PRO_URL ?? "https://pro.jeffreysprompts.
 const navLinks = [
   { href: "/", label: "Prompts" },
   { href: "/bundles", label: "Bundles" },
+  { href: "/pricing", label: "Pricing" },
   { href: "/contribute", label: "Contribute" },
   { href: "/workflows", label: "Workflows" },
   { href: "/how_it_was_made", label: "How It Was Made" },
