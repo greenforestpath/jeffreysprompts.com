@@ -79,21 +79,26 @@ export class ApiClient {
       // Handle non-JSON responses
       const contentType = response.headers.get("content-type");
       let data: T | undefined;
+      let jsonParseError: string | undefined;
 
       if (contentType?.includes("application/json")) {
         try {
           data = (await response.json()) as T;
-        } catch {
-          // JSON parse failed, leave data undefined
+        } catch (parseErr) {
+          // JSON parse failed - capture error for reporting
+          jsonParseError = parseErr instanceof Error ? parseErr.message : "Invalid JSON";
         }
       }
 
       if (!response.ok) {
         // Extract error message from response body if available
+        // Use type guards to safely extract string error messages
         const errorData = data as Record<string, unknown> | undefined;
+        const errorField = errorData?.error;
+        const messageField = errorData?.message;
         const errorMessage =
-          (errorData?.error as string) ||
-          (errorData?.message as string) ||
+          (typeof errorField === "string" ? errorField : null) ||
+          (typeof messageField === "string" ? messageField : null) ||
           response.statusText ||
           "Request failed";
 
@@ -101,6 +106,15 @@ export class ApiClient {
           ok: false,
           status: response.status,
           error: errorMessage,
+        };
+      }
+
+      // If response was OK but JSON parsing failed, return error
+      if (jsonParseError && contentType?.includes("application/json")) {
+        return {
+          ok: false,
+          status: response.status,
+          error: `Invalid JSON response: ${jsonParseError}`,
         };
       }
 

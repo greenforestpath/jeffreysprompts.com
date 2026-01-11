@@ -176,7 +176,9 @@ async function startCallbackServer(timeoutMs: number): Promise<CallbackServer> {
         // Parse token from query params
         const token = url.searchParams.get("token");
         const email = url.searchParams.get("email");
-        const tier = url.searchParams.get("tier") as "free" | "premium";
+        const rawTier = url.searchParams.get("tier");
+        // Validate tier is a known value, default to "free" if unrecognized
+        const tier: "free" | "premium" = rawTier === "premium" ? "premium" : "free";
         const expiresAt = url.searchParams.get("expires_at");
         const userId = url.searchParams.get("user_id");
         const refreshToken = url.searchParams.get("refresh_token");
@@ -189,7 +191,7 @@ async function startCallbackServer(timeoutMs: number): Promise<CallbackServer> {
           return;
         }
 
-        if (!token || !email || !tier || !userId) {
+        if (!token || !email || !rawTier || !userId) {
           res.writeHead(400, { "Content-Type": "text/html" });
           res.end(errorPage("Invalid callback parameters"));
           rejectToken(new Error("Invalid callback parameters"));
