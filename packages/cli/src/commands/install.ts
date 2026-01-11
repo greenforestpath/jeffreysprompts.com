@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { join, resolve } from "path";
-import { homedir } from "os";
 import { getPrompt, prompts } from "@jeffreysprompts/core/prompts";
+import { getHomeDir } from "../lib/config";
 import { getBundle, generateBundleSkillMd } from "@jeffreysprompts/core/prompts/bundles";
 import { generateSkillMd, computeSkillHash } from "@jeffreysprompts/core/export";
 import chalk from "chalk";
@@ -26,7 +26,7 @@ interface InstallOptions {
 export function installCommand(ids: string[], options: InstallOptions) {
   const targetRoot = options.project
     ? resolve(process.cwd(), ".claude/skills")
-    : join(homedir(), ".config/claude/skills");
+    : join(getHomeDir(), ".config/claude/skills");
 
   if (options.all) {
     // Install all prompts

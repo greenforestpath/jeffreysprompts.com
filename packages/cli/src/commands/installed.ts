@@ -1,6 +1,6 @@
 import { join, resolve } from "path";
-import { homedir } from "os";
 import Table from "cli-table3";
+import { getHomeDir } from "../lib/config";
 import chalk from "chalk";
 import { readManifest } from "../lib/manifest";
 import { shouldOutputJson } from "../lib/utils";
@@ -12,7 +12,7 @@ interface InstalledOptions {
 }
 
 export function installedCommand(options: InstalledOptions) {
-  const personalDir = join(homedir(), ".config/claude/skills");
+  const personalDir = join(getHomeDir(), ".config/claude/skills");
   const projectDir = resolve(process.cwd(), ".claude/skills");
 
   // Determine which locations to check

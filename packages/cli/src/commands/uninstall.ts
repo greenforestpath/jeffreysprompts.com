@@ -1,7 +1,7 @@
 import { existsSync, rmSync } from "fs";
 import { join, resolve } from "path";
-import { homedir } from "os";
 import chalk from "chalk";
+import { getHomeDir } from "../lib/config";
 import {
   readManifest,
   writeManifest,
@@ -19,7 +19,7 @@ interface UninstallOptions {
 export function uninstallCommand(ids: string[], options: UninstallOptions) {
   const targetRoot = options.project
     ? resolve(process.cwd(), ".claude/skills")
-    : join(homedir(), ".config/claude/skills");
+    : join(getHomeDir(), ".config/claude/skills");
 
   if (ids.length === 0) {
     console.error(chalk.red("Error: No skill IDs specified"));

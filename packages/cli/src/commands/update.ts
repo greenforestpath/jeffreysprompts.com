@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, mkdirSync, writeFileSync } from "fs";
 import { join, resolve } from "path";
-import { homedir } from "os";
 import { getPrompt } from "@jeffreysprompts/core/prompts";
+import { getHomeDir } from "../lib/config";
 import { generateSkillMd, computeSkillHash } from "@jeffreysprompts/core/export";
 import chalk from "chalk";
 import {
@@ -204,7 +204,7 @@ function updateLocation(
 }
 
 export function updateCommand(options: UpdateOptions) {
-  const personalDir = join(homedir(), ".config/claude/skills");
+  const personalDir = join(getHomeDir(), ".config/claude/skills");
   const projectDir = resolve(process.cwd(), ".claude/skills");
 
   // Determine which locations to update
