@@ -104,13 +104,20 @@ const EXPECTED_PROMPT_SCHEMA = {
 
 /**
  * Expected shape for a SearchResult object in JSON output
+ * Note: Search output is wrapped in { results, query, authenticated }
  */
 const EXPECTED_SEARCH_RESULT_SCHEMA = {
-  requiredFields: ["prompt", "score", "matchedFields"] as const,
+  // Top-level fields in search response
+  wrapperFields: ["results", "query", "authenticated"] as const,
+  // Fields in each result item (flat structure)
+  requiredFields: ["id", "title", "description", "category", "tags", "score", "source"] as const,
+  // Optional fields in each result
+  optionalFields: ["matchedFields"] as const,
   types: {
-    prompt: "object",
+    id: "string",
+    title: "string",
     score: "number",
-    matchedFields: "array",
+    source: "string", // "local" | "mine" | "saved" | "collection"
   } as const,
 };
 
@@ -422,9 +429,9 @@ describe("error payload golden tests", () => {
 // ============================================================================
 
 describe("cross-command schema consistency", () => {
-  it("list and show return same prompt structure", () => {
+  it("list and show return same prompt structure", async () => {
     // Get a prompt from list
-    listCommand({ json: true });
+    await listCommand({ json: true });
     const listOutput = getJsonOutput<Record<string, unknown>[]>();
     const fromList = listOutput.find(
       (p) => p.id === "idea-wizard"
@@ -432,7 +439,7 @@ describe("cross-command schema consistency", () => {
 
     // Reset and get same prompt from show
     output = [];
-    showCommand("idea-wizard", { json: true });
+    await showCommand("idea-wizard", { json: true });
     const fromShow = getJsonOutput<Record<string, unknown>>();
 
     // Keys should match
@@ -447,9 +454,9 @@ describe("cross-command schema consistency", () => {
     expect(fromList.content).toBe(fromShow.content);
   });
 
-  it("search result prompt matches show output", () => {
+  it("search result prompt matches show output", async () => {
     // Get a prompt from search using a query that will definitely match
-    searchCommand("wizard", { json: true });
+    await searchCommand("wizard", { json: true });
     const searchOutput = getJsonOutput<{ prompt: Record<string, unknown> }[]>();
 
     // Find idea-wizard in results (may not be first)
@@ -459,7 +466,7 @@ describe("cross-command schema consistency", () => {
 
     // Reset and get same prompt from show
     output = [];
-    showCommand("idea-wizard", { json: true });
+    await showCommand("idea-wizard", { json: true });
     const fromShow = getJsonOutput<Record<string, unknown>>();
 
     // Values should match
