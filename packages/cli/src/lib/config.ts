@@ -39,45 +39,66 @@ export interface JfpConfig {
   };
 }
 
-const CONFIG_DIR = join(homedir(), ".config", "jfp");
-const CONFIG_FILE = join(CONFIG_DIR, "config.json");
+// Allow overriding home directory for testing via JFP_HOME env var
+export function getHomeDir(): string {
+  return process.env.JFP_HOME || homedir();
+}
+
+// Dynamic config directory (respects JFP_HOME env var)
+export function getConfigDir(): string {
+  return join(getHomeDir(), ".config", "jfp");
+}
+
+function getConfigFile(): string {
+  return join(getConfigDir(), "config.json");
+}
+
 const DEFAULT_REGISTRY_URL = "https://jeffreysprompts.com/api/prompts";
 const DEFAULT_CACHE_TTL = 3600;
 
-export const DEFAULT_CONFIG: JfpConfig = {
-  registry: {
-    url: DEFAULT_REGISTRY_URL,
-    remote: DEFAULT_REGISTRY_URL,
-    manifestUrl: "https://jeffreysprompts.com/registry.manifest.json",
-    cachePath: join(CONFIG_DIR, "registry.json"),
-    metaPath: join(CONFIG_DIR, "registry.meta.json"),
-    autoRefresh: true,
-    cacheTtl: DEFAULT_CACHE_TTL,
-    timeoutMs: 2000,
-  },
-  updates: {
-    autoCheck: true,
-    autoUpdate: false,
-    channel: "stable",
-    lastCheck: null,
-  },
-  skills: {
-    personalDir: join(homedir(), ".config", "claude", "skills"),
-    projectDir: ".claude/skills",
-    preferProject: false,
-  },
-  output: {
-    color: true,
-    json: false,
-  },
-  localPrompts: {
-    enabled: true,
-    dir: join(CONFIG_DIR, "local"),
-  },
-  analytics: {
-    enabled: false,
-  },
-};
+// Create default config with dynamic paths (respects JFP_HOME env var)
+export function createDefaultConfig(): JfpConfig {
+  const configDir = getConfigDir();
+  const home = getHomeDir();
+
+  return {
+    registry: {
+      url: DEFAULT_REGISTRY_URL,
+      remote: DEFAULT_REGISTRY_URL,
+      manifestUrl: "https://jeffreysprompts.com/registry.manifest.json",
+      cachePath: join(configDir, "registry.json"),
+      metaPath: join(configDir, "registry.meta.json"),
+      autoRefresh: true,
+      cacheTtl: DEFAULT_CACHE_TTL,
+      timeoutMs: 2000,
+    },
+    updates: {
+      autoCheck: true,
+      autoUpdate: false,
+      channel: "stable",
+      lastCheck: null,
+    },
+    skills: {
+      personalDir: join(home, ".config", "claude", "skills"),
+      projectDir: ".claude/skills",
+      preferProject: false,
+    },
+    output: {
+      color: true,
+      json: false,
+    },
+    localPrompts: {
+      enabled: true,
+      dir: join(configDir, "local"),
+    },
+    analytics: {
+      enabled: false,
+    },
+  };
+}
+
+// Legacy export for backwards compatibility
+export const DEFAULT_CONFIG: JfpConfig = createDefaultConfig();
 
 function parseEnvNumber(value: string | undefined): number | null {
   if (!value) return null;
@@ -106,25 +127,28 @@ function applyEnvOverrides(config: JfpConfig): JfpConfig {
 }
 
 function loadStoredConfig(): JfpConfig {
-  if (!existsSync(CONFIG_FILE)) {
-    return DEFAULT_CONFIG;
+  const configFile = getConfigFile();
+  const defaultConfig = createDefaultConfig();
+
+  if (!existsSync(configFile)) {
+    return defaultConfig;
   }
   try {
-    const raw = readFileSync(CONFIG_FILE, "utf-8");
+    const raw = readFileSync(configFile, "utf-8");
     const parsed = JSON.parse(raw) as Partial<JfpConfig>;
     const merged: JfpConfig = {
-      ...DEFAULT_CONFIG,
+      ...defaultConfig,
       ...parsed,
-      registry: { ...DEFAULT_CONFIG.registry, ...parsed.registry },
-      updates: { ...DEFAULT_CONFIG.updates, ...parsed.updates },
-      skills: { ...DEFAULT_CONFIG.skills, ...parsed.skills },
-      output: { ...DEFAULT_CONFIG.output, ...parsed.output },
-      localPrompts: { ...DEFAULT_CONFIG.localPrompts, ...parsed.localPrompts },
-      analytics: { ...DEFAULT_CONFIG.analytics, ...parsed.analytics },
+      registry: { ...defaultConfig.registry, ...parsed.registry },
+      updates: { ...defaultConfig.updates, ...parsed.updates },
+      skills: { ...defaultConfig.skills, ...parsed.skills },
+      output: { ...defaultConfig.output, ...parsed.output },
+      localPrompts: { ...defaultConfig.localPrompts, ...parsed.localPrompts },
+      analytics: { ...defaultConfig.analytics, ...parsed.analytics },
     };
     return merged;
   } catch {
-    return DEFAULT_CONFIG;
+    return defaultConfig;
   }
 }
 
@@ -133,6 +157,8 @@ export function loadConfig(): JfpConfig {
 }
 
 export function saveConfig(config: Partial<JfpConfig>): void {
+  const configDir = getConfigDir();
+  const configFile = getConfigFile();
   const base = loadStoredConfig();
   const merged: JfpConfig = {
     ...base,
@@ -144,6 +170,6 @@ export function saveConfig(config: Partial<JfpConfig>): void {
     localPrompts: { ...base.localPrompts, ...config.localPrompts },
     analytics: { ...base.analytics, ...config.analytics },
   };
-  mkdirSync(CONFIG_DIR, { recursive: true });
-  writeFileSync(CONFIG_FILE, JSON.stringify(merged, null, 2));
+  mkdirSync(configDir, { recursive: true });
+  writeFileSync(configFile, JSON.stringify(merged, null, 2));
 }

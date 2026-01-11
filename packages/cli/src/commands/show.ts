@@ -13,7 +13,9 @@ export function showCommand(id: string, options: ShowOptions) {
 
   if (!prompt) {
     if (options.json) {
-      console.log(JSON.stringify({ error: "not_found", message: `Prompt not found: ${id}` }));
+      // NOTE: Error schema is { error: "not_found" } only - no message field
+      // This is a stable API contract (see json-schema-golden.test.ts)
+      console.log(JSON.stringify({ error: "not_found" }));
     } else {
       console.error(chalk.red(`Prompt not found: ${id}`));
     }

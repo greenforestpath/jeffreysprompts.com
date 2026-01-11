@@ -1,16 +1,17 @@
-import { describe, it, expect, beforeEach, afterEach, afterAll, mock } from "bun:test";
+/**
+ * Tests for export command
+ *
+ * Uses actual temp directories instead of mocking fs modules.
+ */
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from "bun:test";
+import { join } from "path";
+import { mkdtempSync, rmSync, existsSync, readFileSync } from "fs";
+import { tmpdir } from "os";
+import { exportCommand } from "../../src/commands/export";
 
-const writes: Array<{ path: string; content: string }> = [];
-
-mock.module("fs", () => {
-  return {
-    writeFileSync: (path: string, content: string) => {
-      writes.push({ path: String(path), content: String(content) });
-    },
-  };
-});
-
-const { exportCommand } = await import("../../src/commands/export");
+// Test helpers
+let testDir: string;
+let originalCwd: string;
 
 let output: string[] = [];
 let errors: string[] = [];
@@ -20,11 +21,28 @@ const originalLog = console.log;
 const originalError = console.error;
 const originalExit = process.exit;
 
+beforeAll(() => {
+  testDir = mkdtempSync(join(tmpdir(), "jfp-export-test-"));
+  originalCwd = process.cwd();
+});
+
+afterAll(() => {
+  // Cleanup temp directory
+  try {
+    rmSync(testDir, { recursive: true, force: true });
+  } catch (e) {
+    console.error("Failed to cleanup test dir:", e);
+  }
+});
+
 beforeEach(() => {
   output = [];
   errors = [];
-  writes.length = 0;
   exitCode = undefined;
+
+  // Change to temp directory for file writes
+  process.chdir(testDir);
+
   console.log = (...args: unknown[]) => {
     output.push(args.join(" "));
   };
@@ -41,10 +59,7 @@ afterEach(() => {
   console.log = originalLog;
   console.error = originalError;
   process.exit = originalExit;
-});
-
-afterAll(() => {
-  mock.restore();
+  process.chdir(originalCwd);
 });
 
 describe("exportCommand", () => {
@@ -52,7 +67,6 @@ describe("exportCommand", () => {
     exportCommand(["idea-wizard"], { stdout: true, format: "md" });
     const text = output.join("\n");
     expect(text).toContain("# The Idea Wizard");
-    expect(writes.length).toBe(0);
   });
 
   it("outputs JSON summary when --json is set", () => {
@@ -60,12 +74,42 @@ describe("exportCommand", () => {
     const payload = JSON.parse(output.join(""));
     expect(payload.exported[0].id).toBe("idea-wizard");
     expect(payload.exported[0].file).toBe("idea-wizard-SKILL.md");
-    expect(writes.length).toBe(1);
+
+    // Verify file was actually written
+    const filePath = join(testDir, "idea-wizard-SKILL.md");
+    expect(existsSync(filePath)).toBe(true);
+
+    const content = readFileSync(filePath, "utf-8");
+    expect(content).toContain("name: idea-wizard");
+    expect(content).toContain("The Idea Wizard");
   });
 
   it("exits with error when no ids provided", () => {
     expect(() => exportCommand([], { json: true })).toThrow();
     expect(errors.join("\n")).toContain("No prompts specified");
     expect(exitCode).toBe(1);
+  });
+
+  it("exports multiple prompts", () => {
+    exportCommand(["idea-wizard", "readme-reviser"], { json: true });
+    const payload = JSON.parse(output.join(""));
+    expect(payload.exported.length).toBe(2);
+    expect(payload.exported[0].id).toBe("idea-wizard");
+    expect(payload.exported[1].id).toBe("readme-reviser");
+
+    // Verify files were actually written
+    expect(existsSync(join(testDir, "idea-wizard-SKILL.md"))).toBe(true);
+    expect(existsSync(join(testDir, "readme-reviser-SKILL.md"))).toBe(true);
+  });
+
+  it("exports as markdown format", () => {
+    exportCommand(["idea-wizard"], { json: true, format: "md" });
+    const payload = JSON.parse(output.join(""));
+    expect(payload.exported[0].file).toBe("idea-wizard.md");
+
+    // Verify markdown file content
+    const content = readFileSync(join(testDir, "idea-wizard.md"), "utf-8");
+    expect(content).toContain("# The Idea Wizard");
+    expect(content).toContain("Come up with your very best ideas");
   });
 });
