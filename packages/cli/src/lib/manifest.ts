@@ -1,7 +1,8 @@
 // Skills manifest management for tracking installed JFP skills
 
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
+import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync, unlinkSync } from "fs";
 import { join, dirname, resolve, sep } from "path";
+import { randomBytes } from "crypto";
 import type { SkillManifest, SkillManifestEntry } from "@jeffreysprompts/core/export";
 import { computeSkillHash } from "@jeffreysprompts/core/export";
 
@@ -98,11 +99,29 @@ export function readManifest(skillsDir: string): FullSkillManifest | null {
 
 /**
  * Write manifest to a skills directory
+ * Uses atomic write (temp file + rename) to prevent corruption on crash
  */
 export function writeManifest(skillsDir: string, manifest: FullSkillManifest): void {
   mkdirSync(skillsDir, { recursive: true });
   const manifestPath = getManifestPath(skillsDir);
-  writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+  const suffix = randomBytes(8).toString("hex");
+  const tempPath = `${manifestPath}.${suffix}.tmp`;
+  const content = JSON.stringify(manifest, null, 2);
+
+  try {
+    writeFileSync(tempPath, content);
+    renameSync(tempPath, manifestPath);
+  } catch (err) {
+    // Clean up temp file on failure
+    try {
+      if (existsSync(tempPath)) {
+        unlinkSync(tempPath);
+      }
+    } catch {
+      // Ignore cleanup errors
+    }
+    throw err;
+  }
 }
 
 /**

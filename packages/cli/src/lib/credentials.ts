@@ -13,6 +13,7 @@ import { homedir } from "os";
 import { join, dirname } from "path";
 import { readFile, writeFile, mkdir, unlink, rename } from "fs/promises";
 import { existsSync } from "fs";
+import { randomBytes } from "crypto";
 
 // Premium API URL for token refresh
 const PREMIUM_URL = process.env.JFP_PREMIUM_URL ?? "https://pro.jeffreysprompts.com";
@@ -108,12 +109,23 @@ export async function saveCredentials(creds: Credentials): Promise<void> {
     await mkdir(dir, { recursive: true, mode: 0o700 });
   }
 
-  // Write atomically via temp file
-  const tempPath = `${path}.tmp`;
+  // Write atomically via temp file with random suffix to prevent race conditions
+  const suffix = randomBytes(8).toString("hex");
+  const tempPath = `${path}.${suffix}.tmp`;
   const content = JSON.stringify(creds, null, 2);
 
-  await writeFile(tempPath, content, { mode: 0o600 }); // User read/write only
-  await rename(tempPath, path);
+  try {
+    await writeFile(tempPath, content, { mode: 0o600 }); // User read/write only
+    await rename(tempPath, path);
+  } catch (err) {
+    // Clean up temp file on failure
+    try {
+      await unlink(tempPath);
+    } catch {
+      // Ignore cleanup errors
+    }
+    throw err;
+  }
 }
 
 /**
