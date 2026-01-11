@@ -107,7 +107,6 @@ export function SwipeablePromptCard({
   const handleDoubleTap = useCallback(() => {
     setShowHeartAnimation(true);
     haptic.success();
-    trackEvent("prompt_save", { id: prompt.id, source: "double_tap" });
     onSave?.(prompt);
     setActionTriggered("save");
     setTimeout(() => {

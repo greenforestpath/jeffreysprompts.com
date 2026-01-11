@@ -197,9 +197,9 @@ describe("CLI Network Failure E2E", () => {
         resultCount: results.length,
       });
 
-      // Should find idea-wizard in bundled prompts
+      // Should find idea-wizard in bundled prompts (flat structure now)
       const hasWizard = results.some(
-        (r: { prompt: { id: string } }) => r.prompt.id === "idea-wizard"
+        (r: { id: string }) => r.id === "idea-wizard"
       );
       expect(hasWizard).toBe(true);
 
@@ -333,8 +333,8 @@ describe("CLI Network Failure E2E", () => {
       expect(searchResults.length).toBeGreaterThan(0);
       logger.info("Search results", { count: searchResults.length });
 
-      // Step 3: Show the top result
-      const topResultId = searchResults[0].prompt.id;
+      // Step 3: Show the top result (flat structure - id directly on result)
+      const topResultId = searchResults[0].id;
       logger.step(`Show details for ${topResultId} (offline mode)`);
       const showResult = await spawnCli({
         cmd: ["bun", "run", "jfp.ts", "show", topResultId, "--json"],
