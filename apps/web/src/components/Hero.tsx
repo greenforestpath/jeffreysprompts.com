@@ -2,11 +2,12 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Search, Sparkles, Terminal, Download, ArrowRight } from "lucide-react";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform, useScroll } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { TextReveal } from "@/components/TextReveal";
+import { CharacterReveal } from "@/components/CharacterReveal";
 import { AnimatedCounter, AnimatedText } from "@/components/AnimatedCounter";
+import { MagneticButton } from "@/components/MagneticButton";
 import type { PromptCategory } from "@jeffreysprompts/core/prompts/types";
 
 interface HeroProps {
@@ -45,6 +46,14 @@ export function Hero({
   // Transform mouse position to gradient position (as percentage)
   const gradientX = useTransform(smoothMouseX, (v) => `${v}%`);
   const gradientY = useTransform(smoothMouseY, (v) => `${v}%`);
+
+  // Scroll-based parallax for background orbs
+  const { scrollY } = useScroll();
+  const parallaxY1 = useTransform(scrollY, [0, 500], [0, -80]);
+  const parallaxY2 = useTransform(scrollY, [0, 500], [0, -120]);
+  const parallaxY3 = useTransform(scrollY, [0, 500], [0, -60]);
+  const parallaxScale = useTransform(scrollY, [0, 300], [1, 0.95]);
+  const parallaxOpacity = useTransform(scrollY, [0, 400], [1, 0]);
 
   // Handle mouse move for gradient tracking
   const handleMouseMove = useCallback(
@@ -130,13 +139,13 @@ export function Hero({
           }}
         />
 
-        {/* Animated orbs with enhanced organic motion */}
+        {/* Animated orbs with enhanced organic motion and parallax */}
         <motion.div
           className="absolute top-1/4 -left-32 w-96 h-96 rounded-full bg-gradient-to-br from-indigo-400/30 to-purple-400/20 blur-3xl"
+          style={{ y: parallaxY1 }}
           animate={{
             scale: [1, 1.1, 1],
             x: [0, 20, 0],
-            y: [0, -10, 0],
           }}
           transition={{
             duration: 8,
@@ -146,10 +155,10 @@ export function Hero({
         />
         <motion.div
           className="absolute bottom-1/4 -right-32 w-80 h-80 rounded-full bg-gradient-to-tl from-blue-400/25 to-cyan-400/15 blur-3xl"
+          style={{ y: parallaxY2 }}
           animate={{
             scale: [1, 1.15, 1],
             x: [0, -15, 0],
-            y: [0, 15, 0],
           }}
           transition={{
             duration: 10,
@@ -160,8 +169,8 @@ export function Hero({
         />
         <motion.div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-gradient-radial from-violet-400/10 to-transparent blur-2xl"
+          style={{ y: parallaxY3, scale: parallaxScale }}
           animate={{
-            scale: [1, 1.05, 1],
             opacity: [0.8, 1, 0.8],
           }}
           transition={{
@@ -196,13 +205,13 @@ export function Hero({
             </span>
           </motion.div>
 
-          {/* Main headline - animated text reveal */}
+          {/* Main headline - character-by-character reveal */}
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-zinc-900 dark:text-white mb-6">
-            <TextReveal
+            <CharacterReveal
               text="Jeffrey's Prompts"
               delay={0.2}
-              stagger={0.1}
-              wordDuration={0.6}
+              stagger={0.025}
+              preset="cascade"
               gradient
             />
           </h1>
@@ -265,19 +274,32 @@ export function Hero({
             </div>
           </motion.div>
 
-          {/* CTA Buttons - staggered entrance */}
+          {/* CTA Buttons - staggered entrance with magnetic effect */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.9, ease: "easeOut" }}
             className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-10"
           >
+            {/* Primary CTA with magnetic effect (desktop) */}
+            <div className="hidden sm:block">
+              <MagneticButton
+                variant="primary"
+                glowColor="rgb(99, 102, 241)"
+                strength={0.2}
+                className="gap-2 px-6 py-3"
+              >
+                <Download className="w-4 h-4" />
+                Install CLI
+              </MagneticButton>
+            </div>
+            {/* Mobile primary CTA (no magnetic - touch devices) */}
             <motion.div
-              whileHover={{ scale: 1.02 }}
+              className="sm:hidden w-full"
               whileTap={{ scale: 0.98 }}
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
-              <Button size="lg" className="gap-2 px-6 min-h-[48px] w-full sm:w-auto touch-manipulation">
+              <Button size="lg" className="gap-2 px-6 min-h-[48px] w-full touch-manipulation">
                 <Download className="w-4 h-4" />
                 Install CLI
               </Button>
