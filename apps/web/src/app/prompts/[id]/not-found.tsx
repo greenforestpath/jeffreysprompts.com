@@ -9,7 +9,7 @@ export default function PromptNotFound() {
         <FileQuestion className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
         <h1 className="text-2xl font-bold mb-2">Prompt Not Found</h1>
         <p className="text-muted-foreground mb-6">
-          The prompt you're looking for doesn't exist or has been removed.
+          The prompt you are looking for does not exist or has been removed.
         </p>
         <Button asChild>
           <Link href="/" className="gap-2">

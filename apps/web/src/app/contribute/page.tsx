@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { categories } from "@jeffreysprompts/core/prompts/registry";
 import type { PromptCategory } from "@jeffreysprompts/core/prompts/types";
@@ -73,11 +73,8 @@ export default function ContributePage() {
   const [whenToUseInput, setWhenToUseInput] = useState("");
   const [tipsInput, setTipsInput] = useState("");
 
-  useEffect(() => {
-    if (!idTouched) {
-      setId(slugify(title));
-    }
-  }, [title, idTouched]);
+  const suggestedId = useMemo(() => slugify(title), [title]);
+  const displayId = idTouched ? id : suggestedId;
 
   const createdDate = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
@@ -86,8 +83,8 @@ export default function ContributePage() {
   const tips = useMemo(() => parseLineList(tipsInput), [tipsInput]);
 
   const effectiveId = idTouched
-    ? (id || slugify(title) || "your-prompt-id")
-    : (slugify(title) || "your-prompt-id");
+    ? (id || suggestedId || "your-prompt-id")
+    : (suggestedId || "your-prompt-id");
   const effectiveCategory = category;
   const safeContent = content.trim()
     ? escapeTemplateLiteral(content.trim())
@@ -157,7 +154,7 @@ export default function ContributePage() {
     return `https://github.com/Dicklesworthstone/jeffreysprompts.com/compare?expand=1&${params.toString()}`;
   }, [issueBody, issueTitle]);
 
-  const idIsValid = !idTouched || SAFE_ID_PATTERN.test(id);
+  const idIsValid = !idTouched || SAFE_ID_PATTERN.test(displayId);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50/40 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900">
@@ -215,7 +212,7 @@ export default function ContributePage() {
                   <Label htmlFor="prompt-id">Prompt ID (kebab-case)</Label>
                   <Input
                     id="prompt-id"
-                    value={id}
+                    value={displayId}
                     onChange={(event) => {
                       setIdTouched(true);
                       setId(event.target.value.toLowerCase());
