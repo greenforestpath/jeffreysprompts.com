@@ -57,14 +57,9 @@ export function useIsMobile(options: UseIsMobileOptions = {}): boolean {
   const { breakpoint = MOBILE_BREAKPOINT, includeTouchDevices = false } =
     options;
 
-  // Initial state: use user agent for SSR-safe guess
-  const [isMobile, setIsMobile] = React.useState(() => {
-    // On server, default to false (optimistic for desktop)
-    if (typeof window === "undefined") return false;
-
-    // On client, check viewport width immediately
-    return window.innerWidth < breakpoint;
-  });
+  // Initial state: default to false to avoid SSR/client hydration mismatches.
+  // We'll compute the real value on mount.
+  const [isMobile, setIsMobile] = React.useState(false);
 
   React.useEffect(() => {
     const checkIsMobile = () => {
@@ -101,10 +96,7 @@ export function useIsMobile(options: UseIsMobileOptions = {}): boolean {
 export function useIsSmallScreen(
   breakpoint: number = MOBILE_BREAKPOINT
 ): boolean {
-  const [isSmall, setIsSmall] = React.useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.innerWidth < breakpoint;
-  });
+  const [isSmall, setIsSmall] = React.useState(false);
 
   React.useEffect(() => {
     const checkWidth = () => {

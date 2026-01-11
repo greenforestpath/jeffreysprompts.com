@@ -1,12 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckCircle2, FileText, Flag, Sparkles } from "lucide-react";
+import { CheckCircle2, FileText, Flag, MessageSquare, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { TranscriptSection } from "@/lib/transcript/types";
-import type { GuideStep } from "@/data/annotations";
+import { workflowPosts, type GuideStep } from "@/data/annotations";
 
 interface AnnotatedGuideProps {
   sections: TranscriptSection[];
@@ -27,6 +27,7 @@ export function AnnotatedGuide({
   duration,
 }: AnnotatedGuideProps) {
   const stepsBySection = new Map(steps.map((step) => [step.sectionId, step]));
+  const workflowPostMap = new Map(workflowPosts.map((post) => [post.id, post]));
 
   return (
     <section id="guide" className="relative overflow-hidden py-20 sm:py-28">
@@ -120,6 +121,44 @@ export function AnnotatedGuide({
                       <div className="rounded-2xl border border-violet-200/40 bg-violet-50/60 p-4 text-sm text-zinc-700 shadow-sm dark:border-violet-500/20 dark:bg-zinc-950/40 dark:text-zinc-200">
                         <p className="leading-relaxed">{step.narrative}</p>
                       </div>
+
+                      {step.excerpts && step.excerpts.length > 0 && (
+                        <div className="mt-4 rounded-2xl border border-amber-200/60 bg-amber-50/70 p-4 text-sm text-amber-900 shadow-sm dark:border-amber-500/30 dark:bg-amber-950/30 dark:text-amber-100">
+                          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-200">
+                            <MessageSquare className="h-3.5 w-3.5" />
+                            Session snapshot (paraphrased)
+                          </div>
+                          <ul className="mt-3 space-y-2 text-sm text-amber-900/90 dark:text-amber-100/90">
+                            {step.excerpts.map((excerpt) => (
+                              <li key={excerpt} className="flex items-start gap-2">
+                                <span className="mt-1 h-2 w-2 rounded-full bg-amber-400/80" />
+                                <span>{excerpt}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {step.xRefs && step.xRefs.length > 0 && (
+                        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                          <span className="font-semibold uppercase tracking-wide text-zinc-400">
+                            Workflow posts
+                          </span>
+                          {step.xRefs.map((postId) => {
+                            const post = workflowPostMap.get(postId);
+                            if (!post) return null;
+                            return (
+                              <a
+                                key={postId}
+                                href={`#xpost-${postId}`}
+                                className="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-sky-700 transition hover:border-sky-300 hover:text-sky-800 dark:border-sky-500/30 dark:bg-sky-950/40 dark:text-sky-200"
+                              >
+                                {post.title}
+                              </a>
+                            );
+                          })}
+                        </div>
+                      )}
 
                       {(step.planPanel || step.revisions?.length) && (
                         <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">

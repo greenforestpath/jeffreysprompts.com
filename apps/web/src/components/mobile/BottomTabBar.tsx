@@ -13,6 +13,7 @@ import {
   X,
   Gift,
   Info,
+  ShoppingBag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useHaptic } from "@/hooks/useHaptic";
@@ -33,7 +34,15 @@ const tabs: TabItem[] = [
   { id: "more", label: "More", icon: Menu, action: "menu" },
 ];
 
-const moreMenuItems = [
+interface MoreMenuItem {
+  label: string;
+  icon: typeof Home;
+  href?: string;
+  action?: "basket";
+}
+
+const moreMenuItems: MoreMenuItem[] = [
+  { label: "Basket", icon: ShoppingBag, action: "basket" },
   { label: "Contribute", icon: Gift, href: "/contribute" },
   { label: "How It's Made", icon: Info, href: "/how_it_was_made" },
 ];
@@ -109,12 +118,24 @@ export function BottomTabBar({ onOpenSearch, className }: BottomTabBarProps) {
       haptic.selection();
 
       if (tab.action === "search") {
+        setMenuOpen(false);
         onOpenSearch?.();
       } else if (tab.action === "menu") {
         setMenuOpen((prev) => !prev);
       }
     },
     [haptic, onOpenSearch]
+  );
+
+  const handleMoreAction = useCallback(
+    (item: MoreMenuItem) => {
+      if (item.action === "basket") {
+        window.dispatchEvent(new CustomEvent("toggle-basket"));
+      }
+      haptic.light();
+      setMenuOpen(false);
+    },
+    [haptic]
   );
 
   // Close menu when clicking outside
@@ -146,26 +167,52 @@ export function BottomTabBar({ onOpenSearch, className }: BottomTabBarProps) {
             data-tab-bar
           >
             <div className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-lg rounded-2xl shadow-xl border border-zinc-200/50 dark:border-zinc-700/50 overflow-hidden">
-              {moreMenuItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => {
-                    haptic.light();
-                    setMenuOpen(false);
-                  }}
-                  className={cn(
-                    "flex items-center gap-3 px-5 py-3.5",
-                    "text-sm font-medium",
-                    "hover:bg-zinc-100 dark:hover:bg-zinc-800",
-                    "transition-colors",
-                    pathname === item.href && "text-indigo-600 dark:text-indigo-400"
-                  )}
-                >
-                  <item.icon className="w-5 h-5" />
-                  {item.label}
-                </Link>
-              ))}
+              {moreMenuItems.map((item) => {
+                const content = (
+                  <>
+                    <item.icon className="w-5 h-5" />
+                    {item.label}
+                  </>
+                );
+
+                if (item.href) {
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => {
+                        haptic.light();
+                        setMenuOpen(false);
+                      }}
+                      className={cn(
+                        "flex items-center gap-3 px-5 py-3.5",
+                        "text-sm font-medium",
+                        "hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                        "transition-colors",
+                        pathname === item.href && "text-indigo-600 dark:text-indigo-400"
+                      )}
+                    >
+                      {content}
+                    </Link>
+                  );
+                }
+
+                return (
+                  <button
+                    key={item.label}
+                    type="button"
+                    onClick={() => handleMoreAction(item)}
+                    className={cn(
+                      "flex w-full items-center gap-3 px-5 py-3.5",
+                      "text-sm font-medium text-left",
+                      "hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                      "transition-colors"
+                    )}
+                  >
+                    {content}
+                  </button>
+                );
+              })}
             </div>
           </motion.div>
         )}

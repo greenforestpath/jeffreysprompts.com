@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { Github, Menu, X, Sparkles, ShoppingBasket, Crown } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ThemeToggle } from "./theme-toggle";
 import { BasketSidebar } from "./BasketSidebar";
 import { Button } from "./ui/button";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 import { useBasket } from "@/hooks/use-basket";
-import { cn } from "@/lib/utils";
 
 // Pro site URL - use env var if available, otherwise default
 const PRO_URL = process.env.NEXT_PUBLIC_PRO_URL ?? "https://pro.jeffreysprompts.com";
@@ -24,6 +24,12 @@ export function Nav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [basketOpen, setBasketOpen] = useState(false);
   const { items } = useBasket();
+
+  useEffect(() => {
+    const handleToggleBasket = () => setBasketOpen((prev) => !prev);
+    window.addEventListener("toggle-basket", handleToggleBasket);
+    return () => window.removeEventListener("toggle-basket", handleToggleBasket);
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -99,65 +105,68 @@ export function Nav() {
             </a>
           </Button>
 
-          {/* Mobile menu button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden h-11 w-11 touch-manipulation"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={mobileMenuOpen}
-          >
-            {mobileMenuOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
-          </Button>
+          {/* Mobile menu button + drawer */}
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden h-11 w-11 touch-manipulation"
+                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+                aria-expanded={mobileMenuOpen}
+              >
+                {mobileMenuOpen ? (
+                  <X className="h-5 w-5" />
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0 gap-0">
+              <SheetHeader className="border-b border-border/60 px-5 py-4">
+                <SheetTitle className="flex items-center gap-2 text-base">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  JeffreysPrompts
+                </SheetTitle>
+              </SheetHeader>
+              <div className="flex h-full flex-col">
+                <nav className="flex flex-col px-5 py-2" aria-label="Mobile navigation">
+                  {navLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="block min-h-[44px] py-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground touch-manipulation"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </nav>
+
+                <div className="mt-auto border-t border-border/60 px-5 py-3">
+                  <a
+                    href={`${PRO_URL}/login`}
+                    className="block min-h-[44px] py-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground touch-manipulation"
+                    rel="noopener noreferrer"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Login
+                  </a>
+                  <a
+                    href={PRO_URL}
+                    className="flex items-center gap-2 min-h-[44px] py-3 text-sm font-medium text-primary transition-colors hover:text-primary/80 touch-manipulation"
+                    rel="noopener noreferrer"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Crown className="h-4 w-4" />
+                    Go Pro
+                  </a>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </nav>
-
-      {/* Mobile Navigation */}
-      <div
-        className={cn(
-          "md:hidden overflow-hidden transition-all duration-300 ease-in-out",
-          mobileMenuOpen ? "max-h-[500px]" : "max-h-0"
-        )}
-      >
-        <nav className="container mx-auto px-4 py-2 border-t border-border/40" aria-label="Mobile navigation">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="block min-h-[44px] py-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground touch-manipulation"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              {link.label}
-            </Link>
-          ))}
-
-          {/* Pro links in mobile menu */}
-          <div className="border-t border-border/40 mt-2 pt-2">
-            <a
-              href={`${PRO_URL}/login`}
-              className="block min-h-[44px] py-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground touch-manipulation"
-              rel="noopener noreferrer"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Login
-            </a>
-            <a
-              href={PRO_URL}
-              className="flex items-center gap-2 min-h-[44px] py-3 text-sm font-medium text-primary transition-colors hover:text-primary/80 touch-manipulation"
-              rel="noopener noreferrer"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Crown className="h-4 w-4" />
-              Go Pro
-            </a>
-          </div>
-        </nav>
-      </div>
 
       {/* Basket Sidebar */}
       <BasketSidebar isOpen={basketOpen} onClose={() => setBasketOpen(false)} />

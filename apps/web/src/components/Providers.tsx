@@ -12,6 +12,7 @@ import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { useServiceWorker } from "@/hooks/useServiceWorker";
 import { useKeyboardShortcuts, type KeyboardShortcut } from "@/hooks/useKeyboardShortcuts";
 import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal";
+import { BottomTabBar } from "@/components/mobile/BottomTabBar";
 
 // Lazy load SpotlightSearch - it's only needed when user presses Cmd+K
 // This reduces initial bundle size significantly (~100KB+ of search/semantic code)
@@ -151,6 +152,7 @@ export function Providers({ children }: ProvidersProps) {
             onClose={() => setShortcutsOpen(false)}
             shortcuts={shortcuts}
           />
+          <BottomTabBar onOpenSearch={openSpotlight} />
           <Toaster />
         </BasketProvider>
       </ToastProvider>

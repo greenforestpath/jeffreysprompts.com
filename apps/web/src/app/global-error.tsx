@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect } from "react";
 
 interface GlobalErrorProps {
@@ -73,7 +74,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                 Try again
               </button>
 
-              <a
+              <Link
                 href="/"
                 className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
               >
@@ -91,7 +92,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                   />
                 </svg>
                 Go home
-              </a>
+              </Link>
             </div>
 
             <div className="mt-8 pt-6 border-t border-zinc-200 dark:border-zinc-800">

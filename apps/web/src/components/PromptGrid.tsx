@@ -1,7 +1,9 @@
 "use client";
 
 import { PromptCard } from "./PromptCard";
+import { SwipeablePromptCard } from "@/components/mobile/SwipeablePromptCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useIsSmallScreen } from "@/hooks/useIsMobile";
 import type { Prompt } from "@jeffreysprompts/core/prompts/types";
 
 interface PromptGridProps {
@@ -17,6 +19,8 @@ export function PromptGrid({
   onPromptCopy,
   onPromptClick,
 }: PromptGridProps) {
+  const isMobile = useIsSmallScreen();
+
   if (loading) {
     return (
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -40,14 +44,26 @@ export function PromptGrid({
 
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {prompts.map((prompt) => (
-        <PromptCard
-          key={prompt.id}
-          prompt={prompt}
-          onCopy={onPromptCopy}
-          onClick={onPromptClick}
-        />
-      ))}
+      {prompts.map((prompt, index) =>
+        isMobile ? (
+          <SwipeablePromptCard
+            key={prompt.id}
+            prompt={prompt}
+            index={index}
+            onCopy={onPromptCopy}
+            onClick={onPromptClick}
+            isMobile={isMobile}
+          />
+        ) : (
+          <PromptCard
+            key={prompt.id}
+            prompt={prompt}
+            index={index}
+            onCopy={onPromptCopy}
+            onClick={onPromptClick}
+          />
+        )
+      )}
     </div>
   );
 }

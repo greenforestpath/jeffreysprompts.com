@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useState, useRef, useEffect, type ReactNode } from "react";
+import {
+  useCallback,
+  useState,
+  useRef,
+  useEffect,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import { motion, useAnimation, AnimatePresence } from "framer-motion";
 import { Copy, Check, ShoppingBag, Plus, Heart, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -18,6 +25,7 @@ interface SwipeablePromptCardProps {
   onCopy?: (prompt: Prompt) => void;
   onClick?: (prompt: Prompt) => void;
   onSave?: (prompt: Prompt) => void;
+  isMobile?: boolean;
 }
 
 const SWIPE_THRESHOLD = 80;
@@ -54,8 +62,17 @@ export function SwipeablePromptCard({
   onCopy,
   onClick,
   onSave,
+  isMobile: isMobileProp,
 }: SwipeablePromptCardProps) {
-  const [isMobile, setIsMobile] = useState(false);
+  const autoIsMobile = useSyncExternalStore(
+    (callback) => {
+      if (typeof window === "undefined") return () => undefined;
+      window.addEventListener("resize", callback);
+      return () => window.removeEventListener("resize", callback);
+    },
+    () => (typeof window === "undefined" ? false : window.innerWidth < 768),
+    () => false
+  );
   const [actionTriggered, setActionTriggered] = useState<"copy" | "basket" | "save" | null>(null);
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
@@ -133,15 +150,7 @@ export function SwipeablePromptCard({
     return timer;
   }, []);
 
-  // Detect mobile viewport
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+  const isMobile = typeof isMobileProp === "boolean" ? isMobileProp : autoIsMobile;
 
   const handleCopy = useCallback(async () => {
     try {

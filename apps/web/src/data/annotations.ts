@@ -101,17 +101,33 @@ export const annotationsMap: Record<string, Omit<TranscriptHighlight, "messageId
 export interface GuideStep {
   sectionId: string;
   narrative: string;
+  excerpts?: string[];
   outcomes: string[];
   artifacts: string[];
   revisions?: Array<{ id: string; label: string }>;
   planPanel?: boolean;
+  xRefs?: string[];
+}
+
+export interface WorkflowPost {
+  id: string;
+  date: string;
+  title: string;
+  summary: string;
+  tags: string[];
+  stepIds: string[];
+  tone: "planning" | "coordination" | "prompting" | "ux";
 }
 
 export const guideSteps: GuideStep[] = [
   {
     sectionId: "section-0",
     narrative:
-      "The build started by mapping the prompt tweets into a full product scope and selecting brenner_bot as the north star for stack and UX. That context was distilled into a comprehensive plan that the rest of the session followed.",
+      "We started by translating the original prompt tweets into a full product brief, then locked the plan before writing code. This is the signature move: spend the human effort up front so execution is fast, aligned, and low-drama. It is deliberately different from the typical \"just start coding\" approach — the plan is the product spec, and the prompts are the operating system.",
+    excerpts: [
+      "The first move is to turn the prompt tweets into a real scope document.",
+      "Planning is treated as the highest leverage phase, not a formality.",
+    ],
     outcomes: [
       "Mapped prompt tweets into a full product scope (web + CLI).",
       "Adopted brenner_bot as the design and stack reference point.",
@@ -129,11 +145,21 @@ export const guideSteps: GuideStep[] = [
       { id: "skill-manifest", label: "Skill manifest hashing" },
       { id: "yaml-safe", label: "YAML-safe frontmatter" },
     ],
+    xRefs: [
+      "2008027253817712704",
+      "2008813484348153961",
+      "1999969044561375694",
+      "1999979218378297623",
+    ],
   },
   {
     sectionId: "section-1",
     narrative:
-      "We carved the monorepo into web, CLI, and a shared core, then locked down the type system so prompts and metadata lived as real TypeScript objects instead of loose markdown.",
+      "Prompts became typed TypeScript objects so the registry is the source of truth for every surface (web, CLI, exports). The \"data is code\" choice avoids brittle markdown parsing and keeps changes precise, which matters when prompts are the product itself. This is different from most prompt libraries that treat content as static files.",
+    excerpts: [
+      "The registry is a real code module, not a folder of markdown files.",
+      "Types lock in categories, metadata, and prompt shape early.",
+    ],
     outcomes: [
       "Established the monorepo layout for core, CLI, and web packages.",
       "Defined prompt/category/meta types as the single source of truth.",
@@ -145,11 +171,16 @@ export const guideSteps: GuideStep[] = [
       "packages/core/src/index.ts",
     ],
     revisions: [{ id: "packages-core", label: "Shared core package" }],
+    xRefs: ["1939000599242252607"],
   },
   {
     sectionId: "section-2",
     narrative:
-      "Search relevance was solved early: tokenize, weight the right fields, and ship a real BM25 scorer so the UI and CLI could surface the best prompts.",
+      "Search relevance was solved early with deterministic BM25 scoring. We deliberately avoided embeddings here because the catalog needs stable, explainable ranking that agents can trust across runs. This is part of the broader philosophy: build mechanical systems first, then add fancy layers only if needed.",
+    excerpts: [
+      "Weighted fields make the system surface what humans actually care about.",
+      "Deterministic search beats fuzzy guesses when prompts are code.",
+    ],
     outcomes: [
       "Implemented BM25 scoring with weighted fields for better relevance.",
       "Built the search pipeline: tokenize, score, rank, and return.",
@@ -165,7 +196,11 @@ export const guideSteps: GuideStep[] = [
   {
     sectionId: "section-3",
     narrative:
-      "With core in place, the Next.js app landed fast: global layout, hero, and the reusable UI blocks that would power search, cards, and navigation.",
+      "The web app was built quickly but intentionally: strong hero, clear navigation, and a UI system tuned for prompt browsing. The UI/UX prompt used in other projects shows up here too — iterate aggressively on layout and polish so the interface feels deliberate rather than template-driven.",
+    excerpts: [
+      "Layout and hero came first so the rest of the UI had a visual anchor.",
+      "Reusable components were designed to scale across search and cards.",
+    ],
     outcomes: [
       "Bootstrapped the Next.js 16 App Router foundation.",
       "Established Tailwind 4 + shadcn/ui styling patterns.",
@@ -176,11 +211,16 @@ export const guideSteps: GuideStep[] = [
       "apps/web/src/components/Nav.tsx",
       "apps/web/src/components/Hero.tsx",
     ],
+    xRefs: ["2007194101448573036"],
   },
   {
     sectionId: "section-4",
     narrative:
-      "The CLI was built to feel agent-native: fuzzy search, crisp output modes, and the ability to install skills directly from the registry.",
+      "The CLI is treated as a first-class agent surface, not a secondary tool: fuzzy search, JSON/markdown modes, and skill installation are all tuned for automation and token efficiency. This is where the Robot-Mode prompt philosophy shows up — build tools the agents can run reliably, then let them scale the work.",
+    excerpts: [
+      "The CLI defaults to agent-friendly output, not human-friendly verbosity.",
+      "Skill install/export workflows are designed for automated pipelines.",
+    ],
     outcomes: [
       "Built the `jfp` CLI entrypoint and command registry.",
       "Added fuzzy search plus JSON/markdown output modes.",
@@ -196,11 +236,21 @@ export const guideSteps: GuideStep[] = [
       { id: "prompt-variables", label: "Prompt templating" },
       { id: "skill-manifest", label: "Skill manifest hashing" },
     ],
+    xRefs: [
+      "1984344027576033619",
+      "2006261780218265758",
+      "2006557029964607785",
+      "1995863013987868954",
+    ],
   },
   {
     sectionId: "section-5",
     narrative:
-      "User-facing features snapped into place: Spotlight search, prompt cards, and the basket workflow that makes bulk export feel effortless.",
+      "User-facing workflows snapped into place: Spotlight search, prompt cards, and the basket flow for bulk export. The goal is throughput — letting you explore, collect, and ship prompts quickly without the friction most catalogs impose.",
+    excerpts: [
+      "Spotlight became the primary discovery mechanism to keep search fast.",
+      "The basket flow makes multi-prompt export a single gesture.",
+    ],
     outcomes: [
       "Shipped SpotlightSearch (Cmd+K) for prompt discovery.",
       "Designed prompt cards with copy and quick actions.",
@@ -212,11 +262,16 @@ export const guideSteps: GuideStep[] = [
       "apps/web/src/components/BasketSidebar.tsx",
     ],
     revisions: [{ id: "changelog", label: "Prompt changelog" }],
+    xRefs: ["2007194101448573036"],
   },
   {
     sectionId: "section-6",
     narrative:
-      "The final stretch was all about trust: tests, docs, and the build pipeline that turns the CLI into a single portable binary.",
+      "The final stretch was about trust and portability: hardening tests, refining docs, and producing a single-file CLI binary. This is the less flashy part of the workflow, but it is what lets agents (and humans) rely on the tooling without surprises.",
+    excerpts: [
+      "Test coverage and docs were tightened before calling it done.",
+      "The binary build step was treated like a core product feature.",
+    ],
     outcomes: [
       "Expanded tests and hardened edge cases before shipping.",
       "Polished docs and release scripts for distribution.",
@@ -231,6 +286,109 @@ export const guideSteps: GuideStep[] = [
       { id: "health-endpoints", label: "Health endpoints" },
       { id: "yaml-safe", label: "YAML-safe frontmatter" },
     ],
+  },
+];
+
+export const workflowPosts: WorkflowPost[] = [
+  {
+    id: "2008027253817712704",
+    date: "Jan 5, 2026",
+    title: "Planning first prevents slop",
+    summary:
+      "Emphasizes that most of the human effort is front-loaded into planning so the execution phase stays clean and predictable.",
+    tags: ["planning", "quality"],
+    stepIds: ["section-0"],
+    tone: "planning",
+  },
+  {
+    id: "2008813484348153961",
+    date: "Jan 7, 2026",
+    title: "What makes a great markdown plan",
+    summary:
+      "Breaks down how a strong plan document is crafted and why it dominates the overall workflow.",
+    tags: ["planning", "process"],
+    stepIds: ["section-0"],
+    tone: "planning",
+  },
+  {
+    id: "1999969044561375694",
+    date: "Dec 13, 2025",
+    title: "Idea to plan to multi-model revision",
+    summary:
+      "Describes the loop of capturing a new idea, producing a plan fast, then refining it with GPT Pro and other models.",
+    tags: ["planning", "revisions"],
+    stepIds: ["section-0"],
+    tone: "planning",
+  },
+  {
+    id: "1999979218378297623",
+    date: "Dec 13, 2025",
+    title: "Dedicated plan revision pass",
+    summary:
+      "Highlights the separate plan-rewrite phase to ensure all feedback is integrated before execution starts.",
+    tags: ["planning", "quality"],
+    stepIds: ["section-0"],
+    tone: "planning",
+  },
+  {
+    id: "1939000599242252607",
+    date: "Jun 28, 2025",
+    title: "Best-practices doc as a contract",
+    summary:
+      "Shows how a detailed stack guide becomes the shared ruleset the plan and prompts align to.",
+    tags: ["architecture", "standards"],
+    stepIds: ["section-1"],
+    tone: "planning",
+  },
+  {
+    id: "2007194101448573036",
+    date: "Jan 2, 2026",
+    title: "UI/UX prompt for Next.js 16",
+    summary:
+      "Documents the UI polish prompt used to push layout, spacing, and motion beyond defaults.",
+    tags: ["ux", "prompting"],
+    stepIds: ["section-3", "section-5"],
+    tone: "ux",
+  },
+  {
+    id: "1984344027576033619",
+    date: "Oct 31, 2025",
+    title: "Messaging changes agent workflow",
+    summary:
+      "Explains how agent-to-agent messaging and GPT Pro plan reviews unlocked a new execution cadence.",
+    tags: ["coordination", "planning"],
+    stepIds: ["section-4"],
+    tone: "coordination",
+  },
+  {
+    id: "2006261780218265758",
+    date: "Dec 31, 2025",
+    title: "Agent Mail + beads + bv stack",
+    summary:
+      "Argues that Agent Mail plus beads and bv eliminates coordination footguns in multi-agent work.",
+    tags: ["coordination", "tools"],
+    stepIds: ["section-4"],
+    tone: "coordination",
+  },
+  {
+    id: "2006557029964607785",
+    date: "Jan 1, 2026",
+    title: "Beads accelerate execution",
+    summary:
+      "Notes that structured task graphs (beads) enable much larger builds at higher speed.",
+    tags: ["coordination", "execution"],
+    stepIds: ["section-4"],
+    tone: "coordination",
+  },
+  {
+    id: "1995863013987868954",
+    date: "Dec 2, 2025",
+    title: "cass for fast session recall",
+    summary:
+      "Introduces cass as the search layer that keeps agent history and decisions retrievable.",
+    tags: ["tools", "workflow"],
+    stepIds: ["section-4"],
+    tone: "prompting",
   },
 ];
 
