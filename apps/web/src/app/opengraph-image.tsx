@@ -81,7 +81,7 @@ export default async function Image() {
               lineHeight: 1.1,
             }}
           >
-            Jeffrey&apos;s Prompts
+            {"Jeffrey's Prompts"}
           </h1>
         </div>
 

@@ -35,7 +35,7 @@ export default function WorkflowsOpenGraphImage() {
             color: "#a5b4fc",
           }}
         >
-          Jeffrey&apos;s Prompts
+          {"Jeffrey's Prompts"}
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>

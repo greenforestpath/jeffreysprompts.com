@@ -48,7 +48,7 @@ export default function PromptOpenGraphImage({
             color: "#c7d2fe",
           }}
         >
-          Jeffrey&apos;s Prompts
+          {"Jeffrey's Prompts"}
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>

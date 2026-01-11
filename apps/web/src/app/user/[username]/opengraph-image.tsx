@@ -73,7 +73,7 @@ export default function UserOpenGraphImage({
             color: "#c7d2fe",
           }}
         >
-          Jeffrey&apos;s Prompts
+          {"Jeffrey's Prompts"}
         </div>
 
         {/* Profile Content */}

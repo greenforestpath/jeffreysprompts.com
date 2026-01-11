@@ -36,7 +36,7 @@ export default function BundlesOpenGraphImage() {
             color: "#b45309",
           }}
         >
-          Jeffrey&apos;s Prompts
+          {"Jeffrey's Prompts"}
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
