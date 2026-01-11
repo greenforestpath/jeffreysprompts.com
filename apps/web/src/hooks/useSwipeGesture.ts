@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback, useState } from "react";
+import { useRef, useCallback, useState, useEffect } from "react";
 
 export type SwipeDirection = "left" | "right" | "up" | "down" | null;
 
@@ -88,6 +88,17 @@ export function useSwipeGesture(
   const startPos = useRef({ x: 0, y: 0 });
   const startTime = useRef(0);
   const currentPos = useRef({ x: 0, y: 0 });
+  const rafIdRef = useRef<number | null>(null);
+
+  // Cleanup animation frame on unmount to prevent state updates after unmount
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+    };
+  }, []);
 
   const reset = useCallback(() => {
     setState({
@@ -214,8 +225,9 @@ export function useSwipeGesture(
       }
     }
 
-    // Reset state after animation frame
-    requestAnimationFrame(() => {
+    // Reset state after animation frame (store ID for cleanup on unmount)
+    rafIdRef.current = requestAnimationFrame(() => {
+      rafIdRef.current = null;
       setState({
         isSwiping: false,
         deltaX: 0,
