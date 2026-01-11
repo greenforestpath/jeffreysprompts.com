@@ -106,7 +106,7 @@ export function readOfflineLibrary(): SyncedPrompt[] {
 export function formatSyncAge(isoDate: string | undefined | null): string {
   if (!isoDate) return "never";
   const date = new Date(isoDate);
-  if (isNaN(date.getTime())) return "unknown";
+  if (Number.isNaN(date.getTime())) return "unknown";
   const ms = Date.now() - date.getTime();
   if (ms < 60000) return "just now";
   if (ms < 3600000) return `${Math.floor(ms / 60000)} min ago`;
