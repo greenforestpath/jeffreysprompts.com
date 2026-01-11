@@ -173,13 +173,85 @@ describe("ApiClient", () => {
       expect(headers.get("Authorization")).toBe("Bearer file-token-12345");
     });
 
-    it("does not include auth header for expired credentials", async () => {
+    it("auto-refreshes expired token and includes new token in header", async () => {
       createCredentialsFile({ expired: true });
+
+      // Mock refresh endpoint to return new token
+      let callCount = 0;
+      globalThis.fetch = mock(() => {
+        callCount++;
+        if (callCount === 1) {
+          // First call is refresh - return new token
+          return Promise.resolve(
+            new Response(JSON.stringify({
+              access_token: "new-refreshed-token",
+              refresh_token: "new-refresh-token",
+              expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+              email: "test@example.com",
+              tier: "premium",
+              user_id: "user-123",
+            }), {
+              status: 200,
+              headers: { "Content-Type": "application/json" },
+            })
+          );
+        }
+        // Subsequent calls are the actual API request
+        return Promise.resolve(
+          new Response(JSON.stringify({ data: "test" }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          })
+        );
+      });
 
       const client = new ApiClient();
       await client.request("/test");
 
-      const [, options] = mockFetch.mock.calls[0] as [string, RequestInit];
+      // The second call should be the API request with the refreshed token
+      const calls = (globalThis.fetch as ReturnType<typeof mock>).mock.calls;
+      expect(calls.length).toBe(2); // refresh + actual request
+
+      // Check the actual API request has the new token
+      const [, options] = calls[1] as [string, RequestInit];
+      const headers = options.headers as Headers;
+      expect(headers.get("Authorization")).toBe("Bearer new-refreshed-token");
+    });
+
+    it("does not include auth header when refresh fails", async () => {
+      createCredentialsFile({ expired: true });
+
+      // Make refresh endpoint fail (401)
+      let callCount = 0;
+      globalThis.fetch = mock(() => {
+        callCount++;
+        if (callCount === 1) {
+          // First call is refresh - return 401 to simulate expired refresh token
+          return Promise.resolve(
+            new Response(JSON.stringify({ error: "Unauthorized" }), {
+              status: 401,
+              headers: { "Content-Type": "application/json" },
+            })
+          );
+        }
+        // Subsequent calls are the actual API request
+        return Promise.resolve(
+          new Response(JSON.stringify({ data: "test" }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          })
+        );
+      });
+
+      const client = new ApiClient();
+      await client.request("/test");
+
+      // The second call should be the API request without auth header
+      const calls = (globalThis.fetch as ReturnType<typeof mock>).mock.calls;
+      expect(calls.length).toBe(2); // refresh + actual request
+
+      // Check the actual API request (second call)
+      const [, options] = calls[1] as [string, RequestInit];
       const headers = options.headers as Headers;
       expect(headers.get("Authorization")).toBeNull();
     });
