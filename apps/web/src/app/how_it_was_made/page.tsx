@@ -5,9 +5,10 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import { EnhancedHero } from "@/components/transcript/enhanced-hero";
 import { EnhancedStats } from "@/components/transcript/enhanced-stats";
 import { EnhancedTimeline } from "@/components/transcript/enhanced-timeline";
+import { AnnotatedGuide } from "@/components/transcript/annotated-guide";
 import { InsightCard } from "@/components/transcript/insight-card";
 import { MultiModelFeedback } from "@/components/transcript/multi-model-feedback";
-import { getAnnotations, getAnnotationsByType } from "@/data/annotations";
+import { getAnnotations, getAnnotationsByType, guideSteps } from "@/data/annotations";
 import type { ProcessedTranscript, TranscriptHighlight } from "@/lib/transcript/types";
 import { cn } from "@/lib/utils";
 // Import the processed transcript data
@@ -167,6 +168,20 @@ function InsightsSection() {
   );
 }
 
+function GuideSection() {
+  const { sections, meta } = transcript;
+  const totalMessages = meta.stats.userMessages + meta.stats.assistantMessages;
+
+  return (
+    <AnnotatedGuide
+      sections={sections}
+      steps={guideSteps}
+      totalMessages={totalMessages}
+      duration={meta.duration}
+    />
+  );
+}
+
 function TimelineSection() {
   const { sections, messages } = transcript;
 
@@ -257,6 +272,7 @@ export default function HowItWasMadePage() {
       <HeroSection />
       <StatsSection />
       <IntroductionSection />
+      <GuideSection />
       <MultiModelFeedback />
       <InsightsSection />
       <TimelineSection />

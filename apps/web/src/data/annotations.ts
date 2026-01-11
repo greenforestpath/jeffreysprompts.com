@@ -95,6 +95,109 @@ export const annotationsMap: Record<string, Omit<TranscriptHighlight, "messageId
 };
 
 /**
+ * Guide steps used by the annotated build guide.
+ * These sit alongside transcript sections to explain what changed at each phase.
+ */
+export interface GuideStep {
+  sectionId: string;
+  outcomes: string[];
+  artifacts: string[];
+}
+
+export const guideSteps: GuideStep[] = [
+  {
+    sectionId: "section-0",
+    outcomes: [
+      "Mapped prompt tweets into a full product scope (web + CLI).",
+      "Adopted brenner_bot as the design and stack reference point.",
+      "Produced the end-to-end build plan to drive execution.",
+    ],
+    artifacts: [
+      "PLAN_TO_MAKE_JEFFREYSPROMPTS_WEBAPP_AND_CLI_TOOL.md",
+      "AGENTS.md",
+    ],
+  },
+  {
+    sectionId: "section-1",
+    outcomes: [
+      "Established the monorepo layout for core, CLI, and web packages.",
+      "Defined prompt/category/meta types as the single source of truth.",
+      "Set the registry contract that every feature relies on.",
+    ],
+    artifacts: [
+      "packages/core/src/prompts/types.ts",
+      "packages/core/src/prompts/registry.ts",
+      "packages/core/src/index.ts",
+    ],
+  },
+  {
+    sectionId: "section-2",
+    outcomes: [
+      "Implemented BM25 scoring with weighted fields for better relevance.",
+      "Built the search pipeline: tokenize, score, rank, and return.",
+      "Added export helpers for markdown, YAML, and skill formats.",
+    ],
+    artifacts: [
+      "packages/core/src/search/bm25.ts",
+      "packages/core/src/search/engine.ts",
+      "packages/core/src/export/markdown.ts",
+    ],
+  },
+  {
+    sectionId: "section-3",
+    outcomes: [
+      "Bootstrapped the Next.js 16 App Router foundation.",
+      "Established Tailwind 4 + shadcn/ui styling patterns.",
+      "Built the initial layout, navigation, and hero system.",
+    ],
+    artifacts: [
+      "apps/web/src/app/page.tsx",
+      "apps/web/src/components/Nav.tsx",
+      "apps/web/src/components/Hero.tsx",
+    ],
+  },
+  {
+    sectionId: "section-4",
+    outcomes: [
+      "Built the `jfp` CLI entrypoint and command registry.",
+      "Added fuzzy search plus JSON/markdown output modes.",
+      "Enabled prompt export and skill installation workflows.",
+    ],
+    artifacts: [
+      "packages/cli/src/index.ts",
+      "packages/cli/src/commands/search.ts",
+      "packages/cli/src/commands/export.ts",
+    ],
+  },
+  {
+    sectionId: "section-5",
+    outcomes: [
+      "Shipped SpotlightSearch (Cmd+K) for prompt discovery.",
+      "Designed prompt cards with copy and quick actions.",
+      "Implemented the basket workflow for bulk downloads.",
+    ],
+    artifacts: [
+      "apps/web/src/components/SpotlightSearch.tsx",
+      "apps/web/src/components/PromptCard.tsx",
+      "apps/web/src/components/BasketSidebar.tsx",
+    ],
+  },
+  {
+    sectionId: "section-6",
+    outcomes: [
+      "Expanded tests and hardened edge cases before shipping.",
+      "Polished docs and release scripts for distribution.",
+      "Prepared single-binary builds with Bun.",
+    ],
+    artifacts: [
+      "packages/cli/__tests__/commands/json-schema-golden.test.ts",
+      "README.md",
+      "scripts/build-cli.sh",
+    ],
+  },
+];
+
+/**
  * Convert annotations map to array format for ProcessedTranscript.
  * @returns Array of TranscriptHighlight objects
  */
