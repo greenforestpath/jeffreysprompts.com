@@ -12,7 +12,6 @@ import { PromptDetailModal } from "@/components/PromptDetailModal";
 import { Button } from "@/components/ui/button";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { useFilterState } from "@/hooks/useFilterState";
-import { toast } from "@/components/ui/toast";
 import { FeaturedPromptsSection } from "@/components/landing";
 import type { Prompt, PromptCategory } from "@jeffreysprompts/core/prompts/types";
 
@@ -124,10 +123,6 @@ function HomeContent() {
     };
   }, []);
 
-  const handlePromptCopy = useCallback((prompt: Prompt) => {
-    toast.success("Copied!", `"${prompt.title}" copied to clipboard`);
-  }, []);
-
   const handleRefresh = useCallback(() => {
     if (typeof window !== "undefined") {
       window.location.reload();
@@ -151,7 +146,6 @@ function HomeContent() {
         prompts={featuredPrompts}
         totalCount={prompts.length}
         onPromptClick={handlePromptClick}
-        onPromptCopy={handlePromptCopy}
       />
 
       {/* Prompt Browser Section */}
@@ -213,7 +207,6 @@ function HomeContent() {
           <PromptGrid
             prompts={filteredPrompts}
             onPromptClick={handlePromptClick}
-            onPromptCopy={handlePromptCopy}
           />
         </ErrorBoundary>
       </main>

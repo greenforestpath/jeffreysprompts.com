@@ -9,7 +9,7 @@ interface FeaturedPromptsSectionProps {
   prompts: Prompt[];
   totalCount: number;
   onPromptClick: (prompt: Prompt) => void;
-  onPromptCopy: (prompt: Prompt) => void;
+  onPromptCopy?: (prompt: Prompt) => void;
 }
 
 export function FeaturedPromptsSection({
@@ -65,7 +65,7 @@ export function FeaturedPromptsSection({
                   prompt={prompt}
                   index={index}
                   onClick={() => onPromptClick(prompt)}
-                  onCopy={() => onPromptCopy(prompt)}
+                  onCopy={() => onPromptCopy?.(prompt)}
                 />
               </motion.div>
             ))}
@@ -86,7 +86,7 @@ export function FeaturedPromptsSection({
                 prompt={prompt}
                 index={index}
                 onClick={() => onPromptClick(prompt)}
-                onCopy={() => onPromptCopy(prompt)}
+                onCopy={() => onPromptCopy?.(prompt)}
               />
             </motion.div>
           ))}
