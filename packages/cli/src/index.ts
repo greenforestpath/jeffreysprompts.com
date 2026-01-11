@@ -29,6 +29,7 @@ import { loginCommand } from "./commands/login";
 import { logoutCommand, whoamiCommand } from "./commands/auth";
 import { notesCommand } from "./commands/notes";
 import { saveCommand } from "./commands/save";
+import { collectionsCommand, collectionShowCommand } from "./commands/collections";
 
 export const cli = cac("jfp");
 
@@ -36,6 +37,8 @@ cli
   .command("list", "List all prompts")
   .option("--category <category>", "Filter by category")
   .option("--tag <tag>", "Filter by tag")
+  .option("--mine", "List only your personal prompts")
+  .option("--saved", "List only your saved prompts")
   .option("--json", "Output JSON")
   .action(listCommand);
 
@@ -163,6 +166,17 @@ cli
   .option("--delete <note-id>", "Delete a note by ID")
   .option("--json", "Output JSON")
   .action(notesCommand);
+
+cli
+  .command("collections [name]", "List or show user collections (premium)")
+  .option("--add <prompt-id>", "Add prompt to collection")
+  .option("--json", "Output JSON")
+  .action((name: string | undefined, options: { add?: string; json?: boolean }) => {
+    if (name) {
+      return collectionShowCommand(name, options);
+    }
+    return collectionsCommand(options);
+  });
 
 cli
   .command("i", "Interactive mode - fzf-style prompt picker")
