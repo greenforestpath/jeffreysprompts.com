@@ -1,7 +1,8 @@
 "use client";
 
 import { Suspense, useMemo, useCallback, useState, useEffect } from "react";
-import { AlertTriangle, Sparkles, ChevronDown } from "lucide-react";
+import { AlertTriangle, Sparkles, ChevronDown, ArrowDown } from "lucide-react";
+import { motion } from "framer-motion";
 import { prompts, categories, tags } from "@jeffreysprompts/core/prompts/registry";
 import { searchPrompts } from "@jeffreysprompts/core/search/engine";
 import { Hero } from "@/components/Hero";
@@ -14,6 +15,13 @@ import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { useFilterState } from "@/hooks/useFilterState";
 import { trackEvent } from "@/lib/analytics";
 import { toast } from "@/components/ui/toast";
+import {
+  FeaturesSection,
+  HowItWorksSection,
+  TestimonialsSection,
+  PricingPreviewSection,
+  FinalCtaSection,
+} from "@/components/landing";
 import type { Prompt, PromptCategory } from "@jeffreysprompts/core/prompts/types";
 
 function PromptGridFallback({ onRefresh }: { onRefresh: () => void }) {
@@ -123,6 +131,13 @@ function HomeContent() {
     }
   }, []);
 
+  const scrollToPrompts = useCallback(() => {
+    const promptsSection = document.getElementById("prompts-section");
+    if (promptsSection) {
+      promptsSection.scrollIntoView({ behavior: "smooth" });
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       {/* Hero Section */}
@@ -135,8 +150,41 @@ function HomeContent() {
         selectedCategory={filters.category}
       />
 
-      {/* Main Content */}
-      <main className="container-wide px-4 sm:px-6 lg:px-8 py-12">
+      {/* Marketing Sections */}
+      <FeaturesSection />
+      <HowItWorksSection />
+      <TestimonialsSection />
+      <PricingPreviewSection />
+
+      {/* Transition to Prompt Browser */}
+      <section className="py-16 bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:to-zinc-950">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white mb-4">
+              Ready to explore?
+            </h2>
+            <p className="text-zinc-600 dark:text-zinc-400 mb-6 max-w-xl mx-auto">
+              Browse our curated collection of {prompts.length} battle-tested prompts below.
+            </p>
+            <Button
+              size="lg"
+              onClick={scrollToPrompts}
+              className="gap-2"
+            >
+              Browse Prompts
+              <ArrowDown className="w-4 h-4" />
+            </Button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Prompt Browser Section */}
+      <main id="prompts-section" className="container-wide px-4 sm:px-6 lg:px-8 py-12">
         {/* Filters Section */}
         <div className="mb-8 space-y-4">
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
@@ -254,47 +302,8 @@ function HomeContent() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t dark:border-zinc-800 bg-white dark:bg-zinc-900">
-        <div className="container-wide px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-center sm:text-left">
-              <h3 className="font-semibold text-zinc-900 dark:text-white mb-1">
-                JeffreysPrompts.com
-              </h3>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                Curated prompts for agentic coding
-              </p>
-            </div>
-            <div className="flex items-center gap-6">
-              <a
-                href="https://github.com/Dicklesworthstone/jeffreysprompts.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
-              >
-                GitHub
-              </a>
-              <a
-                href="https://x.com/doodlestein"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
-              >
-                Twitter
-              </a>
-            </div>
-          </div>
-          <div className="mt-8 pt-8 border-t dark:border-zinc-800 text-center">
-            <p className="text-sm text-zinc-400">
-              Install via CLI:{" "}
-              <code className="bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded font-mono text-xs">
-                curl -fsSL jeffreysprompts.com/install.sh | bash
-              </code>
-            </p>
-          </div>
-        </div>
-      </footer>
+      {/* Final CTA */}
+      <FinalCtaSection />
 
       {/* Prompt Detail Modal */}
       <PromptDetailModal
