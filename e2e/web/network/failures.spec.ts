@@ -113,11 +113,14 @@ test.describe("Network Failures - Request Retry Behavior", () => {
 
 test.describe("Network Failures - Static Asset Handling", () => {
   test("page renders core UI even if some assets fail", async ({ page, logger }) => {
+    let imageRequestCount = 0;
+
     await logger.step("fail some static assets", async () => {
-      // Fail some non-critical image requests
+      // Fail every other image request (deterministic pattern for test stability)
       await page.route("**/*.png", async (route) => {
-        // Randomly fail some images
-        if (Math.random() > 0.5) {
+        imageRequestCount++;
+        // Fail odd-numbered requests, allow even-numbered ones
+        if (imageRequestCount % 2 === 1) {
           await route.abort("failed");
         } else {
           await route.continue();
