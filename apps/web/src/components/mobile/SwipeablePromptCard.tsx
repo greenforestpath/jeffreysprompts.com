@@ -19,6 +19,7 @@ import { useBasket } from "@/hooks/use-basket";
 import { useSwipeHint } from "@/hooks/useSwipeHint";
 import { useToast } from "@/components/ui/toast";
 import { trackEvent } from "@/lib/analytics";
+import { focusTrap } from "@/lib/accessibility";
 import type { Prompt } from "@jeffreysprompts/core/prompts/types";
 
 interface SwipeablePromptCardProps {
@@ -81,6 +82,7 @@ export function SwipeablePromptCard({
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tapCount = useRef(0);
   const actionTimers = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+  const quickActionsRef = useRef<HTMLDivElement>(null);
 
   let basketRevealContent: ReactNode;
   if (actionTriggered === "basket") {
@@ -134,6 +136,13 @@ export function SwipeablePromptCard({
       timers.clear();
     };
   }, []);
+
+  // Focus trap for quick actions menu (accessibility)
+  useEffect(() => {
+    if (showQuickActions && quickActionsRef.current) {
+      return focusTrap(quickActionsRef.current);
+    }
+  }, [showQuickActions]);
 
   // Helper to create tracked timeouts that auto-cleanup
   const safeTimeout = useCallback((callback: () => void, delay: number) => {
@@ -425,26 +434,32 @@ export function SwipeablePromptCard({
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/50 z-40"
               onClick={() => setShowQuickActions(false)}
+              aria-hidden="true"
             />
             {/* Menu */}
             <motion.div
+              ref={quickActionsRef}
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 10 }}
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
               className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-neutral-900 rounded-t-3xl p-4 pb-8 shadow-2xl"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="quick-actions-title"
             >
-              <div className="w-12 h-1 bg-neutral-300 dark:bg-neutral-700 rounded-full mx-auto mb-4" />
-              <h3 className="font-semibold text-lg mb-4 text-center">{prompt.title}</h3>
-              <div className="space-y-2">
+              <div className="w-12 h-1 bg-neutral-300 dark:bg-neutral-700 rounded-full mx-auto mb-4" aria-hidden="true" />
+              <h3 id="quick-actions-title" className="font-semibold text-lg mb-4 text-center">{prompt.title}</h3>
+              <div className="space-y-2" role="group" aria-label="Quick actions">
                 <button
                   onClick={() => {
                     handleCopy();
                     setShowQuickActions(false);
                   }}
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                  aria-label={`Copy "${prompt.title}" to clipboard`}
                 >
-                  <Copy className="w-5 h-5 text-sky-500" />
+                  <Copy className="w-5 h-5 text-sky-500" aria-hidden="true" />
                   <span>Copy to Clipboard</span>
                 </button>
                 <button
@@ -459,8 +474,9 @@ export function SwipeablePromptCard({
                       ? "bg-neutral-50 dark:bg-neutral-800/50 text-neutral-400"
                       : "bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
                   )}
+                  aria-label={inBasket ? `"${prompt.title}" is already in basket` : `Add "${prompt.title}" to basket`}
                 >
-                  <ShoppingBag className={cn("w-5 h-5", inBasket ? "text-neutral-400" : "text-indigo-500")} />
+                  <ShoppingBag className={cn("w-5 h-5", inBasket ? "text-neutral-400" : "text-indigo-500")} aria-hidden="true" />
                   <span>{inBasket ? "Already in Basket" : "Add to Basket"}</span>
                 </button>
                 <button
@@ -470,16 +486,18 @@ export function SwipeablePromptCard({
                     setShowQuickActions(false);
                   }}
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                  aria-label={`Save "${prompt.title}" to favorites`}
                 >
-                  <Heart className="w-5 h-5 text-pink-500" />
+                  <Heart className="w-5 h-5 text-pink-500" aria-hidden="true" />
                   <span>Save Prompt</span>
                 </button>
               </div>
               <button
                 onClick={() => setShowQuickActions(false)}
                 className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                aria-label="Close quick actions menu"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5" aria-hidden="true" />
                 <span>Cancel</span>
               </button>
             </motion.div>
