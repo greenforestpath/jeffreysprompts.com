@@ -9,46 +9,23 @@ export interface WebVitalPayload {
   navigationType: string;
 }
 
-// In-memory buffer for batching (in production, you'd use a proper queue)
-const metricsBuffer: WebVitalPayload[] = [];
-const BUFFER_SIZE = 100;
+const VALID_METRIC_NAMES = ["CLS", "FCP", "INP", "LCP", "TTFB"] as const;
+const VALID_RATINGS = ["good", "needs-improvement", "poor"] as const;
 
-function processMetrics(): void {
-  if (metricsBuffer.length === 0) return;
+function isValidMetricName(name: unknown): name is WebVitalPayload["name"] {
+  return typeof name === "string" && VALID_METRIC_NAMES.includes(name as WebVitalPayload["name"]);
+}
 
-  // In production, you would:
-  // 1. Send to your analytics backend (e.g., BigQuery, InfluxDB, Datadog)
-  // 2. Store in a time-series database
-  // 3. Trigger alerts if metrics degrade
-
-  // For now, just log aggregates in development
-  if (process.env.NODE_ENV === "development") {
-    const aggregates = metricsBuffer.reduce(
-      (acc, metric) => {
-        if (!acc[metric.name]) {
-          acc[metric.name] = { values: [], ratings: { good: 0, "needs-improvement": 0, poor: 0 } };
-        }
-        acc[metric.name].values.push(metric.value);
-        acc[metric.name].ratings[metric.rating]++;
-        return acc;
-      },
-      {} as Record<string, { values: number[]; ratings: Record<string, number> }>
-    );
-
-    console.log("[Web Vitals] Aggregated metrics:", aggregates);
-  }
-
-  // Clear buffer
-  metricsBuffer.length = 0;
+function isValidRating(rating: unknown): rating is WebVitalPayload["rating"] {
+  return typeof rating === "string" && VALID_RATINGS.includes(rating as WebVitalPayload["rating"]);
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    const body = (await request.json()) as WebVitalPayload;
+    const body = await request.json();
 
-    // Validate the payload
-    const validNames = ["CLS", "FCP", "INP", "LCP", "TTFB"];
-    if (!validNames.includes(body.name)) {
+    // Validate required fields
+    if (!isValidMetricName(body.name)) {
       return NextResponse.json({ error: "Invalid metric name" }, { status: 400 });
     }
 
@@ -56,24 +33,31 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: "Invalid metric value" }, { status: 400 });
     }
 
-    // Add to buffer
-    metricsBuffer.push({
+    if (!isValidRating(body.rating)) {
+      return NextResponse.json({ error: "Invalid rating" }, { status: 400 });
+    }
+
+    // Construct validated payload
+    const payload: WebVitalPayload = {
       name: body.name,
       value: body.value,
       rating: body.rating,
-      delta: body.delta,
-      id: body.id,
-      navigationType: body.navigationType,
-    });
+      delta: typeof body.delta === "number" ? body.delta : 0,
+      id: typeof body.id === "string" ? body.id : "",
+      navigationType: typeof body.navigationType === "string" ? body.navigationType : "unknown",
+    };
 
-    // Process when buffer is full
-    if (metricsBuffer.length >= BUFFER_SIZE) {
-      processMetrics();
-    }
+    // Log to stdout for Vercel's log drain integration
+    // In production, this can be piped to Datadog, Logtail, or other services
+    console.log(JSON.stringify({
+      type: "web_vital",
+      timestamp: new Date().toISOString(),
+      ...payload,
+    }));
 
     return NextResponse.json({ success: true }, { status: 202 });
   } catch {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 }
 
@@ -81,7 +65,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 export async function GET(): Promise<NextResponse> {
   return NextResponse.json({
     status: "healthy",
-    metrics: ["CLS", "FCP", "INP", "LCP", "TTFB"],
-    bufferSize: metricsBuffer.length,
+    metrics: VALID_METRIC_NAMES,
   });
 }

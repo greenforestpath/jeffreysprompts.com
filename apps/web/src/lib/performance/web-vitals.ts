@@ -12,7 +12,6 @@ export interface WebVitalMetric {
   delta: number;
   id: string;
   navigationType: string;
-  entries: PerformanceEntry[];
 }
 
 // Thresholds based on Google's Core Web Vitals recommendations
@@ -39,14 +38,7 @@ function sendToAnalytics(metric: Metric): void {
     delta: metric.delta,
     id: metric.id,
     navigationType: metric.navigationType,
-    entries: metric.entries,
   };
-
-  // Send to Vercel Analytics (if available)
-  if (typeof window !== "undefined" && "vercel" in window) {
-    const vercel = window as Window & { vercel?: { logWebVitals?: (metric: WebVitalMetric) => void } };
-    vercel.vercel?.logWebVitals?.(body);
-  }
 
   // Send to GA4 (if available)
   const gtag = (window as Window & { gtag?: (...args: unknown[]) => void }).gtag;
@@ -63,6 +55,7 @@ function sendToAnalytics(metric: Metric): void {
   }
 
   // Send to custom endpoint (for detailed logging)
+  // Note: In serverless environments, metrics are logged per-request rather than batched
   if (process.env.NODE_ENV === "production") {
     const endpoint = "/api/vitals";
     const blob = new Blob([JSON.stringify(body)], { type: "application/json" });
