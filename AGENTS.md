@@ -815,3 +815,65 @@ Parse: `file:line:col` → location | 💡 → how to fix | Exit 0/1 → pass/fa
 - Ignore findings → Investigate each
 - Full scan per edit → Scope to file
 - Fix symptom (`if (x) { x.y }`) → Root cause (`x?.y`)
+
+---
+
+## CLI Cross-Repo Dependency Matrix
+
+This matrix documents dependencies between the public CLI (`jfp`) in this repo and the premium backend APIs in `jeffreysprompts_premium`. Use this when planning CLI work to ensure both repos stay in sync.
+
+### Beads Cross-References
+
+**Public CLI (this repo) → Premium Backend Dependencies:**
+
+| Public Bead | CLI Feature | Premium Dependencies |
+|-------------|-------------|----------------------|
+| `jeffreysprompts.com-uw7z` | CLI login | `jeffreysprompts_premium-0o1` (device code endpoints), `jeffreysprompts_premium-qdm` (verification page), `jeffreysprompts_premium-mn0` (CLI auth page), `jeffreysprompts_premium-qnl` (JWT/token utils), `jeffreysprompts_premium-0ve` (refresh/revoke), `jeffreysprompts_premium-h8r` (device_codes schema), `jeffreysprompts_premium-wdao` (device code tests) |
+| `jeffreysprompts.com-hiff` | CLI sync | `jeffreysprompts_premium-67o` (CLI sync endpoints) |
+| `jeffreysprompts.com-wlg3` | CLI collections | `jeffreysprompts_premium-67o` (CLI collections via sync endpoints) |
+| `jeffreysprompts.com-xzgq` | CLI offline/cache | `jeffreysprompts_premium-67o` (CLI sync endpoints) |
+| `jeffreysprompts.com-t524` | CLI API docs | `jeffreysprompts_premium-67o`, `jeffreysprompts_premium-0o1`, `jeffreysprompts_premium-0ve`, `jeffreysprompts_premium-qnl` |
+| `jeffreysprompts.com-rd99` | CLI integration docs | `jeffreysprompts_premium-0o1`, `jeffreysprompts_premium-qdm`, `jeffreysprompts_premium-mn0`, `jeffreysprompts_premium-qnl`, `jeffreysprompts_premium-0ve`, `jeffreysprompts_premium-67o` |
+
+**Premium Backend → Public CLI Consumers:**
+
+| Premium Bead | Premium Feature | Public CLI Consumers |
+|--------------|-----------------|----------------------|
+| `jeffreysprompts_premium-6x3` | Skills CRUD + install/export endpoints | `jeffreysprompts.com-bojj` (CLI skills commands), `jeffreysprompts.com-t524` (API docs), `jeffreysprompts.com-rd99` (integration docs) |
+
+### CLI Command → Premium API Endpoints
+
+| CLI Command | Auth Required | Premium Only | API Endpoints |
+|-------------|---------------|--------------|---------------|
+| `jfp login` | No | - | `POST /api/cli/device-code`, `POST /api/cli/device-token`, OAuth redirect |
+| `jfp logout` | Yes | - | `POST /cli/revoke` (optional) |
+| `jfp whoami` | Yes | - | Local token validation |
+| `jfp list --mine` | Yes | Premium | `GET /cli/prompts/mine` |
+| `jfp list --saved` | Yes | Premium | `GET /cli/prompts/saved` |
+| `jfp search --mine` | Yes | Premium | `GET /cli/search/mine?q={query}` |
+| `jfp search --saved` | Yes | Premium | `GET /cli/search/saved?q={query}` |
+| `jfp save` | Yes | Premium | `POST /cli/saved-prompts` |
+| `jfp notes` | Yes | Premium | `GET/POST/DELETE /cli/notes/{promptId}` |
+| `jfp collections` | Yes | Premium | `GET/POST /cli/collections/*` |
+| `jfp sync` | Yes | Premium | `GET /cli/sync[?since=...]` |
+
+### Update Rules
+
+1. **Adding a new CLI command**: Add the premium dependency to this matrix
+2. **Adding a new premium CLI endpoint**: Add the public CLI consumer to this matrix
+3. **Cross-repo changes**: Update both repos' beads simultaneously
+4. **Breaking API changes**: Create migration beads in both repos
+
+### Premium API Base URL
+
+```
+Production: https://pro.jeffreysprompts.com/api
+Configurable via: JFP_PREMIUM_API_URL environment variable
+```
+
+### Authentication Flow
+
+1. **Browser OAuth** (interactive): Local callback server → OAuth redirect → Token exchange
+2. **Device Code** (headless): `POST /api/cli/device-code` → Poll `/api/cli/device-token` → Token received
+3. **Token Storage**: `~/.config/jfp/credentials.json` or `JFP_TOKEN` env var
+4. **Token Refresh**: Automatic on 401, uses refresh token if available
