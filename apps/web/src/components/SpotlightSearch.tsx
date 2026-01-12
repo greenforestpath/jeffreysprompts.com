@@ -482,7 +482,7 @@ export function SpotlightSearch({
                 onClick={() => setSemanticMode(!semanticMode)}
                 title={semanticMode ? "Semantic search enabled" : "Enable semantic search"}
                 className={cn(
-                  "shrink-0 size-8 rounded-lg flex items-center justify-center transition-colors duration-150",
+                  "shrink-0 size-10 rounded-lg flex items-center justify-center transition-colors duration-150 touch-manipulation",
                   semanticMode
                     ? "text-amber-500 bg-amber-500/10 hover:bg-amber-500/20"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -497,7 +497,7 @@ export function SpotlightSearch({
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="shrink-0 size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  className="shrink-0 size-10 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors touch-manipulation"
                   aria-label="Close search"
                 >
                   <XIcon className="size-5" />
@@ -524,7 +524,7 @@ export function SpotlightSearch({
                 aria-pressed={!selectedCategory}
                 aria-label="Show all categories"
                 className={cn(
-                  "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
+                  "shrink-0 px-3 py-2.5 min-h-[44px] rounded-full text-sm font-medium transition-colors touch-manipulation",
                   !selectedCategory
                     ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900"
                     : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
@@ -540,7 +540,7 @@ export function SpotlightSearch({
                   aria-pressed={selectedCategory === category}
                   aria-label={`Filter by ${category}`}
                   className={cn(
-                    "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-colors",
+                    "shrink-0 px-3 py-2.5 min-h-[44px] rounded-full text-sm font-medium capitalize transition-colors touch-manipulation",
                     selectedCategory === category
                       ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900"
                       : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"

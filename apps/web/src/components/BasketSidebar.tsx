@@ -277,11 +277,11 @@ export function BasketSidebar({ isOpen, onClose }: BasketSidebarProps) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7 shrink-0"
+                      className="h-9 w-9 shrink-0 -mr-1 touch-manipulation"
                       onClick={() => removeItem(prompt.id)}
                       aria-label={`Remove "${prompt.title}" from basket`}
                     >
-                      <X className="h-3 w-3" aria-hidden="true" />
+                      <X className="h-4 w-4" aria-hidden="true" />
                     </Button>
                   </motion.li>
                 ))}
