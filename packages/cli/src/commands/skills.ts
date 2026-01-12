@@ -244,7 +244,7 @@ export async function skillsListCommand(options: SkillsListOptions): Promise<voi
   });
 
   for (const skill of skills) {
-    const ratingStr = skill.rating ? `${skill.rating.toFixed(1)}/5` : "-";
+    const ratingStr = skill.rating != null ? `${skill.rating.toFixed(1)}/5` : "-";
     const downloadsStr = skill.downloads?.toLocaleString() || "0";
 
     table.push([
@@ -420,11 +420,22 @@ export async function skillsCreateCommand(options: SkillsCreateOptions): Promise
   const description = options.description || "A custom skill for Claude Code";
   const tool = options.tool || "claude-code";
 
-  const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, "-");
+  // Sanitize name: lowercase, replace invalid chars with dash, collapse multiple dashes, trim dashes
+  const safeName = name
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "") || "skill";
+
+  // Escape description for YAML (double-quote and escape internal quotes/newlines)
+  const safeDescription = description
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, "\\n");
 
   const template = `---
 name: ${safeName}
-description: ${description}
+description: "${safeDescription}"
 version: 1.0.0
 author: Your Name
 tool: ${tool}
