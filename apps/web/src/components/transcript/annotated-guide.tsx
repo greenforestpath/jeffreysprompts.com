@@ -32,11 +32,11 @@ export function AnnotatedGuide({
   return (
     <section id="guide" className="relative overflow-hidden py-20 sm:py-28">
       <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 via-transparent to-cyan-500/5" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-white/60 via-transparent to-transparent dark:from-zinc-950/30" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-white/60 via-transparent to-transparent dark:from-neutral-950/30" />
 
       <div className="relative mx-auto max-w-6xl px-4">
         <div className="text-center">
-          <div className="inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-violet-200/60 bg-white/80 px-4 py-2 text-xs font-semibold text-violet-600 shadow-sm backdrop-blur dark:border-violet-500/20 dark:bg-zinc-900/60 dark:text-violet-300">
+          <div className="inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-violet-200/60 bg-white/80 px-4 py-2 text-xs font-semibold text-violet-600 shadow-sm backdrop-blur dark:border-violet-500/20 dark:bg-neutral-900/60 dark:text-violet-300">
             {headerBadges.map((badge) => (
               <span key={badge.label} className="inline-flex items-center gap-1.5">
                 <badge.icon className="h-3.5 w-3.5" />
@@ -45,24 +45,24 @@ export function AnnotatedGuide({
             ))}
           </div>
 
-          <h2 className="mt-5 text-3xl font-bold text-zinc-900 dark:text-zinc-100 sm:text-4xl">
+          <h2 className="mt-5 text-3xl font-bold text-neutral-900 dark:text-neutral-100 sm:text-4xl">
             The annotated build guide
           </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-base text-zinc-600 dark:text-zinc-400 sm:text-lg">
+          <p className="mx-auto mt-3 max-w-2xl text-base text-neutral-600 dark:text-neutral-400 sm:text-lg">
             Each phase of the original session distilled into practical steps, outcomes, and the
             exact artifacts that landed the feature.
           </p>
 
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 shadow-sm dark:bg-zinc-900/60">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-sm text-neutral-500 dark:text-neutral-400">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 shadow-sm dark:bg-neutral-900/60">
               <Flag className="h-4 w-4 text-violet-500" />
               {sections.length} phases
             </span>
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 shadow-sm dark:bg-zinc-900/60">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 shadow-sm dark:bg-neutral-900/60">
               <CheckCircle2 className="h-4 w-4 text-emerald-500" />
               {totalMessages} messages
             </span>
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 shadow-sm dark:bg-zinc-900/60">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 shadow-sm dark:bg-neutral-900/60">
               <Sparkles className="h-4 w-4 text-cyan-500" />
               {duration} total build time
             </span>
@@ -83,7 +83,7 @@ export function AnnotatedGuide({
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.4, delay: index * 0.05 }}
               >
-                <Card className="border-violet-200/40 bg-white/90 shadow-lg shadow-violet-500/5 backdrop-blur dark:border-violet-500/15 dark:bg-zinc-900/70">
+                <Card className="border-violet-200/40 bg-white/90 shadow-lg shadow-violet-500/5 backdrop-blur dark:border-violet-500/15 dark:bg-neutral-900/70">
                   <CardHeader className="flex flex-col gap-4">
                     <div className="flex flex-wrap items-center justify-between gap-4">
                       <div className="flex items-center gap-4">
@@ -91,16 +91,16 @@ export function AnnotatedGuide({
                           {index + 1}
                         </div>
                         <div>
-                          <CardTitle className="text-xl text-zinc-900 dark:text-zinc-100">
+                          <CardTitle className="text-xl text-neutral-900 dark:text-neutral-100">
                             {section.title}
                           </CardTitle>
-                          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                          <p className="text-sm text-neutral-500 dark:text-neutral-400">
                             {section.summary}
                           </p>
                         </div>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="secondary" className="bg-zinc-100/80 text-zinc-600 dark:bg-zinc-800/80 dark:text-zinc-300">
+                        <Badge variant="secondary" className="bg-neutral-100/80 text-neutral-600 dark:bg-neutral-800/80 dark:text-neutral-300">
                           Messages {section.startIndex + 1}–{section.endIndex + 1}
                         </Badge>
                         {section.tags.map((tag) => (
@@ -118,7 +118,7 @@ export function AnnotatedGuide({
 
                   <CardContent className="grid gap-6 sm:grid-cols-[1.2fr_1fr]">
                     <div>
-                      <div className="rounded-2xl border border-violet-200/40 bg-violet-50/60 p-4 text-sm text-zinc-700 shadow-sm dark:border-violet-500/20 dark:bg-zinc-950/40 dark:text-zinc-200">
+                      <div className="rounded-2xl border border-violet-200/40 bg-violet-50/60 p-4 text-sm text-neutral-700 shadow-sm dark:border-violet-500/20 dark:bg-neutral-950/40 dark:text-neutral-200">
                         <p className="leading-relaxed">{step.narrative}</p>
                       </div>
 
@@ -140,8 +140,8 @@ export function AnnotatedGuide({
                       )}
 
                       {step.xRefs && step.xRefs.length > 0 && (
-                        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-                          <span className="font-semibold uppercase tracking-wide text-zinc-400">
+                        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
+                          <span className="font-semibold uppercase tracking-wide text-neutral-400">
                             Workflow posts
                           </span>
                           {step.xRefs.map((postId) => {
@@ -161,8 +161,8 @@ export function AnnotatedGuide({
                       )}
 
                       {((step.planPanels && step.planPanels.length > 0) || step.revisions?.length) && (
-                        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-                          <span className="font-semibold uppercase tracking-wide text-zinc-400">
+                        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
+                          <span className="font-semibold uppercase tracking-wide text-neutral-400">
                             Planning passes
                           </span>
                           {step.planPanels?.map((panel) => (
@@ -187,11 +187,11 @@ export function AnnotatedGuide({
                         </div>
                       )}
 
-                      <div className="flex items-center gap-2 text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-neutral-700 dark:text-neutral-200">
                         <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                         Outcomes
                       </div>
-                      <ul className="mt-3 space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
+                      <ul className="mt-3 space-y-2 text-sm text-neutral-600 dark:text-neutral-400">
                         {step.outcomes.map((outcome) => (
                           <li key={outcome} className="flex items-start gap-2">
                             <span className="mt-1 h-2 w-2 rounded-full bg-emerald-400/80" />
@@ -201,8 +201,8 @@ export function AnnotatedGuide({
                       </ul>
                     </div>
 
-                    <div className="rounded-2xl border border-dashed border-violet-200/60 bg-violet-50/50 p-4 dark:border-violet-500/20 dark:bg-zinc-950/30">
-                      <div className="flex items-center gap-2 text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+                    <div className="rounded-2xl border border-dashed border-violet-200/60 bg-violet-50/50 p-4 dark:border-violet-500/20 dark:bg-neutral-950/30">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-neutral-700 dark:text-neutral-200">
                         <FileText className="h-4 w-4 text-violet-500" />
                         Key artifacts
                       </div>
@@ -211,8 +211,8 @@ export function AnnotatedGuide({
                           <span
                             key={artifact}
                             className={cn(
-                              "rounded-lg bg-white px-3 py-1 text-xs font-semibold text-zinc-700 shadow-sm",
-                              "dark:bg-zinc-900 dark:text-zinc-200",
+                              "rounded-lg bg-white px-3 py-1 text-xs font-semibold text-neutral-700 shadow-sm",
+                              "dark:bg-neutral-900 dark:text-neutral-200",
                               "border border-violet-200/60 dark:border-violet-500/20",
                               "font-mono"
                             )}

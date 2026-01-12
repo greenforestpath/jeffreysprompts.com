@@ -218,7 +218,7 @@ export function ReportDialog({
           size={triggerSize}
           className={cn(
             showLabel && "gap-2",
-            !showLabel && "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400",
+            !showLabel && "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400",
             triggerClassName
           )}
           onClick={(event) => {

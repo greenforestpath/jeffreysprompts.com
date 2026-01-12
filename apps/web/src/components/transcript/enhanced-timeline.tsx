@@ -41,7 +41,7 @@ function TimelineProgress({
             "w-3 h-3 rounded-full transition-all duration-300",
             expandedSections.has(section.id)
               ? "bg-violet-500 scale-125"
-              : "bg-zinc-300 dark:bg-zinc-700 hover:bg-zinc-400 dark:hover:bg-zinc-600"
+              : "bg-neutral-300 dark:bg-neutral-700 hover:bg-neutral-400 dark:hover:bg-neutral-600"
           )}
           title={section.title}
         />
@@ -70,8 +70,8 @@ function SectionHeader({
       className={cn(
         "w-full group relative",
         "p-4 sm:p-5 rounded-2xl",
-        "bg-white dark:bg-zinc-900",
-        "border border-zinc-200/50 dark:border-zinc-800/50",
+        "bg-white dark:bg-neutral-900",
+        "border border-neutral-200/50 dark:border-neutral-800/50",
         "hover:border-violet-300 dark:hover:border-violet-700",
         "hover:shadow-lg hover:shadow-violet-500/5",
         "transition-all duration-300",
@@ -114,28 +114,28 @@ function SectionHeader({
 
         {/* Section info */}
         <div className="flex-1 text-left min-w-0">
-          <h3 className="font-semibold text-lg text-zinc-900 dark:text-zinc-100 truncate">
+          <h3 className="font-semibold text-lg text-neutral-900 dark:text-neutral-100 truncate">
             {section.title}
           </h3>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 line-clamp-1">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 line-clamp-1">
             {section.summary}
           </p>
         </div>
 
         {/* Stats and toggle */}
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-800">
-            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800">
+            <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
               {messageCount}
             </span>
-            <span className="text-xs text-zinc-500">msgs</span>
+            <span className="text-xs text-neutral-500">msgs</span>
           </div>
           <motion.div
             animate={{ rotate: isExpanded ? 180 : 0 }}
             transition={{ duration: 0.2 }}
-            className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center"
+            className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
           >
-            <ChevronDown className="w-5 h-5 text-zinc-500" />
+            <ChevronDown className="w-5 h-5 text-neutral-500" />
           </motion.div>
         </div>
       </div>
@@ -198,7 +198,7 @@ function MessageCard({ message }: { message: TranscriptMessage }) {
         "group relative pl-4 border-l-2 transition-colors",
         isUser
           ? "border-violet-500 hover:border-violet-400"
-          : "border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600"
+          : "border-neutral-300 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-600"
       )}
     >
       {/* Header */}
@@ -208,13 +208,13 @@ function MessageCard({ message }: { message: TranscriptMessage }) {
             "w-6 h-6 rounded-full flex items-center justify-center",
             isUser
               ? "bg-violet-100 dark:bg-violet-900/50"
-              : "bg-zinc-100 dark:bg-zinc-800"
+              : "bg-neutral-100 dark:bg-neutral-800"
           )}
         >
           {isUser ? (
             <User className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" />
           ) : (
-            <Bot className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
+            <Bot className="w-3.5 h-3.5 text-neutral-600 dark:text-neutral-400" />
           )}
         </div>
         <span
@@ -222,12 +222,12 @@ function MessageCard({ message }: { message: TranscriptMessage }) {
             "text-sm font-medium",
             isUser
               ? "text-violet-700 dark:text-violet-300"
-              : "text-zinc-600 dark:text-zinc-400"
+              : "text-neutral-600 dark:text-neutral-400"
           )}
         >
           {isUser ? "Human" : "Claude"}
         </span>
-        <span className="text-xs text-zinc-400 dark:text-zinc-500">
+        <span className="text-xs text-neutral-400 dark:text-neutral-500">
           {formatTime(message.timestamp)}
         </span>
 
@@ -244,14 +244,14 @@ function MessageCard({ message }: { message: TranscriptMessage }) {
           onClick={handleCopy}
           className={cn(
             "p-1.5 rounded-md opacity-0 group-hover:opacity-100",
-            "hover:bg-zinc-100 dark:hover:bg-zinc-800",
+            "hover:bg-neutral-100 dark:hover:bg-neutral-800",
             "transition-all"
           )}
         >
           {copied ? (
             <Check className="w-3.5 h-3.5 text-emerald-500" />
           ) : (
-            <Copy className="w-3.5 h-3.5 text-zinc-400" />
+            <Copy className="w-3.5 h-3.5 text-neutral-400" />
           )}
         </button>
       </div>
@@ -259,9 +259,9 @@ function MessageCard({ message }: { message: TranscriptMessage }) {
       {/* Content */}
       <div
         className={cn(
-          "text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed",
+          "text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed",
           "whitespace-pre-wrap break-words",
-          "bg-zinc-50 dark:bg-zinc-800/50 rounded-lg p-3"
+          "bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-3"
         )}
       >
         {displayContent}
@@ -273,19 +273,19 @@ function MessageCard({ message }: { message: TranscriptMessage }) {
           {message.toolCalls!.slice(0, 3).map((tc) => (
             <div
               key={tc.id}
-              className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400"
+              className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400"
             >
               <Code className="w-3 h-3" />
               <span className="font-mono">{tc.name}</span>
               {typeof tc.input?.file_path === "string" && (
-                <span className="truncate text-zinc-400">
+                <span className="truncate text-neutral-400">
                   {tc.input.file_path.split("/").pop()}
                 </span>
               )}
             </div>
           ))}
           {message.toolCalls!.length > 3 && (
-            <span className="text-xs text-zinc-400">
+            <span className="text-xs text-neutral-400">
               +{message.toolCalls!.length - 3} more tools
             </span>
           )}
@@ -316,9 +316,9 @@ function MessageList({ messages }: { messages: TranscriptMessage[] }) {
           onClick={() => setVisibleCount((c) => c + 20)}
           className={cn(
             "w-full py-3 rounded-xl",
-            "bg-zinc-100 dark:bg-zinc-800",
-            "text-sm font-medium text-zinc-600 dark:text-zinc-400",
-            "hover:bg-zinc-200 dark:hover:bg-zinc-700",
+            "bg-neutral-100 dark:bg-neutral-800",
+            "text-sm font-medium text-neutral-600 dark:text-neutral-400",
+            "hover:bg-neutral-200 dark:hover:bg-neutral-700",
             "transition-colors"
           )}
         >
@@ -377,10 +377,10 @@ export function EnhancedTimeline({
     <div className="relative" id="timeline">
       {/* Section title */}
       <div className="text-center mb-10">
-        <h2 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-3">
+        <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-3">
           Session Timeline
         </h2>
-        <p className="text-zinc-600 dark:text-zinc-400 max-w-lg mx-auto">
+        <p className="text-neutral-600 dark:text-neutral-400 max-w-lg mx-auto">
           {messages.length.toLocaleString()} messages across {sections.length}{" "}
           development phases
         </p>
@@ -388,7 +388,7 @@ export function EnhancedTimeline({
 
       {/* Search - mobile optimized */}
       <div className="mb-6 relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
         <input
           type="text"
           placeholder="Search messages..."
@@ -396,10 +396,10 @@ export function EnhancedTimeline({
           onChange={(e) => setSearchQuery(e.target.value)}
           className={cn(
             "w-full pl-10 pr-4 py-3 rounded-xl",
-            "bg-white dark:bg-zinc-900",
-            "border border-zinc-200 dark:border-zinc-800",
-            "text-zinc-900 dark:text-zinc-100",
-            "placeholder:text-zinc-400",
+            "bg-white dark:bg-neutral-900",
+            "border border-neutral-200 dark:border-neutral-800",
+            "text-neutral-900 dark:text-neutral-100",
+            "placeholder:text-neutral-400",
             "focus:outline-none focus:ring-2 focus:ring-violet-500/50",
             "transition-all"
           )}
@@ -408,7 +408,7 @@ export function EnhancedTimeline({
 
       {/* No search results message */}
       {searchQuery.trim() && !hasSearchResults && (
-        <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">
+        <div className="text-center py-12 text-neutral-500 dark:text-neutral-400">
           <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
           <p className="text-lg font-medium">No messages found</p>
           <p className="text-sm">Try a different search term</p>

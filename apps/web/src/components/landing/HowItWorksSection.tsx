@@ -50,7 +50,7 @@ const colorClasses = {
 
 export function HowItWorksSection() {
   return (
-    <section className="relative py-24 overflow-hidden bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-950 dark:to-zinc-900">
+    <section className="relative py-24 overflow-hidden bg-gradient-to-b from-white to-neutral-50 dark:from-neutral-950 dark:to-neutral-900">
       {/* Background pattern */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(99,102,241,0.03)_1px,transparent_0)] bg-[size:40px_40px]" />
@@ -68,10 +68,10 @@ export function HowItWorksSection() {
           <span className="inline-block px-3 py-1 text-sm font-medium text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/50 rounded-full mb-4">
             How It Works
           </span>
-          <h2 className="text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-white mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-neutral-900 dark:text-white mb-4">
             From search to ship in seconds
           </h2>
-          <p className="text-lg text-zinc-600 dark:text-zinc-400">
+          <p className="text-lg text-neutral-600 dark:text-neutral-400">
             No signup required. Find the perfect prompt and start using it immediately.
           </p>
         </motion.div>
@@ -93,7 +93,7 @@ export function HowItWorksSection() {
                   transition={{ duration: 0.5, delay: index * 0.15 }}
                   className="relative z-10"
                 >
-                  <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-8 border border-zinc-200 dark:border-zinc-800 hover:shadow-xl transition-shadow duration-300">
+                  <div className="relative bg-white dark:bg-neutral-900 rounded-2xl p-8 border border-neutral-200 dark:border-neutral-800 hover:shadow-xl transition-shadow duration-300">
                     {/* Step number badge */}
                     <div className={`absolute -top-4 left-8 px-3 py-1 rounded-full bg-gradient-to-r ${colors.gradient} text-white text-sm font-bold shadow-lg`}>
                       Step {step.number}
@@ -105,10 +105,10 @@ export function HowItWorksSection() {
                     </div>
 
                     {/* Content */}
-                    <h3 className="text-xl font-semibold text-zinc-900 dark:text-white mb-3">
+                    <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-3">
                       {step.title}
                     </h3>
-                    <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                    <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed">
                       {step.description}
                     </p>
                   </div>

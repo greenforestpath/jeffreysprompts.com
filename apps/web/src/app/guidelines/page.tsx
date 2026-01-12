@@ -241,10 +241,10 @@ export default function GuidelinesPage() {
       </ul>
 
       <div className="not-prose mt-8 p-6 bg-indigo-50 dark:bg-indigo-950/30 rounded-xl border border-indigo-100 dark:border-indigo-900/50">
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">
+        <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
           Thank you for being part of our community!
         </h3>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="text-sm text-neutral-600 dark:text-neutral-400">
           These guidelines exist to help us all work together effectively. By contributing to
           JeffreysPrompts.com, you help make AI development better for everyone.
         </p>

@@ -29,14 +29,14 @@ export default function BundlesPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-violet-50/50 to-white dark:from-zinc-950 dark:to-zinc-900">
+    <div className="min-h-screen bg-gradient-to-b from-violet-50/50 to-white dark:from-neutral-950 dark:to-neutral-900">
       {/* Header */}
-      <div className="border-b dark:border-zinc-800">
+      <div className="border-b dark:border-neutral-800">
         <div className="container mx-auto px-4 py-12">
-          <h1 className="text-4xl font-bold text-zinc-900 dark:text-white mb-4">
+          <h1 className="text-4xl font-bold text-neutral-900 dark:text-white mb-4">
             Prompt Bundles
           </h1>
-          <p className="text-xl text-zinc-600 dark:text-zinc-400 max-w-2xl">
+          <p className="text-xl text-neutral-600 dark:text-neutral-400 max-w-2xl">
             Curated collections of related prompts. Install all prompts in a bundle
             with a single command.
           </p>
@@ -53,7 +53,7 @@ export default function BundlesPage() {
 
         {sortedBundles.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-zinc-500 dark:text-zinc-400">
+            <p className="text-neutral-500 dark:text-neutral-400">
               No bundles available yet.
             </p>
           </div>

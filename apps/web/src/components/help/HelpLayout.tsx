@@ -39,13 +39,13 @@ export function HelpLayout({
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
       {/* Header */}
-      <div className="border-b border-border/60 bg-white dark:bg-zinc-900">
+      <div className="border-b border-border/60 bg-white dark:bg-neutral-900">
         <div className="container-wide py-8 sm:py-12">
           {showBreadcrumb && (
-            <nav className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 mb-4">
-              <Link href="/help" className="hover:text-zinc-900 dark:hover:text-white">
+            <nav className="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400 mb-4">
+              <Link href="/help" className="hover:text-neutral-900 dark:hover:text-white">
                 Help Center
               </Link>
               {category && (
@@ -53,7 +53,7 @@ export function HelpLayout({
                   <ChevronRight className="h-4 w-4" />
                   <Link
                     href={`/help/${category}`}
-                    className="hover:text-zinc-900 dark:hover:text-white capitalize"
+                    className="hover:text-neutral-900 dark:hover:text-white capitalize"
                   >
                     {category.replace(/-/g, " ")}
                   </Link>
@@ -67,11 +67,11 @@ export function HelpLayout({
               <HelpCircle className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white">
+              <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">
                 {title}
               </h1>
               {description && (
-                <p className="mt-2 text-zinc-600 dark:text-zinc-400 max-w-2xl">
+                <p className="mt-2 text-neutral-600 dark:text-neutral-400 max-w-2xl">
                   {description}
                 </p>
               )}
@@ -88,11 +88,11 @@ export function HelpLayout({
             <div className="sticky top-20 space-y-6">
               {/* Search placeholder */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                 <input
                   type="search"
                   placeholder="Search help..."
-                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-border bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-border bg-white dark:bg-neutral-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
 
@@ -109,7 +109,7 @@ export function HelpLayout({
                         "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
                         isActive
                           ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
-                          : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                          : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                       )}
                     >
                       <Icon className="h-4 w-4" />
@@ -121,7 +121,7 @@ export function HelpLayout({
 
               {/* Contact support */}
               <div className="border-t border-border/60 pt-6">
-                <p className="text-sm font-medium text-zinc-900 dark:text-white mb-3">
+                <p className="text-sm font-medium text-neutral-900 dark:text-white mb-3">
                   Need more help?
                 </p>
                 <a
@@ -151,7 +151,7 @@ export function HelpLayout({
                       "px-3 py-1.5 rounded-full text-sm transition-colors",
                       isActive
                         ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
-                        : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
+                        : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
                     )}
                   >
                     {cat.title}
@@ -181,25 +181,25 @@ export function ArticleCard({ href, title, description, iconName }: ArticleCardP
   return (
     <Link
       href={href}
-      className="group block p-5 rounded-xl border border-border/60 bg-white dark:bg-zinc-900 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors"
+      className="group block p-5 rounded-xl border border-border/60 bg-white dark:bg-neutral-900 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors"
     >
       <div className="flex items-start gap-4">
         {Icon && (
-          <div className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30 transition-colors">
-            <Icon className="h-5 w-5 text-zinc-600 dark:text-zinc-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
+          <div className="p-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30 transition-colors">
+            <Icon className="h-5 w-5 text-neutral-600 dark:text-neutral-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <h3 className="font-medium text-zinc-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+          <h3 className="font-medium text-neutral-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
             {title}
           </h3>
           {description && (
-            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400 line-clamp-2">
+            <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400 line-clamp-2">
               {description}
             </p>
           )}
         </div>
-        <ChevronRight className="h-5 w-5 text-zinc-400 group-hover:text-indigo-500 transition-colors" />
+        <ChevronRight className="h-5 w-5 text-neutral-400 group-hover:text-indigo-500 transition-colors" />
       </div>
     </Link>
   );
@@ -217,10 +217,10 @@ export function ArticleContent({ children }: ArticleContentProps) {
         "prose-headings:scroll-mt-20",
         "prose-h2:text-xl prose-h2:font-semibold prose-h2:border-b prose-h2:border-border/40 prose-h2:pb-2 prose-h2:mb-4",
         "prose-h3:text-lg prose-h3:font-medium",
-        "prose-p:text-zinc-600 dark:prose-p:text-zinc-400",
-        "prose-li:text-zinc-600 dark:prose-li:text-zinc-400",
+        "prose-p:text-neutral-600 dark:prose-p:text-neutral-400",
+        "prose-li:text-neutral-600 dark:prose-li:text-neutral-400",
         "prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline",
-        "prose-code:bg-zinc-100 dark:prose-code:bg-zinc-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:before:content-none prose-code:after:content-none"
+        "prose-code:bg-neutral-100 dark:prose-code:bg-neutral-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:before:content-none prose-code:after:content-none"
       )}
     >
       {children}

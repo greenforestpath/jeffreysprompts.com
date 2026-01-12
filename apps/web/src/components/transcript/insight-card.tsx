@@ -50,9 +50,9 @@ export function InsightCard({ highlight, index = 0, onClick }: InsightCardProps)
       onClick={onClick}
       className={cn(
         "w-full text-left p-4 rounded-xl border",
-        "bg-white dark:bg-zinc-900",
+        "bg-white dark:bg-neutral-900",
         config.borderColor,
-        "hover:shadow-md dark:hover:shadow-lg dark:hover:shadow-zinc-900/50",
+        "hover:shadow-md dark:hover:shadow-lg dark:hover:shadow-neutral-900/50",
         "transition-all duration-200",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       )}
@@ -67,18 +67,18 @@ export function InsightCard({ highlight, index = 0, onClick }: InsightCardProps)
         >
           <Icon className="w-4 h-4" />
         </div>
-        <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+        <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
           {config.label}
         </span>
       </div>
 
       {/* Annotation text */}
-      <p className="text-zinc-800 dark:text-zinc-200 leading-relaxed">
+      <p className="text-neutral-800 dark:text-neutral-200 leading-relaxed">
         {highlight.annotation}
       </p>
 
       {/* Message ID hint */}
-      <div className="mt-2 text-xs text-zinc-400 dark:text-zinc-500">
+      <div className="mt-2 text-xs text-neutral-400 dark:text-neutral-500">
         Click to view in context
       </div>
     </motion.button>

@@ -75,10 +75,10 @@ export default function AdminUsersPage() {
     <div className="space-y-6">
       {/* Page header */}
       <div>
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+        <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
           User Management
         </h1>
-        <p className="mt-1 text-zinc-600 dark:text-zinc-400">
+        <p className="mt-1 text-neutral-600 dark:text-neutral-400">
           Search, view, and manage user accounts
         </p>
       </div>
@@ -88,7 +88,7 @@ export default function AdminUsersPage() {
         <CardContent className="p-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="relative flex-1 sm:max-w-md">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
               <Input
                 type="search"
                 placeholder="Search by email or name..."
@@ -100,12 +100,12 @@ export default function AdminUsersPage() {
                 <Filter className="mr-2 h-4 w-4" />
                 Filter
               </Button>
-              <select className="h-9 rounded-md border border-zinc-200 bg-white px-3 text-sm dark:border-zinc-800 dark:bg-zinc-900">
+              <select className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm dark:border-neutral-800 dark:bg-neutral-900">
                 <option value="all">All tiers</option>
                 <option value="premium">Premium</option>
                 <option value="free">Free</option>
               </select>
-              <select className="h-9 rounded-md border border-zinc-200 bg-white px-3 text-sm dark:border-zinc-800 dark:bg-zinc-900">
+              <select className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm dark:border-neutral-800 dark:bg-neutral-900">
                 <option value="all">All status</option>
                 <option value="active">Active</option>
                 <option value="suspended">Suspended</option>
@@ -129,28 +129,28 @@ export default function AdminUsersPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-zinc-200 dark:border-zinc-800">
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
+                <tr className="border-b border-neutral-200 dark:border-neutral-800">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                     User
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                     Tier
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                     Joined
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                     Last Active
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-zinc-500">
+                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-neutral-500">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+              <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
                 {mockUsers.map((user) => (
                   <UserRow key={user.id} user={user} />
                 ))}
@@ -159,15 +159,15 @@ export default function AdminUsersPage() {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between border-t border-zinc-200 px-6 py-4 dark:border-zinc-800">
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          <div className="flex items-center justify-between border-t border-neutral-200 px-6 py-4 dark:border-neutral-800">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">
               Showing 1-5 of 1,234 users
             </p>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" disabled>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <span className="text-sm text-zinc-600 dark:text-zinc-400">
+              <span className="text-sm text-neutral-600 dark:text-neutral-400">
                 Page 1 of 247
               </span>
               <Button variant="outline" size="sm">
@@ -195,17 +195,17 @@ function UserRow({
   };
 }) {
   return (
-    <tr className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+    <tr className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
       <td className="whitespace-nowrap px-6 py-4">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-violet-100 text-sm font-medium text-violet-600 dark:bg-violet-500/20 dark:text-violet-400">
             {user.name.charAt(0)}
           </div>
           <div>
-            <p className="font-medium text-zinc-900 dark:text-white">
+            <p className="font-medium text-neutral-900 dark:text-white">
               {user.name}
             </p>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">
               {user.email}
             </p>
           </div>
@@ -236,10 +236,10 @@ function UserRow({
           {user.status}
         </Badge>
       </td>
-      <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-600 dark:text-zinc-400">
+      <td className="whitespace-nowrap px-6 py-4 text-sm text-neutral-600 dark:text-neutral-400">
         {user.joinedAt}
       </td>
-      <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-600 dark:text-zinc-400">
+      <td className="whitespace-nowrap px-6 py-4 text-sm text-neutral-600 dark:text-neutral-400">
         {user.lastActive}
       </td>
       <td className="whitespace-nowrap px-6 py-4 text-right">

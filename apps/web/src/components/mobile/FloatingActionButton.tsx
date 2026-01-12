@@ -185,8 +185,8 @@ export function FloatingActionButton({
                     }}
                     className={cn(
                       "px-3 py-1.5 rounded-full",
-                      "bg-white dark:bg-zinc-800",
-                      "text-sm font-medium text-zinc-900 dark:text-zinc-100",
+                      "bg-white dark:bg-neutral-800",
+                      "text-sm font-medium text-neutral-900 dark:text-neutral-100",
                       "shadow-lg shadow-black/10"
                     )}
                   >
@@ -219,7 +219,7 @@ export function FloatingActionButton({
             "shadow-xl shadow-indigo-500/30",
             "text-white touch-manipulation",
             isExpanded
-              ? "bg-zinc-800 dark:bg-zinc-700"
+              ? "bg-neutral-800 dark:bg-neutral-700"
               : "bg-gradient-to-br from-indigo-500 to-indigo-600"
           )}
           style={{

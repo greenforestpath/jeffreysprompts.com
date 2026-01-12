@@ -15,10 +15,10 @@ export default function AdminSettingsPage() {
     <div className="space-y-6">
       {/* Page header */}
       <div>
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+        <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
           Settings
         </h1>
-        <p className="mt-1 text-zinc-600 dark:text-zinc-400">
+        <p className="mt-1 text-neutral-600 dark:text-neutral-400">
           Configure platform-wide settings and preferences
         </p>
       </div>
@@ -29,7 +29,7 @@ export default function AdminSettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Globe className="h-5 w-5 text-zinc-500" />
+              <Globe className="h-5 w-5 text-neutral-500" />
               General
             </CardTitle>
             <CardDescription>
@@ -59,7 +59,7 @@ export default function AdminSettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5 text-zinc-500" />
+              <Bell className="h-5 w-5 text-neutral-500" />
               Notifications
             </CardTitle>
             <CardDescription>
@@ -89,7 +89,7 @@ export default function AdminSettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-zinc-500" />
+              <Shield className="h-5 w-5 text-neutral-500" />
               Security
             </CardTitle>
             <CardDescription>
@@ -120,7 +120,7 @@ export default function AdminSettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5 text-zinc-500" />
+              <Database className="h-5 w-5 text-neutral-500" />
               Data Management
             </CardTitle>
             <CardDescription>
@@ -170,7 +170,7 @@ function SettingRow({
     <div className="flex items-center justify-between py-2">
       <div className="space-y-0.5">
         <div className="flex items-center gap-2">
-          <span className="font-medium text-zinc-900 dark:text-white">
+          <span className="font-medium text-neutral-900 dark:text-white">
             {label}
           </span>
           {badge && (
@@ -179,7 +179,7 @@ function SettingRow({
             </Badge>
           )}
         </div>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="text-sm text-neutral-600 dark:text-neutral-400">
           {description}
         </p>
       </div>

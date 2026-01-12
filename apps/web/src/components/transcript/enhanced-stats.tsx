@@ -112,11 +112,11 @@ function AnimatedStat({
       <div
         className={cn(
           "relative rounded-2xl p-5 sm:p-6",
-          "bg-white/80 dark:bg-zinc-900/80",
+          "bg-white/80 dark:bg-neutral-900/80",
           "backdrop-blur-xl",
-          "border border-zinc-200/50 dark:border-zinc-700/50",
-          "shadow-lg shadow-zinc-900/5 dark:shadow-zinc-900/30",
-          "group-hover:border-zinc-300 dark:group-hover:border-zinc-600",
+          "border border-neutral-200/50 dark:border-neutral-700/50",
+          "shadow-lg shadow-neutral-900/5 dark:shadow-neutral-900/30",
+          "group-hover:border-neutral-300 dark:group-hover:border-neutral-600",
           "group-hover:shadow-xl",
           "transition-all duration-300"
         )}
@@ -146,7 +146,7 @@ function AnimatedStat({
           </div>
           <TrendingUp
             className={cn(
-              "w-4 h-4 text-zinc-400",
+              "w-4 h-4 text-neutral-400",
               "opacity-0 group-hover:opacity-100",
               "transform translate-x-2 group-hover:translate-x-0",
               "transition-all duration-300"
@@ -156,7 +156,7 @@ function AnimatedStat({
 
         {/* Value with animated counter */}
         <div className="mb-1">
-          <span className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+          <span className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
             {prefix}
             {count.toLocaleString()}
             {suffix}
@@ -164,13 +164,13 @@ function AnimatedStat({
         </div>
 
         {/* Label */}
-        <div className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+        <div className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
           {label}
         </div>
 
         {/* Detail */}
         {detail && (
-          <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-500 font-mono">
+          <div className="mt-2 text-xs text-neutral-500 dark:text-neutral-500 font-mono">
             {detail}
           </div>
         )}
@@ -226,7 +226,7 @@ export function EnhancedStats({ transcript }: EnhancedStatsProps) {
       label: "Files Created",
       value: stats.filesEdited,
       detail: "TypeScript, TSX, CSS, JSON",
-      gradient: "from-emerald-500 to-green-400",
+      gradient: "from-emerald-500 to-emerald-400",
       glowColor: "bg-emerald-500/30",
     },
     {
@@ -256,10 +256,10 @@ export function EnhancedStats({ transcript }: EnhancedStatsProps) {
         animate={isInView ? { opacity: 1, y: 0 } : {}}
         className="text-center mb-10"
       >
-        <h2 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-3">
+        <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-3">
           By the Numbers
         </h2>
-        <p className="text-zinc-600 dark:text-zinc-400 max-w-lg mx-auto">
+        <p className="text-neutral-600 dark:text-neutral-400 max-w-lg mx-auto">
           Real metrics from the session that built this entire platform
         </p>
       </motion.div>

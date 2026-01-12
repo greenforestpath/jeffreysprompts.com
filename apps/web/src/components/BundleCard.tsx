@@ -161,7 +161,7 @@ export function BundleCard({ bundle, index = 0 }: BundleCardProps) {
               >
                 {copied ? (
                   <>
-                    <Check className="w-3 h-3 mr-1 text-green-500" />
+                    <Check className="w-3 h-3 mr-1 text-emerald-500" />
                     Copied
                   </>
                 ) : (

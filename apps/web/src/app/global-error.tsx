@@ -20,7 +20,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
 
   return (
     <html lang="en">
-      <body className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 antialiased">
+      <body className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 antialiased">
         <div className="min-h-screen flex items-center justify-center px-4">
           <div className="text-center max-w-md">
             <div className="mb-6">
@@ -43,12 +43,12 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               Critical Error
             </h1>
 
-            <p className="text-zinc-600 dark:text-zinc-400 mb-6">
+            <p className="text-neutral-600 dark:text-neutral-400 mb-6">
               Something went wrong at the application level. This is unusual and we apologize for the inconvenience.
             </p>
 
             {error.digest && (
-              <p className="text-xs text-zinc-500 font-mono mb-6">
+              <p className="text-xs text-neutral-500 font-mono mb-6">
                 Error ID: {error.digest}
               </p>
             )}
@@ -76,7 +76,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
 
               <Link
                 href="/"
-                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 font-medium hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
               >
                 <svg
                   className="h-4 w-4"
@@ -95,7 +95,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               </Link>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-zinc-200 dark:border-zinc-800">
+            <div className="mt-8 pt-6 border-t border-neutral-200 dark:border-neutral-800">
               <a
                 href="https://github.com/Dicklesworthstone/jeffreysprompts.com/issues/new"
                 target="_blank"

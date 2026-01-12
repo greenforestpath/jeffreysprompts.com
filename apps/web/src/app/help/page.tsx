@@ -24,12 +24,12 @@ export default function HelpPage() {
       showBreadcrumb={false}
     >
       {/* Quick search suggestion */}
-      <div className="mb-8 p-4 bg-white dark:bg-zinc-900 rounded-xl border border-border/60">
-        <div className="flex items-center gap-3 text-sm text-zinc-600 dark:text-zinc-400">
+      <div className="mb-8 p-4 bg-white dark:bg-neutral-900 rounded-xl border border-border/60">
+        <div className="flex items-center gap-3 text-sm text-neutral-600 dark:text-neutral-400">
           <Search className="h-5 w-5" />
           <span>
             Looking for something specific? Use the search bar in the sidebar or try{" "}
-            <kbd className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded text-xs font-mono">
+            <kbd className="px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded text-xs font-mono">
               Cmd+K
             </kbd>{" "}
             to search the site.
@@ -48,10 +48,10 @@ export default function HelpPage() {
                   <Icon className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                  <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
                     {category.title}
                   </h2>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
                     {category.description}
                   </p>
                 </div>
@@ -73,7 +73,7 @@ export default function HelpPage() {
 
       {/* Popular topics */}
       <section className="mt-12 pt-8 border-t border-border/60">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
+        <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
           Popular Topics
         </h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

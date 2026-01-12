@@ -48,7 +48,7 @@ const plans = [
 
 export function PricingPreviewSection() {
   return (
-    <section className="relative py-24 overflow-hidden bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:to-zinc-950">
+    <section className="relative py-24 overflow-hidden bg-gradient-to-b from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-950">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div
@@ -61,10 +61,10 @@ export function PricingPreviewSection() {
           <span className="inline-block px-3 py-1 text-sm font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 rounded-full mb-4">
             Pricing
           </span>
-          <h2 className="text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-white mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-neutral-900 dark:text-white mb-4">
             Simple, transparent pricing
           </h2>
-          <p className="text-lg text-zinc-600 dark:text-zinc-400">
+          <p className="text-lg text-neutral-600 dark:text-neutral-400">
             Start free, upgrade when you&apos;re ready. No hidden fees, no surprises.
           </p>
         </motion.div>
@@ -85,7 +85,7 @@ export function PricingPreviewSection() {
                   "relative h-full p-8 rounded-2xl border transition-all duration-300",
                   plan.highlight
                     ? "bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 border-indigo-200 dark:border-indigo-800/50 shadow-xl shadow-indigo-500/10"
-                    : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:shadow-lg"
+                    : "bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 hover:shadow-lg"
                 )}
               >
                 {/* Best value badge */}
@@ -98,10 +98,10 @@ export function PricingPreviewSection() {
 
                 {/* Plan header */}
                 <div className="mb-6">
-                  <h3 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">
+                  <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">
                     {plan.name}
                   </h3>
-                  <p className="text-zinc-600 dark:text-zinc-400 text-sm">
+                  <p className="text-neutral-600 dark:text-neutral-400 text-sm">
                     {plan.description}
                   </p>
                 </div>
@@ -109,10 +109,10 @@ export function PricingPreviewSection() {
                 {/* Price */}
                 <div className="mb-6">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold text-zinc-900 dark:text-white">
+                    <span className="text-4xl font-bold text-neutral-900 dark:text-white">
                       {plan.price}
                     </span>
-                    <span className="text-zinc-500 dark:text-zinc-400">
+                    <span className="text-neutral-500 dark:text-neutral-400">
                       /{plan.period}
                     </span>
                   </div>
@@ -125,7 +125,7 @@ export function PricingPreviewSection() {
                       <div className="mt-0.5 w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
                         <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                       </div>
-                      <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                      <span className="text-sm text-neutral-700 dark:text-neutral-300">
                         {feature}
                       </span>
                     </li>

@@ -101,7 +101,7 @@ export function MessageContent({ content }: MessageContentProps) {
           return (
             <div key={index} className="relative rounded-lg overflow-hidden">
               {block.language && block.language !== "text" && (
-                <div className="absolute top-0 right-0 px-2 py-1 text-xs font-mono text-zinc-400 bg-zinc-800/80 rounded-bl">
+                <div className="absolute top-0 right-0 px-2 py-1 text-xs font-mono text-neutral-400 bg-neutral-800/80 rounded-bl">
                   {block.language}
                 </div>
               )}
@@ -127,7 +127,7 @@ export function MessageContent({ content }: MessageContentProps) {
         return (
           <div
             key={index}
-            className="whitespace-pre-wrap text-zinc-800 dark:text-zinc-200 leading-relaxed"
+            className="whitespace-pre-wrap text-neutral-800 dark:text-neutral-200 leading-relaxed"
           >
             {block.content}
           </div>

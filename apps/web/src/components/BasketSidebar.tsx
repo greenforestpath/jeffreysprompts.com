@@ -35,6 +35,7 @@ export function BasketSidebar({ isOpen, onClose }: BasketSidebarProps) {
   const [copyFlash, setCopyFlash] = useState(false);
   const [exporting, setExporting] = useState(false);
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const copyFlashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prefersReducedMotion = useReducedMotion();
 
   const basketPrompts = useMemo(
@@ -54,9 +55,8 @@ export function BasketSidebar({ isOpen, onClose }: BasketSidebarProps) {
 
   useEffect(() => {
     return () => {
-      if (resetTimerRef.current) {
-        clearTimeout(resetTimerRef.current);
-      }
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+      if (copyFlashTimerRef.current) clearTimeout(copyFlashTimerRef.current);
     };
   }, []);
 
@@ -151,7 +151,8 @@ export function BasketSidebar({ isOpen, onClose }: BasketSidebarProps) {
       trackEvent("skill_install", { count: basketPrompts.length, source: "basket" });
 
       // Reset flash quickly
-      setTimeout(() => setCopyFlash(false), 300);
+      if (copyFlashTimerRef.current) clearTimeout(copyFlashTimerRef.current);
+      copyFlashTimerRef.current = setTimeout(() => setCopyFlash(false), 300);
 
       if (resetTimerRef.current) {
         clearTimeout(resetTimerRef.current);
@@ -250,16 +251,15 @@ export function BasketSidebar({ isOpen, onClose }: BasketSidebarProps) {
           ) : (
             <ul className="space-y-2">
               <AnimatePresence mode="popLayout" initial={false}>
-                {basketPrompts.map((prompt, index) => (
+                {basketPrompts.map((prompt) => (
                   <motion.li
                     key={prompt.id}
                     layout
-                    initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, x: -20, height: 0 }}
-                    animate={{ opacity: 1, x: 0, height: "auto" }}
-                    exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, x: 20, height: 0 }}
+                    initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, x: 20 }}
                     transition={{
                       duration: 0.2,
-                      delay: prefersReducedMotion ? 0 : index * 0.03,
                       ease: [0.25, 0.1, 0.25, 1],
                     }}
                     className="flex items-center justify-between gap-2 p-2 rounded-md bg-muted/50 hover:bg-muted transition-colors overflow-hidden"

@@ -92,7 +92,7 @@ export function MessageDetail({ message, highlight }: MessageDetailProps) {
         "group rounded-xl border p-4",
         isUser
           ? "bg-violet-50/50 dark:bg-violet-950/20 border-violet-200 dark:border-violet-800"
-          : "bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
+          : "bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800"
       )}
     >
       {/* Header */}
@@ -102,19 +102,19 @@ export function MessageDetail({ message, highlight }: MessageDetailProps) {
             "w-8 h-8 rounded-full flex items-center justify-center",
             isUser
               ? "bg-violet-100 dark:bg-violet-900 text-violet-600 dark:text-violet-400"
-              : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
+              : "bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300"
           )}
         >
           {createElement(messageIcon, { className: "w-4 h-4" })}
         </div>
         <div className="flex-1">
-          <div className="font-medium text-sm text-zinc-900 dark:text-zinc-100">
+          <div className="font-medium text-sm text-neutral-900 dark:text-neutral-100">
             {getMessageLabel(message.type)}
           </div>
-          <div className="text-xs text-zinc-500 dark:text-zinc-400">
+          <div className="text-xs text-neutral-500 dark:text-neutral-400">
             {formatTime(message.timestamp)}
             {message.model && (
-              <span className="ml-2 text-zinc-400 dark:text-zinc-500">
+              <span className="ml-2 text-neutral-400 dark:text-neutral-500">
                 {message.model}
               </span>
             )}
@@ -145,8 +145,8 @@ export function MessageDetail({ message, highlight }: MessageDetailProps) {
             onClick={() => setShowThinking(!showThinking)}
             className={cn(
               "flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg",
-              "hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors",
-              "text-zinc-600 dark:text-zinc-400"
+              "hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors",
+              "text-neutral-600 dark:text-neutral-400"
             )}
           >
             {showThinking ? (
@@ -185,7 +185,7 @@ export function MessageDetail({ message, highlight }: MessageDetailProps) {
       {/* Tool calls */}
       {message.toolCalls && message.toolCalls.length > 0 && (
         <div className="mt-4 space-y-2">
-          <div className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+          <div className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
             Tool Calls ({message.toolCalls.length})
           </div>
 
@@ -219,7 +219,7 @@ function ToolCallDisplay({ tool, expanded, onToggle }: ToolCallDisplayProps) {
       className={cn(
         "rounded-lg border overflow-hidden",
         tool.success
-          ? "border-zinc-200 dark:border-zinc-700"
+          ? "border-neutral-200 dark:border-neutral-700"
           : "border-red-200 dark:border-red-800"
       )}
     >
@@ -228,23 +228,23 @@ function ToolCallDisplay({ tool, expanded, onToggle }: ToolCallDisplayProps) {
         onClick={onToggle}
         className={cn(
           "w-full flex items-center gap-2 px-3 py-2 text-left",
-          "hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors",
+          "hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors",
           !tool.success && "bg-red-50/50 dark:bg-red-950/20"
         )}
       >
         {expanded ? (
-          <ChevronDown className="w-4 h-4 text-zinc-500" />
+          <ChevronDown className="w-4 h-4 text-neutral-500" />
         ) : (
-          <ChevronRight className="w-4 h-4 text-zinc-500" />
+          <ChevronRight className="w-4 h-4 text-neutral-500" />
         )}
         {createElement(toolIcon, {
-          className: "w-4 h-4 text-zinc-600 dark:text-zinc-400",
+          className: "w-4 h-4 text-neutral-600 dark:text-neutral-400",
         })}
-        <span className="font-mono text-sm text-zinc-800 dark:text-zinc-200">
+        <span className="font-mono text-sm text-neutral-800 dark:text-neutral-200">
           {tool.name}
         </span>
         {tool.duration && (
-          <span className="text-xs text-zinc-400 dark:text-zinc-500 ml-auto">
+          <span className="text-xs text-neutral-400 dark:text-neutral-500 ml-auto">
             {tool.duration}ms
           </span>
         )}
@@ -264,10 +264,10 @@ function ToolCallDisplay({ tool, expanded, onToggle }: ToolCallDisplayProps) {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="border-t border-zinc-200 dark:border-zinc-700">
+            <div className="border-t border-neutral-200 dark:border-neutral-700">
               {/* Input */}
-              <div className="border-b border-zinc-200 dark:border-zinc-700">
-                <div className="px-3 py-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+              <div className="border-b border-neutral-200 dark:border-neutral-700">
+                <div className="px-3 py-1.5 text-xs font-medium text-neutral-500 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-800/50">
                   Input
                 </div>
                 <div className="max-h-64 overflow-auto">
@@ -287,7 +287,7 @@ function ToolCallDisplay({ tool, expanded, onToggle }: ToolCallDisplayProps) {
 
               {/* Output */}
               <div>
-                <div className="px-3 py-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+                <div className="px-3 py-1.5 text-xs font-medium text-neutral-500 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-800/50">
                   Output
                 </div>
                 <div className="max-h-64 overflow-auto">
@@ -304,7 +304,7 @@ function ToolCallDisplay({ tool, expanded, onToggle }: ToolCallDisplayProps) {
                       {tool.output}
                     </SyntaxHighlighter>
                   ) : (
-                    <div className="px-3 py-2 text-xs text-zinc-400 dark:text-zinc-500 italic">
+                    <div className="px-3 py-2 text-xs text-neutral-400 dark:text-neutral-500 italic">
                       No output
                     </div>
                   )}

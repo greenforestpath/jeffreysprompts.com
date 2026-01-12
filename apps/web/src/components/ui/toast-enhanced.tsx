@@ -280,8 +280,8 @@ function ToastItem({ toast, index, onRemove }: ToastItemProps) {
       className={cn(
         "relative w-full max-w-sm overflow-hidden",
         "rounded-xl border shadow-lg",
-        "bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl",
-        "border-zinc-200/50 dark:border-zinc-800/50",
+        "bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl",
+        "border-neutral-200/50 dark:border-neutral-800/50",
         index > 0 && "pointer-events-none"
       )}
       style={{
@@ -315,11 +315,11 @@ function ToastItem({ toast, index, onRemove }: ToastItemProps) {
 
         {/* Content */}
         <div className="flex-1 min-w-0 pt-0.5">
-          <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
             {toast.title}
           </p>
           {toast.message && (
-            <p className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2">
+            <p className="mt-0.5 text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2">
               {toast.message}
             </p>
           )}
@@ -351,9 +351,9 @@ function ToastItem({ toast, index, onRemove }: ToastItemProps) {
             className={cn(
               "shrink-0 size-7 rounded-full",
               "flex items-center justify-center",
-              "text-zinc-400 hover:text-zinc-600",
-              "dark:text-zinc-500 dark:hover:text-zinc-300",
-              "hover:bg-zinc-100 dark:hover:bg-zinc-800",
+              "text-neutral-400 hover:text-neutral-600",
+              "dark:text-neutral-500 dark:hover:text-neutral-300",
+              "hover:bg-neutral-100 dark:hover:bg-neutral-800",
               "transition-colors"
             )}
             aria-label="Dismiss"
@@ -364,7 +364,7 @@ function ToastItem({ toast, index, onRemove }: ToastItemProps) {
       </div>
 
       {/* Progress bar */}
-      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-zinc-100 dark:bg-zinc-800">
+      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-neutral-100 dark:bg-neutral-800">
         <motion.div
           className={cn(
             "h-full origin-left",

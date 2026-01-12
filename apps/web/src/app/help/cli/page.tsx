@@ -28,11 +28,11 @@ export default function CLIPage() {
         ))}
       </div>
 
-      <div className="mt-8 p-5 bg-zinc-100 dark:bg-zinc-800 rounded-xl">
-        <h3 className="font-semibold text-zinc-900 dark:text-white mb-2">
+      <div className="mt-8 p-5 bg-neutral-100 dark:bg-neutral-800 rounded-xl">
+        <h3 className="font-semibold text-neutral-900 dark:text-white mb-2">
           Why use the CLI?
         </h3>
-        <ul className="text-sm text-zinc-600 dark:text-zinc-400 space-y-1">
+        <ul className="text-sm text-neutral-600 dark:text-neutral-400 space-y-1">
           <li>Access prompts without leaving your terminal</li>
           <li>Integrate prompts into scripts and automation</li>
           <li>Fuzzy search with fzf-style interface</li>

@@ -21,7 +21,7 @@ export function TimelineSkeleton({
   return (
     <div className="relative">
       {/* Vertical line */}
-      <div className="absolute left-[1.125rem] top-0 bottom-0 w-0.5 bg-gradient-to-b from-zinc-300 via-zinc-200 to-zinc-300 dark:from-zinc-700 dark:via-zinc-600 dark:to-zinc-700 opacity-30" />
+      <div className="absolute left-[1.125rem] top-0 bottom-0 w-0.5 bg-gradient-to-b from-neutral-300 via-neutral-200 to-neutral-300 dark:from-neutral-700 dark:via-neutral-600 dark:to-neutral-700 opacity-30" />
 
       {/* Section groups */}
       <div className="space-y-4">
@@ -52,7 +52,7 @@ function SectionSkeleton({ index, messageCount }: SectionSkeletonProps) {
           variant="pulse"
           className={cn(
             "relative z-10 w-8 h-8 rounded-full",
-            "bg-zinc-200 dark:bg-zinc-700"
+            "bg-neutral-200 dark:bg-neutral-700"
           )}
         />
 
@@ -60,18 +60,18 @@ function SectionSkeleton({ index, messageCount }: SectionSkeletonProps) {
         <div className="flex-1 space-y-2">
           <Skeleton
             variant="pulse"
-            className="h-4 w-32 bg-zinc-200 dark:bg-zinc-700"
+            className="h-4 w-32 bg-neutral-200 dark:bg-neutral-700"
           />
           <Skeleton
             variant="pulse"
-            className="h-3 w-48 bg-zinc-100 dark:bg-zinc-800"
+            className="h-3 w-48 bg-neutral-100 dark:bg-neutral-800"
           />
         </div>
 
         {/* Expand indicator */}
         <Skeleton
           variant="pulse"
-          className="w-5 h-5 rounded bg-zinc-100 dark:bg-zinc-800"
+          className="w-5 h-5 rounded bg-neutral-100 dark:bg-neutral-800"
         />
       </div>
 
@@ -92,22 +92,22 @@ function MessagePreviewSkeleton() {
     <div
       className={cn(
         "p-3 rounded-lg",
-        "border-l-2 border-zinc-200 dark:border-zinc-700"
+        "border-l-2 border-neutral-200 dark:border-neutral-700"
       )}
     >
       {/* Header row */}
       <div className="flex items-center gap-2 mb-2">
         <Skeleton
           variant="pulse"
-          className="w-4 h-4 rounded-full bg-zinc-200 dark:bg-zinc-700"
+          className="w-4 h-4 rounded-full bg-neutral-200 dark:bg-neutral-700"
         />
         <Skeleton
           variant="pulse"
-          className="h-3 w-12 bg-zinc-200 dark:bg-zinc-700"
+          className="h-3 w-12 bg-neutral-200 dark:bg-neutral-700"
         />
         <Skeleton
           variant="pulse"
-          className="h-3 w-10 bg-zinc-100 dark:bg-zinc-800"
+          className="h-3 w-10 bg-neutral-100 dark:bg-neutral-800"
         />
       </div>
 
@@ -115,11 +115,11 @@ function MessagePreviewSkeleton() {
       <div className="space-y-1.5">
         <Skeleton
           variant="pulse"
-          className="h-3 w-full bg-zinc-100 dark:bg-zinc-800"
+          className="h-3 w-full bg-neutral-100 dark:bg-neutral-800"
         />
         <Skeleton
           variant="pulse"
-          className="h-3 w-3/4 bg-zinc-100 dark:bg-zinc-800"
+          className="h-3 w-3/4 bg-neutral-100 dark:bg-neutral-800"
         />
       </div>
     </div>
@@ -136,16 +136,16 @@ export function TimelineSkeletonCompact() {
         <div key={i} className="flex items-center gap-3">
           <Skeleton
             variant="pulse"
-            className="w-6 h-6 rounded-full bg-zinc-200 dark:bg-zinc-700"
+            className="w-6 h-6 rounded-full bg-neutral-200 dark:bg-neutral-700"
           />
           <div className="flex-1 space-y-1">
             <Skeleton
               variant="pulse"
-              className="h-3 w-full bg-zinc-100 dark:bg-zinc-800"
+              className="h-3 w-full bg-neutral-100 dark:bg-neutral-800"
             />
             <Skeleton
               variant="pulse"
-              className="h-3 w-2/3 bg-zinc-100 dark:bg-zinc-800"
+              className="h-3 w-2/3 bg-neutral-100 dark:bg-neutral-800"
             />
           </div>
         </div>
@@ -166,26 +166,26 @@ export function StatsDashboardSkeleton() {
           key={i}
           className={cn(
             "relative rounded-xl p-4 border",
-            "bg-zinc-50 dark:bg-zinc-900",
-            "border-zinc-200 dark:border-zinc-800"
+            "bg-neutral-50 dark:bg-neutral-900",
+            "border-neutral-200 dark:border-neutral-800"
           )}
         >
           {/* Icon placeholder */}
           <Skeleton
             variant="pulse"
-            className="w-10 h-10 rounded-lg mb-3 bg-zinc-200 dark:bg-zinc-700"
+            className="w-10 h-10 rounded-lg mb-3 bg-neutral-200 dark:bg-neutral-700"
           />
 
           {/* Value */}
           <Skeleton
             variant="pulse"
-            className="h-7 w-16 mb-1 bg-zinc-200 dark:bg-zinc-700"
+            className="h-7 w-16 mb-1 bg-neutral-200 dark:bg-neutral-700"
           />
 
           {/* Label */}
           <Skeleton
             variant="pulse"
-            className="h-4 w-20 bg-zinc-100 dark:bg-zinc-800"
+            className="h-4 w-20 bg-neutral-100 dark:bg-neutral-800"
           />
         </div>
       ))}

@@ -34,9 +34,9 @@ function StatCard({ icon: Icon, label, value, detail, color, index }: StatCardPr
       transition={{ delay: index * 0.1, duration: 0.4, ease: "easeOut" }}
       className={cn(
         "relative rounded-xl p-4 border",
-        "bg-zinc-50 dark:bg-zinc-900",
-        "border-zinc-200 dark:border-zinc-800",
-        "hover:border-zinc-300 dark:hover:border-zinc-700",
+        "bg-neutral-50 dark:bg-neutral-900",
+        "border-neutral-200 dark:border-neutral-800",
+        "hover:border-neutral-300 dark:hover:border-neutral-700",
         "transition-colors duration-200"
       )}
     >
@@ -51,18 +51,18 @@ function StatCard({ icon: Icon, label, value, detail, color, index }: StatCardPr
       </div>
 
       {/* Value */}
-      <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+      <div className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
         {typeof value === "number" ? formatNumber(value) : value}
       </div>
 
       {/* Label */}
-      <div className="text-sm text-zinc-600 dark:text-zinc-400 mt-0.5">
+      <div className="text-sm text-neutral-600 dark:text-neutral-400 mt-0.5">
         {label}
       </div>
 
       {/* Detail */}
       {detail && (
-        <div className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
+        <div className="text-xs text-neutral-500 dark:text-neutral-500 mt-1">
           {detail}
         </div>
       )}

@@ -157,7 +157,7 @@ export default function ContributePage() {
   const idIsValid = !idTouched || SAFE_ID_PATTERN.test(displayId);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50/40 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900">
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50/40 via-white to-white dark:from-neutral-950 dark:via-neutral-950 dark:to-neutral-900">
       <div className="border-b border-border/60">
         <div className="container-wide py-12">
           <div className="flex flex-col gap-4">
@@ -165,15 +165,15 @@ export default function ContributePage() {
               <Sparkles className="h-4 w-4" />
               Contribute a prompt
             </div>
-            <h1 className="text-4xl font-bold text-zinc-900 dark:text-white">
+            <h1 className="text-4xl font-bold text-neutral-900 dark:text-white">
               Share your favorite prompt
             </h1>
-            <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl">
+            <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl">
               Use this page to format a prompt submission for JeffreysPrompts.com. No database, no
               account, just a clean GitHub issue or pull request with a ready-to-paste TypeScript
               entry.
             </p>
-            <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
+            <div className="flex flex-wrap items-center gap-3 text-sm text-neutral-500 dark:text-neutral-400">
               <span className="inline-flex items-center gap-2">
                 <Github className="h-4 w-4" />
                 Submissions go to GitHub
@@ -181,7 +181,7 @@ export default function ContributePage() {
               <span>•</span>
               <Link
                 href="/"
-                className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100"
+                className="inline-flex items-center gap-1 hover:text-neutral-900 dark:hover:text-neutral-100"
               >
                 Browse prompts
                 <ExternalLink className="h-4 w-4" />
@@ -352,7 +352,7 @@ export default function ContributePage() {
                     </Badge>
                   )}
                 </div>
-                <pre className="whitespace-pre-wrap rounded-lg bg-muted/60 p-4 text-xs font-mono text-zinc-700 dark:text-zinc-200">
+                <pre className="whitespace-pre-wrap rounded-lg bg-muted/60 p-4 text-xs font-mono text-neutral-700 dark:text-neutral-200">
                   {tsEntry}
                 </pre>
               </CardContent>

@@ -33,22 +33,22 @@ function MessagePreview({ message, onClick }: MessagePreviewProps) {
       onClick={onClick}
       className={cn(
         "w-full text-left p-3 rounded-lg transition-all",
-        "hover:bg-zinc-100 dark:hover:bg-zinc-800/50",
+        "hover:bg-neutral-100 dark:hover:bg-neutral-800/50",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
         isUser
           ? "border-l-2 border-violet-500"
-          : "border-l-2 border-zinc-400 dark:border-zinc-600"
+          : "border-l-2 border-neutral-400 dark:border-neutral-600"
       )}
     >
       <div className="flex items-center gap-2 mb-1">
         <Icon className={cn(
           "w-4 h-4",
-          isUser ? "text-violet-500" : "text-zinc-500"
+          isUser ? "text-violet-500" : "text-neutral-500"
         )} />
-        <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+        <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
           {isUser ? "Human" : "Claude"}
         </span>
-        <span className="text-xs text-zinc-400 dark:text-zinc-500">
+        <span className="text-xs text-neutral-400 dark:text-neutral-500">
           {formatTime(message.timestamp)}
         </span>
         {hasTools && (
@@ -58,7 +58,7 @@ function MessagePreview({ message, onClick }: MessagePreviewProps) {
           </span>
         )}
       </div>
-      <p className="text-sm text-zinc-700 dark:text-zinc-300 line-clamp-2">
+      <p className="text-sm text-neutral-700 dark:text-neutral-300 line-clamp-2">
         {previewContent}
       </p>
     </button>
@@ -87,7 +87,7 @@ function SectionGroup({ section, messages, sectionIndex, onSelectMessage }: Sect
         onClick={() => setIsExpanded(!isExpanded)}
         className={cn(
           "w-full flex items-center gap-3 p-3 rounded-lg",
-          "hover:bg-zinc-100 dark:hover:bg-zinc-800/50",
+          "hover:bg-neutral-100 dark:hover:bg-neutral-800/50",
           "transition-colors duration-200"
         )}
       >
@@ -98,16 +98,16 @@ function SectionGroup({ section, messages, sectionIndex, onSelectMessage }: Sect
 
         {/* Section info */}
         <div className="flex-1 text-left">
-          <div className="font-medium text-zinc-900 dark:text-zinc-100">
+          <div className="font-medium text-neutral-900 dark:text-neutral-100">
             {section.title}
           </div>
-          <div className="text-sm text-zinc-500 dark:text-zinc-400">
+          <div className="text-sm text-neutral-500 dark:text-neutral-400">
             {section.summary}
           </div>
         </div>
 
         {/* Expand/collapse */}
-        <div className="text-zinc-400">
+        <div className="text-neutral-400">
           {isExpanded ? (
             <ChevronDown className="w-5 h-5" />
           ) : (

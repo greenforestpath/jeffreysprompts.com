@@ -162,18 +162,18 @@ const changeTypeConfig = {
 
 export default function ChangelogPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-violet-50/60 via-white to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900">
+    <div className="min-h-screen bg-gradient-to-b from-violet-50/60 via-white to-white dark:from-neutral-950 dark:via-neutral-950 dark:to-neutral-900">
       {/* Header */}
-      <div className="border-b border-zinc-200/70 dark:border-zinc-800/70">
+      <div className="border-b border-neutral-200/70 dark:border-neutral-800/70">
         <div className="container mx-auto px-4 py-14">
           <div className="max-w-3xl">
             <Badge variant="secondary" className="mb-4">
               Product Updates
             </Badge>
-            <h1 className="text-4xl font-bold text-zinc-900 dark:text-white sm:text-5xl">
+            <h1 className="text-4xl font-bold text-neutral-900 dark:text-white sm:text-5xl">
               Changelog
             </h1>
-            <p className="mt-4 text-lg text-zinc-600 dark:text-zinc-400">
+            <p className="mt-4 text-lg text-neutral-600 dark:text-neutral-400">
               Stay up to date with the latest features, improvements, and fixes.
               We ship frequently to make JeffreysPrompts better for you.
             </p>
@@ -197,13 +197,13 @@ export default function ChangelogPage() {
       </div>
 
       {/* Footer CTA */}
-      <div className="border-t border-zinc-200/70 dark:border-zinc-800/70">
+      <div className="border-t border-neutral-200/70 dark:border-neutral-800/70">
         <div className="container mx-auto px-4 py-12">
           <div className="mx-auto max-w-xl text-center">
-            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
               Have a feature request?
             </h2>
-            <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+            <p className="mt-2 text-neutral-600 dark:text-neutral-400">
               We&apos;d love to hear your ideas for making JeffreysPrompts better.
             </p>
             <a
@@ -236,7 +236,7 @@ function ChangelogEntryCard({
         className={`absolute left-0 top-2 hidden h-4 w-4 rounded-full border-2 md:left-6 md:block ${
           isLatest
             ? "border-violet-500 bg-violet-500"
-            : "border-zinc-300 bg-white dark:border-zinc-600 dark:bg-zinc-900"
+            : "border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-900"
         }`}
       />
 
@@ -250,7 +250,7 @@ function ChangelogEntryCard({
             >
               v{entry.version}
             </Badge>
-            <div className="flex items-center gap-1.5 text-sm text-zinc-500">
+            <div className="flex items-center gap-1.5 text-sm text-neutral-500">
               <Calendar className="h-4 w-4" />
               {entry.date}
             </div>
@@ -262,11 +262,11 @@ function ChangelogEntryCard({
           </div>
 
           {/* Title & description */}
-          <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">
+          <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
             {entry.title}
           </h2>
           {entry.description && (
-            <p className="mt-1 text-zinc-600 dark:text-zinc-400">
+            <p className="mt-1 text-neutral-600 dark:text-neutral-400">
               {entry.description}
             </p>
           )}
@@ -282,7 +282,7 @@ function ChangelogEntryCard({
                     <Icon className="mr-1 h-3 w-3" />
                     {config.label}
                   </Badge>
-                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                  <span className="text-sm text-neutral-700 dark:text-neutral-300">
                     {change.text}
                   </span>
                 </li>

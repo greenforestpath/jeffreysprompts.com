@@ -36,17 +36,17 @@ export default async function AdminLayout({
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
   return (
-    <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950">
+    <div className="flex min-h-screen bg-neutral-50 dark:bg-neutral-950">
       {/* Sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 flex-col border-r border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 lg:flex">
         {/* Header */}
-        <div className="flex h-16 items-center gap-2 border-b border-zinc-200 px-6 dark:border-zinc-800">
+        <div className="flex h-16 items-center gap-2 border-b border-neutral-200 px-6 dark:border-neutral-800">
           <Shield className="h-6 w-6 text-violet-600 dark:text-violet-400" />
           <div>
-            <span className="text-lg font-semibold text-zinc-900 dark:text-white">
+            <span className="text-lg font-semibold text-neutral-900 dark:text-white">
               Admin
             </span>
-            <div className="text-xs text-zinc-500 dark:text-zinc-400 capitalize">
+            <div className="text-xs text-neutral-500 dark:text-neutral-400 capitalize">
               {roleLabel}
             </div>
           </div>
@@ -60,10 +60,10 @@ export default async function AdminLayout({
         </nav>
 
         {/* Footer */}
-        <div className="border-t border-zinc-200 p-4 dark:border-zinc-800">
+        <div className="border-t border-neutral-200 p-4 dark:border-neutral-800">
           <Link
             href="/"
-            className="flex items-center gap-2 text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+            className="flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
           >
             <ChevronLeft className="h-4 w-4" />
             Back to site
@@ -74,25 +74,25 @@ export default async function AdminLayout({
       {/* Main content */}
       <main className="flex-1 lg:pl-64">
         {/* Mobile header */}
-        <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-zinc-200 bg-white px-4 dark:border-zinc-800 dark:bg-zinc-900 lg:hidden">
+        <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-neutral-200 bg-white px-4 dark:border-neutral-800 dark:bg-neutral-900 lg:hidden">
           <Shield className="h-6 w-6 text-violet-600 dark:text-violet-400" />
           <div>
-            <span className="text-lg font-semibold text-zinc-900 dark:text-white">
+            <span className="text-lg font-semibold text-neutral-900 dark:text-white">
               Admin
             </span>
-            <div className="text-xs text-zinc-500 dark:text-zinc-400 capitalize">
+            <div className="text-xs text-neutral-500 dark:text-neutral-400 capitalize">
               {roleLabel}
             </div>
           </div>
         </header>
 
         {/* Mobile navigation */}
-        <nav className="flex items-center gap-2 overflow-x-auto border-b border-zinc-200 bg-white px-4 py-2 dark:border-zinc-800 dark:bg-zinc-900 lg:hidden">
+        <nav className="flex items-center gap-2 overflow-x-auto border-b border-neutral-200 bg-white px-4 py-2 dark:border-neutral-800 dark:bg-neutral-900 lg:hidden">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+              className="flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
             >
               <item.icon className="h-4 w-4" />
               {item.label}
@@ -122,8 +122,8 @@ function AdminNavLink({
       href={href}
       className={cn(
         "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-        "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900",
-        "dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
+        "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900",
+        "dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white"
       )}
     >
       <Icon className="h-5 w-5" />

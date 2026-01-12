@@ -70,15 +70,17 @@ export function PromptCard({ prompt, index = 0, onCopy, onClick }: PromptCardPro
   const [basketFlash, setBasketFlash] = useState(false);
   const prefersReducedMotion = useReducedMotion();
   const copiedResetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const copyFlashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const basketFlashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { success, error } = useToast();
   const { addItem, isInBasket } = useBasket();
   const inBasket = isInBasket(prompt.id);
 
   useEffect(() => {
     return () => {
-      if (copiedResetTimer.current) {
-        clearTimeout(copiedResetTimer.current);
-      }
+      if (copiedResetTimer.current) clearTimeout(copiedResetTimer.current);
+      if (copyFlashTimer.current) clearTimeout(copyFlashTimer.current);
+      if (basketFlashTimer.current) clearTimeout(basketFlashTimer.current);
     };
   }, []);
 
@@ -100,7 +102,8 @@ export function PromptCard({ prompt, index = 0, onCopy, onClick }: PromptCardPro
         onCopy?.(prompt);
 
         // Reset flash quickly
-        setTimeout(() => setCopyFlash(false), 300);
+        if (copyFlashTimer.current) clearTimeout(copyFlashTimer.current);
+        copyFlashTimer.current = setTimeout(() => setCopyFlash(false), 300);
 
         if (copiedResetTimer.current) {
           clearTimeout(copiedResetTimer.current);
@@ -136,7 +139,8 @@ export function PromptCard({ prompt, index = 0, onCopy, onClick }: PromptCardPro
         trackEvent("basket_add", { id: prompt.id, source: "card" });
 
         // Reset flash quickly
-        setTimeout(() => setBasketFlash(false), 300);
+        if (basketFlashTimer.current) clearTimeout(basketFlashTimer.current);
+        basketFlashTimer.current = setTimeout(() => setBasketFlash(false), 300);
       }
     },
     [prompt, inBasket, addItem, success]

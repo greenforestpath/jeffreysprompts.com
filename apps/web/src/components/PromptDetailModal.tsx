@@ -91,9 +91,11 @@ export function PromptDetailModal({
   const [copyFlash, setCopyFlash] = useState(false);
   const [context, setContext] = useState("");
   const copiedResetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const copyFlashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prefersReducedMotion = useReducedMotion();
   const handleClose = useCallback(() => {
     setCopied(false);
+    setCopyFlash(false);
     setContext("");
     onClose();
   }, [onClose]);
@@ -167,7 +169,8 @@ export function PromptDetailModal({
       }
 
       // Reset flash quickly
-      setTimeout(() => setCopyFlash(false), 300);
+      if (copyFlashTimer.current) clearTimeout(copyFlashTimer.current);
+      copyFlashTimer.current = setTimeout(() => setCopyFlash(false), 300);
 
       if (copiedResetTimer.current) {
         clearTimeout(copiedResetTimer.current);
@@ -220,9 +223,8 @@ export function PromptDetailModal({
 
   useEffect(() => {
     return () => {
-      if (copiedResetTimer.current) {
-        clearTimeout(copiedResetTimer.current);
-      }
+      if (copiedResetTimer.current) clearTimeout(copiedResetTimer.current);
+      if (copyFlashTimer.current) clearTimeout(copyFlashTimer.current);
     };
   }, []);
 

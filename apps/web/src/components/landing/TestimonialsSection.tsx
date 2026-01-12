@@ -63,7 +63,7 @@ export function TestimonialsSection() {
     <section className="relative py-24 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-zinc-950 dark:via-zinc-900 dark:to-indigo-950" />
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-indigo-950" />
       </div>
 
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -78,10 +78,10 @@ export function TestimonialsSection() {
           <span className="inline-block px-3 py-1 text-sm font-medium text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/50 rounded-full mb-4">
             Testimonials
           </span>
-          <h2 className="text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-white mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-neutral-900 dark:text-white mb-4">
             Loved by developers worldwide
           </h2>
-          <p className="text-lg text-zinc-600 dark:text-zinc-400">
+          <p className="text-lg text-neutral-600 dark:text-neutral-400">
             Join thousands of developers who have supercharged their AI workflows.
           </p>
         </motion.div>
@@ -100,7 +100,7 @@ export function TestimonialsSection() {
               variants={itemVariants}
               className="relative group"
             >
-              <div className="relative h-full p-8 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-indigo-200 dark:hover:border-indigo-800/50 transition-all duration-300 hover:shadow-xl">
+              <div className="relative h-full p-8 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-indigo-200 dark:hover:border-indigo-800/50 transition-all duration-300 hover:shadow-xl">
                 {/* Quote icon */}
                 <div className="absolute -top-4 -left-2 w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg">
                   <Quote className="w-5 h-5 text-white" />
@@ -117,7 +117,7 @@ export function TestimonialsSection() {
                 </div>
 
                 {/* Quote */}
-                <blockquote className="text-zinc-700 dark:text-zinc-300 mb-6 leading-relaxed">
+                <blockquote className="text-neutral-700 dark:text-neutral-300 mb-6 leading-relaxed">
                   &ldquo;{testimonial.quote}&rdquo;
                 </blockquote>
 
@@ -128,10 +128,10 @@ export function TestimonialsSection() {
                     {getInitials(testimonial.author)}
                   </div>
                   <div>
-                    <div className="font-semibold text-zinc-900 dark:text-white">
+                    <div className="font-semibold text-neutral-900 dark:text-white">
                       {testimonial.author}
                     </div>
-                    <div className="text-sm text-zinc-500 dark:text-zinc-400">
+                    <div className="text-sm text-neutral-500 dark:text-neutral-400">
                       {testimonial.role} at {testimonial.company}
                     </div>
                   </div>

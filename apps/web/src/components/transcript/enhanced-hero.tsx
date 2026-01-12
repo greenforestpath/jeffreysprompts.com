@@ -55,7 +55,7 @@ function GridBackground() {
   return (
     <div className="absolute inset-0 overflow-hidden">
       {/* Base gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-violet-50 via-white to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-950" />
+      <div className="absolute inset-0 bg-gradient-to-b from-violet-50 via-white to-white dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-950" />
 
       {/* Grid pattern */}
       <div
@@ -68,7 +68,7 @@ function GridBackground() {
       />
 
       {/* Radial gradient overlay */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_0%,_var(--tw-gradient-from)_100%)] from-white dark:from-zinc-950" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_0%,_var(--tw-gradient-from)_100%)] from-white dark:from-neutral-950" />
     </div>
   );
 }
@@ -101,17 +101,17 @@ function StatBadge({
       transition={{ delay, duration: 0.5 }}
       className={cn(
         "flex items-center gap-2 px-4 py-2 rounded-full",
-        "bg-white/60 dark:bg-zinc-800/60",
+        "bg-white/60 dark:bg-neutral-800/60",
         "backdrop-blur-md",
-        "border border-zinc-200/50 dark:border-zinc-700/50",
+        "border border-neutral-200/50 dark:border-neutral-700/50",
         "shadow-sm"
       )}
     >
       <Icon className="w-4 h-4 text-violet-500" />
-      <span className="font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
+      <span className="font-semibold text-neutral-900 dark:text-neutral-100 tabular-nums">
         {count.toLocaleString()}
       </span>
-      <span className="text-sm text-zinc-500 dark:text-zinc-400">{label}</span>
+      <span className="text-sm text-neutral-500 dark:text-neutral-400">{label}</span>
     </motion.div>
   );
 }
@@ -190,7 +190,7 @@ export function EnhancedHero({
           transition={{ delay: 0.2, duration: 0.6 }}
           className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6"
         >
-          <span className="text-zinc-900 dark:text-zinc-100">Built in a </span>
+          <span className="text-neutral-900 dark:text-neutral-100">Built in a </span>
           <span className="relative">
             <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 dark:from-violet-400 dark:via-purple-400 dark:to-blue-400">
               Single Day
@@ -210,7 +210,7 @@ export function EnhancedHero({
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ delay: 0.4 }}
-          className="text-lg sm:text-xl md:text-2xl text-zinc-600 dark:text-zinc-400 max-w-3xl mx-auto mb-10 leading-relaxed"
+          className="text-lg sm:text-xl md:text-2xl text-neutral-600 dark:text-neutral-400 max-w-3xl mx-auto mb-10 leading-relaxed"
         >
           The complete, unedited Claude Code session that designed, planned, and
           shipped this entire platform—from first prompt to production deploy.
@@ -221,16 +221,16 @@ export function EnhancedHero({
           initial={{ opacity: 0, scale: 0.9 }}
           animate={inView ? { opacity: 1, scale: 1 } : {}}
           transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
-          className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-white dark:bg-zinc-800 shadow-xl shadow-zinc-900/10 dark:shadow-zinc-900/50 border border-zinc-200/50 dark:border-zinc-700/50 mb-10"
+          className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-white dark:bg-neutral-800 shadow-xl shadow-neutral-900/10 dark:shadow-neutral-900/50 border border-neutral-200/50 dark:border-neutral-700/50 mb-10"
         >
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
             <Clock className="w-5 h-5 text-white" />
           </div>
           <div className="text-left">
-            <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            <div className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
               {duration}
             </div>
-            <div className="text-sm text-zinc-500 dark:text-zinc-400">
+            <div className="text-sm text-neutral-500 dark:text-neutral-400">
               of live coding
             </div>
           </div>
@@ -281,10 +281,10 @@ export function EnhancedHero({
             }}
             className={cn(
               "group flex items-center gap-2 px-6 py-3 rounded-xl",
-              "bg-zinc-900 dark:bg-white",
-              "text-white dark:text-zinc-900",
+              "bg-neutral-900 dark:bg-white",
+              "text-white dark:text-neutral-900",
               "font-medium",
-              "shadow-lg shadow-zinc-900/20 dark:shadow-white/10",
+              "shadow-lg shadow-neutral-900/20 dark:shadow-white/10",
               "hover:shadow-xl hover:scale-[1.02]",
               "transition-all duration-200"
             )}
@@ -300,12 +300,12 @@ export function EnhancedHero({
             }}
             className={cn(
               "flex items-center gap-2 px-6 py-3 rounded-xl",
-              "bg-white/60 dark:bg-zinc-800/60",
+              "bg-white/60 dark:bg-neutral-800/60",
               "backdrop-blur-md",
-              "border border-zinc-200 dark:border-zinc-700",
-              "text-zinc-700 dark:text-zinc-300",
+              "border border-neutral-200 dark:border-neutral-700",
+              "text-neutral-700 dark:text-neutral-300",
               "font-medium",
-              "hover:bg-white dark:hover:bg-zinc-800",
+              "hover:bg-white dark:hover:bg-neutral-800",
               "hover:shadow-md",
               "transition-all duration-200"
             )}
@@ -326,7 +326,7 @@ export function EnhancedHero({
             animate={{ y: [0, 8, 0] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
-            <ChevronDown className="w-6 h-6 text-zinc-400" />
+            <ChevronDown className="w-6 h-6 text-neutral-400" />
           </motion.div>
         </motion.div>
       </motion.div>

@@ -91,8 +91,8 @@ export function KeyboardShortcutsModal({
             className={cn(
               "fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2",
               "w-full max-w-lg max-h-[80vh]",
-              "bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl",
-              "border border-zinc-200 dark:border-zinc-800",
+              "bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl",
+              "border border-neutral-200 dark:border-neutral-800",
               "overflow-hidden",
               className
             )}
@@ -101,7 +101,7 @@ export function KeyboardShortcutsModal({
             aria-labelledby="shortcuts-title"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-800">
               <div className="flex items-center gap-3">
                 <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30">
                   <Keyboard className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
@@ -109,11 +109,11 @@ export function KeyboardShortcutsModal({
                 <div>
                   <h2
                     id="shortcuts-title"
-                    className="text-lg font-semibold text-zinc-900 dark:text-white"
+                    className="text-lg font-semibold text-neutral-900 dark:text-white"
                   >
                     Keyboard Shortcuts
                   </h2>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
                     Navigate faster with your keyboard
                   </p>
                 </div>
@@ -122,8 +122,8 @@ export function KeyboardShortcutsModal({
                 onClick={onClose}
                 className={cn(
                   "flex items-center justify-center w-8 h-8 rounded-lg",
-                  "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200",
-                  "hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                  "text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200",
+                  "hover:bg-neutral-100 dark:hover:bg-neutral-800",
                   "transition-colors"
                 )}
                 aria-label="Close"
@@ -137,7 +137,7 @@ export function KeyboardShortcutsModal({
               <div className="space-y-6">
                 {categories.map((category) => (
                   <div key={category}>
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-3">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-3">
                       {category}
                     </h3>
                     <div className="space-y-2">
@@ -146,7 +146,7 @@ export function KeyboardShortcutsModal({
                           key={shortcut.id}
                           className="flex items-center justify-between py-2"
                         >
-                          <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                          <span className="text-sm text-neutral-700 dark:text-neutral-300">
                             {shortcut.description}
                           </span>
                           <ShortcutKeys keys={shortcut.keys} />
@@ -159,10 +159,10 @@ export function KeyboardShortcutsModal({
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-3 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50">
-              <p className="text-xs text-center text-zinc-500 dark:text-zinc-400">
+            <div className="px-6 py-3 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50">
+              <p className="text-xs text-center text-neutral-500 dark:text-neutral-400">
                 Press{" "}
-                <kbd className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 font-mono text-xs">
+                <kbd className="px-1.5 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 font-mono text-xs">
                   ?
                 </kbd>{" "}
                 anytime to show this help
@@ -186,11 +186,11 @@ function ShortcutKeys({ keys }: { keys: string }) {
       <div className="flex items-center gap-1">
         {parts.map((part, i) => (
           <Fragment key={i}>
-            <kbd className="px-2 py-1 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 font-mono text-xs text-zinc-700 dark:text-zinc-300">
+            <kbd className="px-2 py-1 rounded-md bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 font-mono text-xs text-neutral-700 dark:text-neutral-300">
               {part.toUpperCase()}
             </kbd>
             {i < parts.length - 1 && (
-              <span className="text-zinc-400 text-xs">then</span>
+              <span className="text-neutral-400 text-xs">then</span>
             )}
           </Fragment>
         ))}
@@ -208,7 +208,7 @@ function ShortcutKeys({ keys }: { keys: string }) {
         return (
           <kbd
             key={i}
-            className="px-2 py-1 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 font-mono text-xs text-zinc-700 dark:text-zinc-300"
+            className="px-2 py-1 rounded-md bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 font-mono text-xs text-neutral-700 dark:text-neutral-300"
           >
             {display}
           </kbd>

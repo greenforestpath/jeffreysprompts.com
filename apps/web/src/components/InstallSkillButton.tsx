@@ -115,7 +115,7 @@ export function InstallSkillButton({
     >
       {copied ? (
         <>
-          <Check className="h-4 w-4 text-green-500" />
+          <Check className="h-4 w-4 text-emerald-500" />
           <span>Copied!</span>
         </>
       ) : (
@@ -225,7 +225,7 @@ export function InstallAllSkillsButton({
     >
       {copied ? (
         <>
-          <Check className="h-4 w-4 text-green-500" />
+          <Check className="h-4 w-4 text-emerald-500" />
           <span>Copied!</span>
         </>
       ) : (

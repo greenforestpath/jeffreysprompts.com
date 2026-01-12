@@ -177,9 +177,9 @@ export function WorkflowBuilder({ className, onExport }: WorkflowBuilderProps) {
           placeholder="Workflow title..."
           className={cn(
             "w-full text-2xl font-bold bg-transparent",
-            "border-b border-transparent focus:border-zinc-300 dark:focus:border-zinc-600",
+            "border-b border-transparent focus:border-neutral-300 dark:focus:border-neutral-600",
             "outline-none transition-colors pb-1",
-            "placeholder:text-zinc-400"
+            "placeholder:text-neutral-400"
           )}
         />
         <textarea
@@ -189,9 +189,9 @@ export function WorkflowBuilder({ className, onExport }: WorkflowBuilderProps) {
           rows={2}
           className={cn(
             "w-full text-sm bg-transparent resize-none",
-            "border-b border-transparent focus:border-zinc-300 dark:focus:border-zinc-600",
+            "border-b border-transparent focus:border-neutral-300 dark:focus:border-neutral-600",
             "outline-none transition-colors pb-1",
-            "placeholder:text-zinc-400"
+            "placeholder:text-neutral-400"
           )}
         />
       </div>
@@ -199,13 +199,13 @@ export function WorkflowBuilder({ className, onExport }: WorkflowBuilderProps) {
       {/* Steps */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <h3 className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
             Steps ({draft.steps.length})
           </h3>
           {draft.steps.length > 0 && (
             <button
               onClick={handleClear}
-              className="text-xs text-zinc-400 hover:text-red-500 transition-colors"
+              className="text-xs text-neutral-400 hover:text-red-500 transition-colors"
             >
               Clear all
             </button>
@@ -213,7 +213,7 @@ export function WorkflowBuilder({ className, onExport }: WorkflowBuilderProps) {
         </div>
 
         {draft.steps.length === 0 ? (
-          <div className="text-center py-8 text-zinc-400">
+          <div className="text-center py-8 text-neutral-400">
             <p>No steps yet. Add prompts to build your workflow.</p>
           </div>
         ) : (
@@ -247,7 +247,7 @@ export function WorkflowBuilder({ className, onExport }: WorkflowBuilderProps) {
             className="overflow-hidden"
           >
             <div className="relative">
-              <Search className="absolute left-3 top-3 w-4 h-4 text-zinc-400" />
+              <Search className="absolute left-3 top-3 w-4 h-4 text-neutral-400" />
               <input
                 type="text"
                 value={searchQuery}
@@ -256,8 +256,8 @@ export function WorkflowBuilder({ className, onExport }: WorkflowBuilderProps) {
                 autoFocus
                 className={cn(
                   "w-full pl-10 pr-10 py-3 rounded-xl",
-                  "border border-zinc-200 dark:border-zinc-700",
-                  "bg-white dark:bg-zinc-800",
+                  "border border-neutral-200 dark:border-neutral-700",
+                  "bg-white dark:bg-neutral-800",
                   "focus:outline-none focus:ring-2 focus:ring-violet-500"
                 )}
               />
@@ -266,26 +266,26 @@ export function WorkflowBuilder({ className, onExport }: WorkflowBuilderProps) {
                   setShowSearch(false);
                   setSearchQuery("");
                 }}
-                className="absolute right-3 top-3 text-zinc-400 hover:text-zinc-600"
+                className="absolute right-3 top-3 text-neutral-400 hover:text-neutral-600"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {searchResults.length > 0 && (
-              <div className="mt-2 border rounded-xl overflow-hidden divide-y dark:divide-zinc-700">
+              <div className="mt-2 border rounded-xl overflow-hidden divide-y dark:divide-neutral-700">
                 {searchResults.map((prompt) => (
                   <button
                     key={prompt.id}
                     onClick={() => addStep(prompt)}
                     className={cn(
                       "w-full text-left p-3",
-                      "hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
+                      "hover:bg-neutral-50 dark:hover:bg-neutral-800/50",
                       "transition-colors"
                     )}
                   >
                     <div className="font-medium text-sm">{prompt.title}</div>
-                    <div className="text-xs text-zinc-500 line-clamp-1">
+                    <div className="text-xs text-neutral-500 line-clamp-1">
                       {prompt.description}
                     </div>
                   </button>
@@ -352,14 +352,14 @@ function StepCard({ step, index, isLast, onRemove, onUpdateNote }: StepCardProps
         exit={{ opacity: 0, y: -20 }}
         className={cn(
           "p-4 rounded-xl border",
-          "bg-white dark:bg-zinc-900",
-          "border-zinc-200 dark:border-zinc-700",
+          "bg-white dark:bg-neutral-900",
+          "border-neutral-200 dark:border-neutral-700",
           "shadow-sm"
         )}
       >
         <div className="flex items-start gap-3">
           {/* Drag handle */}
-          <div className="cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-600">
+          <div className="cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600">
             <GripVertical className="w-5 h-5" />
           </div>
 
@@ -372,7 +372,7 @@ function StepCard({ step, index, isLast, onRemove, onUpdateNote }: StepCardProps
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <h4 className="font-medium text-zinc-900 dark:text-zinc-100">
+                <h4 className="font-medium text-neutral-900 dark:text-neutral-100">
                   {prompt.title}
                 </h4>
                 <Badge variant="secondary" className="mt-1">
@@ -381,7 +381,7 @@ function StepCard({ step, index, isLast, onRemove, onUpdateNote }: StepCardProps
               </div>
               <button
                 onClick={onRemove}
-                className="text-zinc-400 hover:text-red-500 transition-colors"
+                className="text-neutral-400 hover:text-red-500 transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -390,7 +390,7 @@ function StepCard({ step, index, isLast, onRemove, onUpdateNote }: StepCardProps
             {/* Handoff note */}
             <button
               onClick={() => setNoteExpanded(!noteExpanded)}
-              className="mt-3 flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700"
+              className="mt-3 flex items-center gap-1 text-xs text-neutral-500 hover:text-neutral-700"
             >
               <ChevronDown
                 className={cn(
@@ -416,8 +416,8 @@ function StepCard({ step, index, isLast, onRemove, onUpdateNote }: StepCardProps
                     rows={2}
                     className={cn(
                       "w-full mt-2 p-2 text-sm rounded-lg resize-none",
-                      "border border-zinc-200 dark:border-zinc-700",
-                      "bg-zinc-50 dark:bg-zinc-800",
+                      "border border-neutral-200 dark:border-neutral-700",
+                      "bg-neutral-50 dark:bg-neutral-800",
                       "focus:outline-none focus:ring-2 focus:ring-violet-500"
                     )}
                   />
@@ -431,7 +431,7 @@ function StepCard({ step, index, isLast, onRemove, onUpdateNote }: StepCardProps
       {/* Arrow to next step */}
       {!isLast && (
         <div className="flex justify-center py-2">
-          <ArrowRight className="w-4 h-4 text-zinc-300 dark:text-zinc-600 rotate-90" />
+          <ArrowRight className="w-4 h-4 text-neutral-300 dark:text-neutral-600 rotate-90" />
         </div>
       )}
     </Reorder.Item>

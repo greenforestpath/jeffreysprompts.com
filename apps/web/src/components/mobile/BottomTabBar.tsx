@@ -168,7 +168,7 @@ export function BottomTabBar({ onOpenSearch, className }: BottomTabBarProps) {
             className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] right-4 z-40 md:hidden"
             data-tab-bar
           >
-            <div className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-lg rounded-2xl shadow-xl border border-zinc-200/50 dark:border-zinc-700/50 overflow-hidden">
+            <div className="bg-white/95 dark:bg-neutral-900/95 backdrop-blur-lg rounded-2xl shadow-xl border border-neutral-200/50 dark:border-neutral-700/50 overflow-hidden">
               {moreMenuItems.map((item) => {
                 const content = (
                   <>
@@ -189,7 +189,7 @@ export function BottomTabBar({ onOpenSearch, className }: BottomTabBarProps) {
                       className={cn(
                         "flex items-center gap-3 px-5 py-3.5",
                         "text-sm font-medium",
-                        "hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                        "hover:bg-neutral-100 dark:hover:bg-neutral-800",
                         "transition-colors",
                         pathname === item.href && "text-indigo-600 dark:text-indigo-400"
                       )}
@@ -207,7 +207,7 @@ export function BottomTabBar({ onOpenSearch, className }: BottomTabBarProps) {
                     className={cn(
                       "flex w-full items-center gap-3 px-5 py-3.5",
                       "text-sm font-medium text-left",
-                      "hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                      "hover:bg-neutral-100 dark:hover:bg-neutral-800",
                       "transition-colors"
                     )}
                   >
@@ -230,8 +230,8 @@ export function BottomTabBar({ onOpenSearch, className }: BottomTabBarProps) {
         transition={{ duration: 0.25, ease: "easeInOut" }}
         className={cn(
           "fixed bottom-0 inset-x-0 z-50 md:hidden",
-          "bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl",
-          "border-t border-zinc-200/50 dark:border-zinc-700/50",
+          "bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl",
+          "border-t border-neutral-200/50 dark:border-neutral-700/50",
           "pb-[env(safe-area-inset-bottom)]",
           className
         )}
@@ -253,7 +253,7 @@ export function BottomTabBar({ onOpenSearch, className }: BottomTabBarProps) {
                   "transition-colors",
                   active
                     ? "text-indigo-600 dark:text-indigo-400"
-                    : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+                    : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
                 )}
                 whileTap={{ scale: 0.9 }}
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}

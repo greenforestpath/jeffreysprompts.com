@@ -39,7 +39,7 @@ const typeConfig: Record<string, {
 const defaultConfig = {
   label: "Update",
   icon: Sparkles,
-  className: "bg-zinc-500/10 text-zinc-600 dark:text-zinc-400",
+  className: "bg-neutral-500/10 text-neutral-600 dark:text-neutral-400",
 };
 
 /**

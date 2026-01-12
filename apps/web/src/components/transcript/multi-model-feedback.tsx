@@ -315,10 +315,10 @@ function FeedbackCard({
       transition={{ delay: index * 0.05, duration: 0.4 }}
       className={cn(
         "relative p-4 rounded-xl border transition-all",
-        "bg-white dark:bg-zinc-900",
+        "bg-white dark:bg-neutral-900",
         item.implemented
           ? "border-emerald-200 dark:border-emerald-800/50"
-          : "border-zinc-200 dark:border-zinc-800"
+          : "border-neutral-200 dark:border-neutral-800"
       )}
     >
       {/* Status indicator */}
@@ -326,7 +326,7 @@ function FeedbackCard({
         {item.implemented ? (
           <CheckCircle2 className="w-5 h-5 text-emerald-500" />
         ) : (
-          <Circle className="w-5 h-5 text-zinc-300 dark:text-zinc-600" />
+          <Circle className="w-5 h-5 text-neutral-300 dark:text-neutral-600" />
         )}
       </div>
 
@@ -341,14 +341,14 @@ function FeedbackCard({
           <Icon className="w-4 h-4" />
         </div>
         <div>
-          <h4 className="font-medium text-zinc-900 dark:text-zinc-100">
+          <h4 className="font-medium text-neutral-900 dark:text-neutral-100">
             {item.title}
           </h4>
           <span
             className={cn(
               "text-xs px-1.5 py-0.5 rounded",
               item.source === "gpt"
-                ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
                 : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
             )}
           >
@@ -358,7 +358,7 @@ function FeedbackCard({
       </div>
 
       {/* Description */}
-      <p className="text-sm text-zinc-600 dark:text-zinc-400 ml-11">
+      <p className="text-sm text-neutral-600 dark:text-neutral-400 ml-11">
         {item.description}
       </p>
     </motion.div>
@@ -383,14 +383,14 @@ export function MultiModelFeedback() {
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-emerald-100 to-blue-100 dark:from-emerald-900/30 dark:to-blue-900/30 text-sm font-medium mb-4">
           <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-          <span className="text-zinc-700 dark:text-zinc-300">
+          <span className="text-neutral-700 dark:text-neutral-300">
             Multi-Model Feedback Loop
           </span>
         </div>
-        <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
+        <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">
           Refined by Multiple AI Models
         </h2>
-        <p className="text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto">
+        <p className="text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
           After Claude created the initial plan, it was reviewed by GPT Pro and
           Gemini for architectural improvements, bug fixes, and feature ideas.
         </p>
@@ -404,21 +404,21 @@ export function MultiModelFeedback() {
             Claude Plan
           </span>
         </div>
-        <ArrowRight className="w-4 h-4 text-zinc-400" />
-        <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-100 dark:bg-green-900/30">
-          <MessageSquare className="w-4 h-4 text-green-600 dark:text-green-400" />
-          <span className="text-sm font-medium text-green-700 dark:text-green-300">
+        <ArrowRight className="w-4 h-4 text-neutral-400" />
+        <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+          <MessageSquare className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
             GPT Review
           </span>
         </div>
-        <ArrowRight className="w-4 h-4 text-zinc-400" />
+        <ArrowRight className="w-4 h-4 text-neutral-400" />
         <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
           <MessageSquare className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
             Gemini Review
           </span>
         </div>
-        <ArrowRight className="w-4 h-4 text-zinc-400" />
+        <ArrowRight className="w-4 h-4 text-neutral-400" />
         <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-100 dark:bg-violet-900/30">
           <Zap className="w-4 h-4 text-violet-600 dark:text-violet-400" />
           <span className="text-sm font-medium text-violet-700 dark:text-violet-300">
@@ -433,25 +433,25 @@ export function MultiModelFeedback() {
           <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
             {implemented}
           </div>
-          <div className="text-sm text-zinc-600 dark:text-zinc-400">
+          <div className="text-sm text-neutral-600 dark:text-neutral-400">
             Implemented
           </div>
         </div>
-        <div className="h-8 w-px bg-zinc-200 dark:bg-zinc-700" />
+        <div className="h-8 w-px bg-neutral-200 dark:bg-neutral-700" />
         <div className="text-center">
-          <div className="text-3xl font-bold text-zinc-400">
+          <div className="text-3xl font-bold text-neutral-400">
             {total - implemented}
           </div>
-          <div className="text-sm text-zinc-600 dark:text-zinc-400">
+          <div className="text-sm text-neutral-600 dark:text-neutral-400">
             Future Work
           </div>
         </div>
-        <div className="h-8 w-px bg-zinc-200 dark:bg-zinc-700" />
+        <div className="h-8 w-px bg-neutral-200 dark:bg-neutral-700" />
         <div className="text-center">
           <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
             {Math.round((implemented / total) * 100)}%
           </div>
-          <div className="text-sm text-zinc-600 dark:text-zinc-400">
+          <div className="text-sm text-neutral-600 dark:text-neutral-400">
             Adoption Rate
           </div>
         </div>
@@ -467,7 +467,7 @@ export function MultiModelFeedback() {
       {/* GPT Pro planning + revisions */}
       <div
         id="planning-revisions"
-        className="mt-10 rounded-2xl border border-violet-200/50 bg-white/80 p-6 shadow-lg shadow-violet-500/10 backdrop-blur dark:border-violet-500/20 dark:bg-zinc-900/70"
+        className="mt-10 rounded-2xl border border-violet-200/50 bg-white/80 p-6 shadow-lg shadow-violet-500/10 backdrop-blur dark:border-violet-500/20 dark:bg-neutral-900/70"
       >
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -475,24 +475,24 @@ export function MultiModelFeedback() {
               <Sparkles className="h-3.5 w-3.5" />
               GPT Pro Planning + Revisions
             </div>
-            <h3 className="mt-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            <h3 className="mt-3 text-lg font-semibold text-neutral-900 dark:text-neutral-100">
               Second-pass plan refinement (web session)
             </h3>
-            <p className="mt-2 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="mt-2 max-w-2xl text-sm text-neutral-600 dark:text-neutral-400">
               The initial plan was refined in GPT Pro with additional architectural safeguards
               and scope adjustments. The guide steps above link directly to the revisions below.
             </p>
           </div>
-          <div className="flex items-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
+          <div className="flex items-center gap-3 text-sm text-neutral-500 dark:text-neutral-400">
             <div className="text-center">
               <div className="text-2xl font-semibold text-emerald-500">
                 {revisionsImplemented}
               </div>
               <div className="text-xs uppercase tracking-wide">Applied</div>
             </div>
-            <div className="h-8 w-px bg-zinc-200 dark:bg-zinc-700" />
+            <div className="h-8 w-px bg-neutral-200 dark:bg-neutral-700" />
             <div className="text-center">
-              <div className="text-2xl font-semibold text-zinc-400">
+              <div className="text-2xl font-semibold text-neutral-400">
                 {revisionsTotal - revisionsImplemented}
               </div>
               <div className="text-xs uppercase tracking-wide">Deferred</div>
@@ -502,7 +502,7 @@ export function MultiModelFeedback() {
 
         <div className="mt-6 grid gap-6 sm:grid-cols-2">
           <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+            <div className="flex items-center gap-2 text-sm font-semibold text-neutral-700 dark:text-neutral-200">
               <GitBranch className="h-4 w-4 text-violet-500" />
               Changes captured in the plan
             </div>
@@ -514,7 +514,7 @@ export function MultiModelFeedback() {
                     "flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2 text-sm",
                     item.implemented
                       ? "border-emerald-200 bg-emerald-50/70 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-950/40 dark:text-emerald-200"
-                      : "border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-300"
+                      : "border-neutral-200 bg-neutral-50 text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900/60 dark:text-neutral-300"
                   )}
                 >
                   <a href={`#feedback-${item.id}`} className="flex items-center gap-2">
@@ -537,7 +537,7 @@ export function MultiModelFeedback() {
           </div>
 
           <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+            <div className="flex items-center gap-2 text-sm font-semibold text-neutral-700 dark:text-neutral-200">
               <Shield className="h-4 w-4 text-blue-500" />
               Revisions + quality gates
             </div>
@@ -549,7 +549,7 @@ export function MultiModelFeedback() {
                     "flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2 text-sm",
                     item.implemented
                       ? "border-blue-200 bg-blue-50/70 text-blue-700 dark:border-blue-500/30 dark:bg-blue-950/40 dark:text-blue-200"
-                      : "border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-300"
+                      : "border-neutral-200 bg-neutral-50 text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900/60 dark:text-neutral-300"
                   )}
                 >
                   <a href={`#feedback-${item.id}`} className="flex items-center gap-2">
@@ -576,7 +576,7 @@ export function MultiModelFeedback() {
       {/* GPT Pro planning session */}
       <div
         id="planning-revisions-gpt-pro"
-        className="mt-10 rounded-2xl border border-emerald-200/50 bg-white/80 p-6 shadow-lg shadow-emerald-500/10 backdrop-blur dark:border-emerald-500/20 dark:bg-zinc-900/70"
+        className="mt-10 rounded-2xl border border-emerald-200/50 bg-white/80 p-6 shadow-lg shadow-emerald-500/10 backdrop-blur dark:border-emerald-500/20 dark:bg-neutral-900/70"
       >
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -584,24 +584,24 @@ export function MultiModelFeedback() {
               <Sparkles className="h-3.5 w-3.5" />
               GPT Pro planning session
             </div>
-            <h3 className="mt-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            <h3 className="mt-3 text-lg font-semibold text-neutral-900 dark:text-neutral-100">
               GPT Pro plan fusion (web session)
             </h3>
-            <p className="mt-2 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="mt-2 max-w-2xl text-sm text-neutral-600 dark:text-neutral-400">
               This was the dedicated GPT Pro pass that merged multiple model plans,
               tightened constraints, and locked the execution rules before build-out.
             </p>
           </div>
-          <div className="flex items-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
+          <div className="flex items-center gap-3 text-sm text-neutral-500 dark:text-neutral-400">
             <div className="text-center">
               <div className="text-2xl font-semibold text-emerald-500">
                 {gptProImplemented}
               </div>
               <div className="text-xs uppercase tracking-wide">Applied</div>
             </div>
-            <div className="h-8 w-px bg-zinc-200 dark:bg-zinc-700" />
+            <div className="h-8 w-px bg-neutral-200 dark:bg-neutral-700" />
             <div className="text-center">
-              <div className="text-2xl font-semibold text-zinc-400">
+              <div className="text-2xl font-semibold text-neutral-400">
                 {gptProTotal - gptProImplemented}
               </div>
               <div className="text-xs uppercase tracking-wide">Deferred</div>
@@ -611,7 +611,7 @@ export function MultiModelFeedback() {
 
         <div className="mt-6 grid gap-6 sm:grid-cols-2">
           <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+            <div className="flex items-center gap-2 text-sm font-semibold text-neutral-700 dark:text-neutral-200">
               <MessageSquare className="h-4 w-4 text-emerald-500" />
               Session inputs
             </div>
@@ -623,7 +623,7 @@ export function MultiModelFeedback() {
                     "flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2 text-sm",
                     item.implemented
                       ? "border-emerald-200 bg-emerald-50/70 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-950/40 dark:text-emerald-200"
-                      : "border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-300"
+                      : "border-neutral-200 bg-neutral-50 text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900/60 dark:text-neutral-300"
                   )}
                 >
                   <div className="flex items-center gap-2">
@@ -646,7 +646,7 @@ export function MultiModelFeedback() {
           </div>
 
           <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+            <div className="flex items-center gap-2 text-sm font-semibold text-neutral-700 dark:text-neutral-200">
               <Zap className="h-4 w-4 text-violet-500" />
               Plan outputs
             </div>
@@ -658,7 +658,7 @@ export function MultiModelFeedback() {
                     "flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2 text-sm",
                     item.implemented
                       ? "border-violet-200 bg-violet-50/70 text-violet-700 dark:border-violet-500/30 dark:bg-violet-950/40 dark:text-violet-200"
-                      : "border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-300"
+                      : "border-neutral-200 bg-neutral-50 text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900/60 dark:text-neutral-300"
                   )}
                 >
                   <div className="flex items-center gap-2">
@@ -685,7 +685,7 @@ export function MultiModelFeedback() {
       {/* Workflow sources from X */}
       <div
         id="workflow-sources"
-        className="mt-10 rounded-2xl border border-sky-200/50 bg-white/80 p-6 shadow-lg shadow-sky-500/10 backdrop-blur dark:border-sky-500/20 dark:bg-zinc-900/70"
+        className="mt-10 rounded-2xl border border-sky-200/50 bg-white/80 p-6 shadow-lg shadow-sky-500/10 backdrop-blur dark:border-sky-500/20 dark:bg-neutral-900/70"
       >
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -693,16 +693,16 @@ export function MultiModelFeedback() {
               <Sparkles className="h-3.5 w-3.5" />
               Workflow sources from X
             </div>
-            <h3 className="mt-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            <h3 className="mt-3 text-lg font-semibold text-neutral-900 dark:text-neutral-100">
               Methodology notes tied to the guide
             </h3>
-            <p className="mt-2 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="mt-2 max-w-2xl text-sm text-neutral-600 dark:text-neutral-400">
               These posts capture the planning-first workflow, the coordination stack, and the
               prompting philosophy that shaped the build. Each card links back to the relevant
               guide step.
             </p>
           </div>
-          <div className="text-sm text-zinc-500 dark:text-zinc-400">
+          <div className="text-sm text-neutral-500 dark:text-neutral-400">
             {workflowPosts.length} posts indexed
           </div>
         </div>
@@ -733,21 +733,21 @@ export function MultiModelFeedback() {
                 >
                   {post.tone}
                 </span>
-                <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                <span className="text-xs text-neutral-500 dark:text-neutral-400">
                   {post.date}
                 </span>
               </div>
-              <h4 className="mt-3 text-base font-semibold text-zinc-900 dark:text-zinc-100">
+              <h4 className="mt-3 text-base font-semibold text-neutral-900 dark:text-neutral-100">
                 {post.title}
               </h4>
-              <p className="mt-2 text-sm text-zinc-700/90 dark:text-zinc-300">
+              <p className="mt-2 text-sm text-neutral-700/90 dark:text-neutral-300">
                 {post.summary}
               </p>
               <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                 {post.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-full border border-zinc-200/70 bg-white/70 px-2 py-0.5 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-300"
+                    className="rounded-full border border-neutral-200/70 bg-white/70 px-2 py-0.5 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900/60 dark:text-neutral-300"
                   >
                     {tag}
                   </span>
@@ -772,9 +772,9 @@ export function MultiModelFeedback() {
       </div>
 
       {/* Note */}
-      <div className="mt-8 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700">
-        <p className="text-sm text-zinc-600 dark:text-zinc-400 text-center">
-          <strong className="text-zinc-900 dark:text-zinc-100">
+      <div className="mt-8 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
+        <p className="text-sm text-neutral-600 dark:text-neutral-400 text-center">
+          <strong className="text-neutral-900 dark:text-neutral-100">
             The meta-demonstration:
           </strong>{" "}
           This multi-model review process is itself a prompt engineering pattern

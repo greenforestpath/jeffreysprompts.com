@@ -149,10 +149,10 @@ export default async function UserProfilePage({ params }: PageProps) {
       <div className="container max-w-4xl mx-auto px-4 py-16">
         <Card>
           <CardContent className="py-16 text-center">
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
               Private Profile
             </h1>
-            <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+            <p className="mt-2 text-neutral-600 dark:text-neutral-400">
               This user has set their profile to private.
             </p>
           </CardContent>
@@ -181,10 +181,10 @@ export default async function UserProfilePage({ params }: PageProps) {
               <div className="flex-1 min-w-0">
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div>
-                    <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
+                    <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
                       {user.displayName}
                     </h1>
-                    <p className="text-zinc-500 dark:text-zinc-400">
+                    <p className="text-neutral-500 dark:text-neutral-400">
                       @{user.username}
                     </p>
                   </div>
@@ -195,7 +195,7 @@ export default async function UserProfilePage({ params }: PageProps) {
                       <Share2 className="h-4 w-4" />
                       Share
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-zinc-500">
+                    <Button variant="ghost" size="sm" className="text-neutral-500">
                       <Flag className="h-4 w-4" />
                     </Button>
                   </div>
@@ -203,7 +203,7 @@ export default async function UserProfilePage({ params }: PageProps) {
 
                 {/* Bio */}
                 {user.bio && (
-                  <p className="mt-4 text-zinc-700 dark:text-zinc-300">
+                  <p className="mt-4 text-neutral-700 dark:text-neutral-300">
                     {user.bio}
                   </p>
                 )}
@@ -218,7 +218,7 @@ export default async function UserProfilePage({ params }: PageProps) {
                 )}
 
                 {/* Meta Info */}
-                <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-zinc-500 dark:text-zinc-400">
+                <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-neutral-500 dark:text-neutral-400">
                   <span className="flex items-center gap-1.5">
                     <Calendar className="h-4 w-4" />
                     Member since {formatDate(user.joinDate)}
@@ -250,7 +250,7 @@ export default async function UserProfilePage({ params }: PageProps) {
                       href={`https://twitter.com/${user.twitter}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
+                      className="flex items-center gap-1.5 text-sm text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200"
                     >
                       <Twitter className="h-4 w-4" />
                       @{user.twitter}
@@ -261,7 +261,7 @@ export default async function UserProfilePage({ params }: PageProps) {
                       href={`https://github.com/${user.github}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
+                      className="flex items-center gap-1.5 text-sm text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200"
                     >
                       <Github className="h-4 w-4" />
                       {user.github}
@@ -272,7 +272,7 @@ export default async function UserProfilePage({ params }: PageProps) {
             </div>
 
             {/* Stats */}
-            <div className="mt-6 pt-6 border-t border-zinc-200 dark:border-zinc-800">
+            <div className="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-800">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <StatItem label="Prompts" value={user.stats.prompts} />
                 <StatItem label="Packs" value={user.stats.packs} />
@@ -412,7 +412,7 @@ function UserAvatar({
         src={avatar}
         alt={displayName}
         className={cn(
-          "rounded-full object-cover ring-2 ring-zinc-200 dark:ring-zinc-700",
+          "rounded-full object-cover ring-2 ring-neutral-200 dark:ring-neutral-700",
           sizeClasses[size]
         )}
       />
@@ -424,7 +424,7 @@ function UserAvatar({
       className={cn(
         "flex items-center justify-center rounded-full",
         "bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-semibold",
-        "ring-2 ring-zinc-200 dark:ring-zinc-700",
+        "ring-2 ring-neutral-200 dark:ring-neutral-700",
         sizeClasses[size]
       )}
     >
@@ -470,10 +470,10 @@ function ReputationBadge({ type }: { type: string }) {
 function StatItem({ label, value }: { label: string; value: number }) {
   return (
     <div className="text-center">
-      <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+      <p className="text-2xl font-bold text-neutral-900 dark:text-white">
         {value.toLocaleString()}
       </p>
-      <p className="text-sm text-zinc-500 dark:text-zinc-400">{label}</p>
+      <p className="text-sm text-neutral-500 dark:text-neutral-400">{label}</p>
     </div>
   );
 }
@@ -495,10 +495,10 @@ function ContentCard({
         <CardContent className="p-4">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <h3 className="font-semibold text-zinc-900 dark:text-white">
+              <h3 className="font-semibold text-neutral-900 dark:text-white">
                 {title}
               </h3>
-              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2">
+              <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2">
                 {description}
               </p>
             </div>
@@ -522,8 +522,8 @@ function EmptyState({
   return (
     <Card>
       <CardContent className="py-12 text-center">
-        <p className="font-medium text-zinc-900 dark:text-white">{message}</p>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="font-medium text-neutral-900 dark:text-white">{message}</p>
+        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
           {description}
         </p>
       </CardContent>

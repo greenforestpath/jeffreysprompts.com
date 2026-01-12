@@ -102,14 +102,14 @@ export default async function BundleDetailPage({ params }: PageProps) {
   const skillMdContent = generateBundleSkillMd(bundle);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-violet-50/50 to-white dark:from-zinc-950 dark:to-zinc-900">
+    <div className="min-h-screen bg-gradient-to-b from-violet-50/50 to-white dark:from-neutral-950 dark:to-neutral-900">
       {/* Header */}
-      <div className="border-b dark:border-zinc-800">
+      <div className="border-b dark:border-neutral-800">
         <div className="container mx-auto px-4 py-8">
           {/* Back link */}
           <Link
             href="/bundles"
-            className="inline-flex items-center gap-1 text-sm text-zinc-600 dark:text-zinc-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors mb-6"
+            className="inline-flex items-center gap-1 text-sm text-neutral-600 dark:text-neutral-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors mb-6"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Bundles
@@ -122,7 +122,7 @@ export default async function BundleDetailPage({ params }: PageProps) {
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+                <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
                   {bundle.title}
                 </h1>
                 {bundle.featured && (
@@ -132,10 +132,10 @@ export default async function BundleDetailPage({ params }: PageProps) {
                   </Badge>
                 )}
               </div>
-              <p className="text-lg text-zinc-600 dark:text-zinc-400 mb-4">
+              <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-4">
                 {bundle.description}
               </p>
-              <div className="flex items-center gap-4 text-sm text-zinc-500 dark:text-zinc-400">
+              <div className="flex items-center gap-4 text-sm text-neutral-500 dark:text-neutral-400">
                 <span>v{bundle.version}</span>
                 <span>by {bundle.author}</span>
                 <span>{prompts.length} prompts</span>
@@ -153,12 +153,12 @@ export default async function BundleDetailPage({ params }: PageProps) {
             {/* Workflow */}
             {bundle.workflow && (
               <section>
-                <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-4">
+                <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-4">
                   Workflow
                 </h2>
                 <div className="prose prose-zinc dark:prose-invert max-w-none">
-                  <div className="bg-zinc-50 dark:bg-zinc-800/50 p-6 rounded-lg border dark:border-zinc-700">
-                    <div className="whitespace-pre-wrap text-zinc-700 dark:text-zinc-300 text-sm leading-relaxed">
+                  <div className="bg-neutral-50 dark:bg-neutral-800/50 p-6 rounded-lg border dark:border-neutral-700">
+                    <div className="whitespace-pre-wrap text-neutral-700 dark:text-neutral-300 text-sm leading-relaxed">
                       {bundle.workflow}
                     </div>
                   </div>
@@ -169,14 +169,14 @@ export default async function BundleDetailPage({ params }: PageProps) {
             {/* When to Use */}
             {bundle.whenToUse && bundle.whenToUse.length > 0 && (
               <section>
-                <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-4">
+                <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-4">
                   When to Use This Bundle
                 </h2>
                 <ul className="space-y-2">
                   {bundle.whenToUse.map((item, idx) => (
                     <li
                       key={idx}
-                      className="flex items-start gap-2 text-zinc-600 dark:text-zinc-400"
+                      className="flex items-start gap-2 text-neutral-600 dark:text-neutral-400"
                     >
                       <span className="text-violet-500 mt-1">•</span>
                       {item}
@@ -188,21 +188,21 @@ export default async function BundleDetailPage({ params }: PageProps) {
 
             {/* Included Prompts */}
             <section>
-              <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-4">
+              <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-4">
                 Included Prompts
               </h2>
               <div className="space-y-4">
                 {prompts.map((prompt) => (
                   <div
                     key={prompt.id}
-                    className="bg-white dark:bg-zinc-900/50 border dark:border-zinc-800 rounded-lg p-4 hover:border-violet-200 dark:hover:border-violet-800 transition-colors"
+                    className="bg-white dark:bg-neutral-900/50 border dark:border-neutral-800 rounded-lg p-4 hover:border-violet-200 dark:hover:border-violet-800 transition-colors"
                   >
                     <div className="flex items-start justify-between gap-4 mb-2">
                       <div>
-                        <h3 className="font-semibold text-zinc-900 dark:text-white">
+                        <h3 className="font-semibold text-neutral-900 dark:text-white">
                           {prompt.title}
                         </h3>
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                        <p className="text-sm text-neutral-500 dark:text-neutral-400">
                           {prompt.description}
                         </p>
                       </div>
@@ -212,8 +212,8 @@ export default async function BundleDetailPage({ params }: PageProps) {
                     </div>
 
                     {/* Content preview */}
-                    <div className="mt-3 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded text-xs font-mono text-zinc-600 dark:text-zinc-400 max-h-32 overflow-hidden relative">
-                      <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-zinc-50 dark:from-zinc-800/50 to-transparent pointer-events-none" />
+                    <div className="mt-3 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded text-xs font-mono text-neutral-600 dark:text-neutral-400 max-h-32 overflow-hidden relative">
+                      <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-neutral-50 dark:from-neutral-800/50 to-transparent pointer-events-none" />
                       {prompt.content.slice(0, 300)}
                       {prompt.content.length > 300 && "..."}
                     </div>
@@ -223,7 +223,7 @@ export default async function BundleDetailPage({ params }: PageProps) {
                       {prompt.tags.slice(0, 4).map((tag) => (
                         <span
                           key={tag}
-                          className="text-xs text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full"
+                          className="text-xs text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full"
                         >
                           {tag}
                         </span>
@@ -238,18 +238,18 @@ export default async function BundleDetailPage({ params }: PageProps) {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Install card */}
-            <div className="sticky top-20 bg-white dark:bg-zinc-900/50 border dark:border-zinc-800 rounded-lg p-6">
-              <h3 className="font-semibold text-zinc-900 dark:text-white mb-4">
+            <div className="sticky top-20 bg-white dark:bg-neutral-900/50 border dark:border-neutral-800 rounded-lg p-6">
+              <h3 className="font-semibold text-neutral-900 dark:text-white mb-4">
                 Install this Bundle
               </h3>
 
               {/* CLI command */}
               <div className="mb-4">
-                <label className="text-xs text-zinc-500 dark:text-zinc-400 mb-2 block">
+                <label className="text-xs text-neutral-500 dark:text-neutral-400 mb-2 block">
                   CLI Command
                 </label>
                 <div className="relative">
-                  <code className="block bg-zinc-100 dark:bg-zinc-800 p-3 pr-12 rounded text-sm font-mono text-zinc-700 dark:text-zinc-300 break-all">
+                  <code className="block bg-neutral-100 dark:bg-neutral-800 p-3 pr-12 rounded text-sm font-mono text-neutral-700 dark:text-neutral-300 break-all">
                     {installCommand}
                   </code>
                   <div className="absolute right-2 top-1/2 -translate-y-1/2">
@@ -260,7 +260,7 @@ export default async function BundleDetailPage({ params }: PageProps) {
 
               {/* Download as SKILL.md */}
               <div className="mb-4">
-                <label className="text-xs text-zinc-500 dark:text-zinc-400 mb-2 block">
+                <label className="text-xs text-neutral-500 dark:text-neutral-400 mb-2 block">
                   Claude Code Skill
                 </label>
                 <DownloadSkillButton
@@ -270,28 +270,28 @@ export default async function BundleDetailPage({ params }: PageProps) {
               </div>
 
               {/* Prompt count */}
-              <div className="pt-4 border-t dark:border-zinc-700">
+              <div className="pt-4 border-t dark:border-neutral-700">
                 <div className="flex justify-between text-sm">
-                  <span className="text-zinc-500 dark:text-zinc-400">
+                  <span className="text-neutral-500 dark:text-neutral-400">
                     Total prompts
                   </span>
-                  <span className="font-medium text-zinc-900 dark:text-white">
+                  <span className="font-medium text-neutral-900 dark:text-white">
                     {prompts.length}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm mt-2">
-                  <span className="text-zinc-500 dark:text-zinc-400">
+                  <span className="text-neutral-500 dark:text-neutral-400">
                     Version
                   </span>
-                  <span className="font-medium text-zinc-900 dark:text-white">
+                  <span className="font-medium text-neutral-900 dark:text-white">
                     {bundle.version}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm mt-2">
-                  <span className="text-zinc-500 dark:text-zinc-400">
+                  <span className="text-neutral-500 dark:text-neutral-400">
                     Updated
                   </span>
-                  <span className="font-medium text-zinc-900 dark:text-white">
+                  <span className="font-medium text-neutral-900 dark:text-white">
                     {bundle.updatedAt}
                   </span>
                 </div>

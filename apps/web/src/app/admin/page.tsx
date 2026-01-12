@@ -43,10 +43,10 @@ export default function AdminDashboardPage() {
     <div className="space-y-8">
       {/* Page header */}
       <div>
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+        <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
           Dashboard
         </h1>
-        <p className="mt-1 text-zinc-600 dark:text-zinc-400">
+        <p className="mt-1 text-neutral-600 dark:text-neutral-400">
           Platform overview and key metrics
         </p>
       </div>
@@ -90,7 +90,7 @@ export default function AdminDashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-zinc-500" />
+              <Clock className="h-5 w-5 text-neutral-500" />
               Recent Activity
             </CardTitle>
           </CardHeader>
@@ -137,8 +137,8 @@ export default function AdminDashboardPage() {
             <CardTitle>User Growth</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700">
-              <p className="text-sm text-zinc-500">
+            <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-neutral-300 dark:border-neutral-700">
+              <p className="text-sm text-neutral-500">
                 Chart placeholder - integrate with analytics API
               </p>
             </div>
@@ -149,8 +149,8 @@ export default function AdminDashboardPage() {
             <CardTitle>Revenue</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700">
-              <p className="text-sm text-zinc-500">
+            <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-neutral-300 dark:border-neutral-700">
+              <p className="text-sm text-neutral-500">
                 Chart placeholder - integrate with Stripe API
               </p>
             </div>
@@ -210,12 +210,12 @@ function StatCard({
           )}
         </div>
         <div className="mt-4">
-          <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+          <p className="text-2xl font-bold text-neutral-900 dark:text-white">
             {value}
           </p>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">{subtitle}</p>
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">{subtitle}</p>
         </div>
-        <p className="mt-2 text-sm font-medium text-zinc-500">{title}</p>
+        <p className="mt-2 text-sm font-medium text-neutral-500">{title}</p>
       </CardContent>
     </Card>
   );
@@ -247,18 +247,18 @@ function ActivityItem({
       label: "Content reported",
       color: "bg-amber-500",
     },
-  }[type] ?? { label: type, color: "bg-zinc-500" };
+  }[type] ?? { label: type, color: "bg-neutral-500" };
 
   return (
     <div className="flex items-center gap-3">
       <div className={`h-2 w-2 rounded-full ${config.color}`} />
       <div className="flex-1">
-        <p className="text-sm text-zinc-900 dark:text-white">
+        <p className="text-sm text-neutral-900 dark:text-white">
           <span className="font-medium">{config.label}</span>
-          <span className="text-zinc-600 dark:text-zinc-400"> - {user}</span>
+          <span className="text-neutral-600 dark:text-neutral-400"> - {user}</span>
         </p>
       </div>
-      <p className="text-xs text-zinc-500">{time}</p>
+      <p className="text-xs text-neutral-500">{time}</p>
     </div>
   );
 }
@@ -277,12 +277,12 @@ function QuickActionLink({
   return (
     <a
       href={href}
-      className="flex items-center justify-between rounded-lg border border-zinc-200 p-4 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-800/50"
+      className="flex items-center justify-between rounded-lg border border-neutral-200 p-4 transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-800/50"
     >
       <div>
-        <p className="font-medium text-zinc-900 dark:text-white">{label}</p>
+        <p className="font-medium text-neutral-900 dark:text-white">{label}</p>
         {description && (
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">
             {description}
           </p>
         )}
@@ -293,7 +293,7 @@ function QuickActionLink({
             {count}
           </Badge>
         )}
-        <ArrowUpRight className="h-4 w-4 text-zinc-400" />
+        <ArrowUpRight className="h-4 w-4 text-neutral-400" />
       </div>
     </a>
   );

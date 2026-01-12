@@ -78,10 +78,10 @@ export default function AdminModerationPage() {
     <div className="space-y-6">
       {/* Page header */}
       <div>
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+        <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
           Content Moderation
         </h1>
-        <p className="mt-1 text-zinc-600 dark:text-zinc-400">
+        <p className="mt-1 text-neutral-600 dark:text-neutral-400">
           Review reported content and take appropriate action
         </p>
       </div>
@@ -119,22 +119,22 @@ export default function AdminModerationPage() {
         <CardContent className="p-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-zinc-400" />
-              <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              <Filter className="h-4 w-4 text-neutral-400" />
+              <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                 Filter:
               </span>
-              <select className="h-9 rounded-md border border-zinc-200 bg-white px-3 text-sm dark:border-zinc-800 dark:bg-zinc-900">
+              <select className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm dark:border-neutral-800 dark:bg-neutral-900">
                 <option value="pending">Pending</option>
                 <option value="reviewed">Reviewed</option>
                 <option value="all">All</option>
               </select>
-              <select className="h-9 rounded-md border border-zinc-200 bg-white px-3 text-sm dark:border-zinc-800 dark:bg-zinc-900">
+              <select className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm dark:border-neutral-800 dark:bg-neutral-900">
                 <option value="all">All types</option>
                 <option value="prompt">Prompts</option>
                 <option value="collection">Collections</option>
                 <option value="skill">Skills</option>
               </select>
-              <select className="h-9 rounded-md border border-zinc-200 bg-white px-3 text-sm dark:border-zinc-800 dark:bg-zinc-900">
+              <select className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm dark:border-neutral-800 dark:bg-neutral-900">
                 <option value="all">All reasons</option>
                 <option value="spam">Spam</option>
                 <option value="inappropriate">Inappropriate</option>
@@ -162,10 +162,10 @@ export default function AdminModerationPage() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <CheckCircle className="h-12 w-12 text-emerald-500" />
-            <h3 className="mt-4 text-lg font-semibold text-zinc-900 dark:text-white">
+            <h3 className="mt-4 text-lg font-semibold text-neutral-900 dark:text-white">
               All caught up!
             </h3>
-            <p className="mt-1 text-zinc-600 dark:text-zinc-400">
+            <p className="mt-1 text-neutral-600 dark:text-neutral-400">
               No pending reports to review.
             </p>
           </CardContent>
@@ -187,7 +187,7 @@ function ModerationStatCard({
   variant?: "default" | "warning" | "success" | "danger";
 }) {
   const colors = {
-    default: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+    default: "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400",
     warning: "bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400",
     success: "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400",
     danger: "bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400",
@@ -200,10 +200,10 @@ function ModerationStatCard({
           <Icon className="h-5 w-5" />
         </div>
         <div>
-          <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+          <p className="text-2xl font-bold text-neutral-900 dark:text-white">
             {value}
           </p>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">{label}</p>
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">{label}</p>
         </div>
       </CardContent>
     </Card>
@@ -230,7 +230,7 @@ function ReportCard({
     "Copyright violation": "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400",
     "Inappropriate or offensive": "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400",
     "Contains harmful content": "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400",
-    "Other": "bg-zinc-100 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300",
+    "Other": "bg-neutral-100 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300",
   };
 
   return (
@@ -245,14 +245,14 @@ function ReportCard({
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-zinc-900 dark:text-white">
+                  <h3 className="font-semibold text-neutral-900 dark:text-white">
                     {report.contentTitle}
                   </h3>
                   <Badge variant="outline" className="text-xs">
                     {report.contentType}
                   </Badge>
                 </div>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">
                   by {report.contentAuthor}
                 </p>
               </div>
@@ -271,11 +271,11 @@ function ReportCard({
                 )}
               </div>
 
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">
                 {report.details}
               </p>
 
-              <div className="flex items-center gap-4 text-xs text-zinc-500">
+              <div className="flex items-center gap-4 text-xs text-neutral-500">
                 <span>Reported by: {report.reportedBy}</span>
                 <span>{report.createdAt}</span>
               </div>

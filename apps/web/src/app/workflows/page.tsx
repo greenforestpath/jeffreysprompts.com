@@ -29,7 +29,7 @@ export default function WorkflowsPage() {
             Multi-Step Workflows
           </div>
           <h1 className="text-4xl font-bold mb-4">Workflow Builder</h1>
-          <p className="text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto">
+          <p className="text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
             Chain prompts together into powerful workflows. Add steps, customize handoff notes,
             and export as markdown for use with any AI assistant.
           </p>
@@ -37,14 +37,14 @@ export default function WorkflowsPage() {
 
         {/* Tab Switcher */}
         <div className="flex justify-center mb-8">
-          <div className="inline-flex rounded-lg border border-zinc-200 dark:border-zinc-700 p-1">
+          <div className="inline-flex rounded-lg border border-neutral-200 dark:border-neutral-700 p-1">
             <button
               onClick={() => setActiveTab("builder")}
               className={cn(
                 "px-4 py-2 rounded-md text-sm font-medium transition-colors",
                 activeTab === "builder"
                   ? "bg-violet-500 text-white"
-                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+                  : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
               )}
             >
               Build New
@@ -55,7 +55,7 @@ export default function WorkflowsPage() {
                 "px-4 py-2 rounded-md text-sm font-medium transition-colors",
                 activeTab === "library"
                   ? "bg-violet-500 text-white"
-                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+                  : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
               )}
             >
               Curated ({workflows.length})
@@ -82,7 +82,7 @@ export default function WorkflowsPage() {
             className="space-y-4"
           >
             {workflows.length === 0 ? (
-              <div className="text-center py-12 text-zinc-500">
+              <div className="text-center py-12 text-neutral-500">
                 No curated workflows yet. Check back soon!
               </div>
             ) : (
@@ -118,13 +118,13 @@ function WorkflowCard({ workflow }: WorkflowCardProps) {
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <h3 className="font-semibold text-lg">{workflow.title}</h3>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
               {workflow.description}
             </p>
             <div className="flex items-center gap-2 mt-3">
               <Badge variant="secondary">{workflow.steps.length} steps</Badge>
               {workflow.whenToUse.length > 0 && (
-                <span className="text-xs text-zinc-500">
+                <span className="text-xs text-neutral-500">
                   {workflow.whenToUse[0]}
                 </span>
               )}
@@ -132,7 +132,7 @@ function WorkflowCard({ workflow }: WorkflowCardProps) {
           </div>
           <ArrowRight
             className={cn(
-              "w-5 h-5 text-zinc-400 transition-transform",
+              "w-5 h-5 text-neutral-400 transition-transform",
               expanded && "rotate-90"
             )}
           />
@@ -144,7 +144,7 @@ function WorkflowCard({ workflow }: WorkflowCardProps) {
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: "auto", opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
-          className="border-t dark:border-zinc-700"
+          className="border-t dark:border-neutral-700"
         >
           <div className="p-6 space-y-4">
             {workflow.steps.map((step, index) => {
@@ -158,7 +158,7 @@ function WorkflowCard({ workflow }: WorkflowCardProps) {
                     <div className="font-medium">
                       {prompt?.title ?? step.promptId}
                     </div>
-                    <div className="text-sm text-zinc-500 mt-0.5">
+                    <div className="text-sm text-neutral-500 mt-0.5">
                       {step.note}
                     </div>
                   </div>

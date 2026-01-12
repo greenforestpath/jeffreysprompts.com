@@ -69,10 +69,10 @@ function IntroductionSection() {
   return (
     <section className="mx-auto max-w-5xl px-4 py-16 sm:py-24">
       <div className="text-center mb-12">
-        <h2 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-3">
+        <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-3">
           Why Share This?
         </h2>
-        <p className="text-zinc-600 dark:text-zinc-400 max-w-lg mx-auto">
+        <p className="text-neutral-600 dark:text-neutral-400 max-w-lg mx-auto">
           Complete transparency in AI-assisted development
         </p>
       </div>
@@ -83,10 +83,10 @@ function IntroductionSection() {
             key={card.title}
             className={cn(
               "group relative rounded-2xl p-6",
-              "bg-white/80 dark:bg-zinc-900/80",
+              "bg-white/80 dark:bg-neutral-900/80",
               "backdrop-blur-xl",
-              "border border-zinc-200/50 dark:border-zinc-700/50",
-              "hover:border-zinc-300 dark:hover:border-zinc-600",
+              "border border-neutral-200/50 dark:border-neutral-700/50",
+              "hover:border-neutral-300 dark:hover:border-neutral-600",
               "hover:shadow-xl",
               "transition-all duration-300"
             )}
@@ -114,10 +114,10 @@ function IntroductionSection() {
               <Sparkles className="w-5 h-5 text-white" />
             </div>
 
-            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
               {card.title}
             </h3>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
               {card.description}
             </p>
           </div>
@@ -151,10 +151,10 @@ function InsightsSection() {
   return (
     <section className="mx-auto max-w-5xl px-4 py-16 sm:py-24">
       <div className="text-center mb-12">
-        <h2 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-3">
+        <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-3">
           Key Insights
         </h2>
-        <p className="text-zinc-600 dark:text-zinc-400 max-w-lg mx-auto">
+        <p className="text-neutral-600 dark:text-neutral-400 max-w-lg mx-auto">
           Notable moments and decisions from the development session
         </p>
       </div>
@@ -193,7 +193,7 @@ function TimelineSection() {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="h-24 rounded-xl bg-zinc-100 dark:bg-zinc-800"
+                className="h-24 rounded-xl bg-neutral-100 dark:bg-neutral-800"
               />
             ))}
           </div>
@@ -220,10 +220,10 @@ function CTASection() {
           </span>
         </div>
 
-        <h2 className="text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">
+        <h2 className="text-3xl sm:text-4xl font-bold text-neutral-900 dark:text-neutral-100 mb-4">
           Try These Prompts Yourself
         </h2>
-        <p className="text-lg text-zinc-600 dark:text-zinc-400 mb-10 max-w-xl mx-auto">
+        <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-10 max-w-xl mx-auto">
           The same prompts that built this site are available for you. Browse, copy, or install
           them as Claude Code skills.
         </p>
@@ -233,10 +233,10 @@ function CTASection() {
             href="/"
             className={cn(
               "group inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl",
-              "bg-zinc-900 dark:bg-white",
-              "text-white dark:text-zinc-900",
+              "bg-neutral-900 dark:bg-white",
+              "text-white dark:text-neutral-900",
               "font-medium text-lg",
-              "shadow-lg shadow-zinc-900/20 dark:shadow-white/10",
+              "shadow-lg shadow-neutral-900/20 dark:shadow-white/10",
               "hover:shadow-xl hover:scale-[1.02]",
               "transition-all duration-200"
             )}
@@ -248,12 +248,12 @@ function CTASection() {
             href="/bundles"
             className={cn(
               "inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl",
-              "bg-white/60 dark:bg-zinc-800/60",
+              "bg-white/60 dark:bg-neutral-800/60",
               "backdrop-blur-md",
-              "border border-zinc-200 dark:border-zinc-700",
-              "text-zinc-700 dark:text-zinc-300",
+              "border border-neutral-200 dark:border-neutral-700",
+              "text-neutral-700 dark:text-neutral-300",
               "font-medium text-lg",
-              "hover:bg-white dark:hover:bg-zinc-800",
+              "hover:bg-white dark:hover:bg-neutral-800",
               "hover:shadow-md",
               "transition-all duration-200"
             )}
