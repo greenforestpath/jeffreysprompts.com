@@ -10,6 +10,8 @@ export type AdminPermission =
   | "content.view_reported"
   | "content.moderate"
   | "content.delete"
+  | "support.view"
+  | "support.manage"
   | "billing.view"
   | "billing.refund"
   | "admins.view"
@@ -33,6 +35,10 @@ export const PERMISSIONS: Record<AdminPermission, AdminRole[]> = {
   "content.view_reported": ["moderator", "support", "admin", "super_admin"],
   "content.moderate": ["moderator", "admin", "super_admin"],
   "content.delete": ["admin", "super_admin"],
+
+  // Support tickets
+  "support.view": ["support", "admin", "super_admin"],
+  "support.manage": ["support", "admin", "super_admin"],
 
   // Billing
   "billing.view": ["support", "admin", "super_admin"],
