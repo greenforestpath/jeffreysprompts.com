@@ -49,7 +49,7 @@ export function CategoryFilter({
       >
         All
         {counts && (
-          <span className={cn("ml-1.5 text-xs", selected === null ? "opacity-70" : "text-neutral-400")}>
+          <span className={cn("ml-1.5 text-xs", selected === null ? "opacity-70" : "text-neutral-400 dark:text-neutral-500")}>
             {Object.values(counts).reduce((a, b) => a + b, 0)}
           </span>
         )}
@@ -72,7 +72,7 @@ export function CategoryFilter({
         >
           {category}
           {counts?.[category] !== undefined && (
-            <span className={cn("ml-1.5 text-xs", selected === category ? "opacity-70" : "text-neutral-400")}>
+            <span className={cn("ml-1.5 text-xs", selected === category ? "opacity-70" : "text-neutral-400 dark:text-neutral-500")}>
               {counts[category]}
             </span>
           )}

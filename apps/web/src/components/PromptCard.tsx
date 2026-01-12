@@ -188,7 +188,7 @@ export function PromptCard({ prompt, index = 0, onCopy, onClick }: PromptCardPro
               </span>
             ))}
             {prompt.tags.length > 3 && (
-              <span className="text-xs text-neutral-400 dark:text-neutral-600 px-1.5 py-0.5">
+              <span className="text-xs text-neutral-400 dark:text-neutral-500 px-1.5 py-0.5">
                 +{prompt.tags.length - 3}
               </span>
             )}
@@ -213,7 +213,7 @@ export function PromptCard({ prompt, index = 0, onCopy, onClick }: PromptCardPro
             {/* Actions row - simplified to 2 primary actions */}
             <div className="flex items-center justify-between">
               {/* Token count */}
-              <div className="flex items-center gap-1.5 text-xs text-neutral-400 dark:text-neutral-600">
+              <div className="flex items-center gap-1.5 text-xs text-neutral-400 dark:text-neutral-500">
                 {prompt.estimatedTokens && (
                   <>
                     <Zap className="w-3 h-3" />

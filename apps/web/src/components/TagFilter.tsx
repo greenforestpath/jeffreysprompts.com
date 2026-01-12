@@ -90,7 +90,7 @@ export function TagFilter({
               {isSelected && <Check className="w-3 h-3 mr-1.5" aria-hidden="true" />}
               {tag}
               {counts?.[tag] !== undefined && (
-                <span className={cn("ml-1.5 text-xs", isSelected ? "opacity-70" : "text-neutral-400")}>
+                <span className={cn("ml-1.5 text-xs", isSelected ? "opacity-70" : "text-neutral-400 dark:text-neutral-500")}>
                   {counts[tag]}
                 </span>
               )}
@@ -99,7 +99,7 @@ export function TagFilter({
         })}
 
         {hiddenCount > 0 && (
-          <span className="inline-flex items-center rounded-full px-3 py-2 text-xs font-medium text-neutral-400 dark:text-neutral-600 border border-dashed border-neutral-200 dark:border-neutral-800">
+          <span className="inline-flex items-center rounded-full px-3 py-2 text-xs font-medium text-neutral-400 dark:text-neutral-500 border border-dashed border-neutral-200 dark:border-neutral-700">
             +{hiddenCount} more
           </span>
         )}
