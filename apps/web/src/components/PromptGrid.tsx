@@ -1,9 +1,11 @@
 "use client";
 
+import { motion, AnimatePresence } from "framer-motion";
 import { PromptCard } from "./PromptCard";
 import { SwipeablePromptCard } from "@/components/mobile/SwipeablePromptCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsSmallScreen } from "@/hooks/useIsMobile";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import type { Prompt } from "@jeffreysprompts/core/prompts/types";
 
 interface PromptGridProps {
@@ -20,6 +22,7 @@ export function PromptGrid({
   onPromptClick,
 }: PromptGridProps) {
   const isMobile = useIsSmallScreen();
+  const prefersReducedMotion = useReducedMotion();
 
   if (loading) {
     return (
@@ -33,38 +36,73 @@ export function PromptGrid({
 
   if (prompts.length === 0) {
     return (
-      <div className="text-center py-16">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="text-center py-16"
+      >
         <div className="text-neutral-400 dark:text-neutral-500 mb-2">No prompts found</div>
         <p className="text-sm text-neutral-400 dark:text-neutral-500">
           Try adjusting your search or filters
         </p>
-      </div>
+      </motion.div>
     );
   }
 
+  // Animation variants for grid items
+  const itemVariants = {
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: (index: number) => ({
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: prefersReducedMotion ? 0 : 0.2,
+        delay: prefersReducedMotion ? 0 : Math.min(index * 0.03, 0.15),
+      },
+    }),
+    exit: {
+      opacity: 0,
+      scale: 0.95,
+      transition: { duration: prefersReducedMotion ? 0 : 0.15 },
+    },
+  };
+
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {prompts.map((prompt, index) =>
-        isMobile ? (
-          <SwipeablePromptCard
+    <motion.div
+      layout={!prefersReducedMotion}
+      className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+    >
+      <AnimatePresence mode="popLayout">
+        {prompts.map((prompt, index) => (
+          <motion.div
             key={prompt.id}
-            prompt={prompt}
-            index={index}
-            onCopy={onPromptCopy}
-            onClick={onPromptClick}
-            isMobile={isMobile}
-          />
-        ) : (
-          <PromptCard
-            key={prompt.id}
-            prompt={prompt}
-            index={index}
-            onCopy={onPromptCopy}
-            onClick={onPromptClick}
-          />
-        )
-      )}
-    </div>
+            layout={!prefersReducedMotion}
+            custom={index}
+            variants={itemVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            {isMobile ? (
+              <SwipeablePromptCard
+                prompt={prompt}
+                index={index}
+                onCopy={onPromptCopy}
+                onClick={onPromptClick}
+                isMobile={isMobile}
+              />
+            ) : (
+              <PromptCard
+                prompt={prompt}
+                index={index}
+                onCopy={onPromptCopy}
+                onClick={onPromptClick}
+              />
+            )}
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </motion.div>
   );
 }
 
