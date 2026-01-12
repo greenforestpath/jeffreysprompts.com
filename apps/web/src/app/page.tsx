@@ -8,6 +8,7 @@ import { Hero } from "@/components/Hero";
 import { PromptGrid } from "@/components/PromptGrid";
 import { CategoryFilter } from "@/components/CategoryFilter";
 import { TagFilter } from "@/components/TagFilter";
+import { ActiveFilterChips } from "@/components/ActiveFilterChips";
 import { PromptDetailModal } from "@/components/PromptDetailModal";
 import { Button } from "@/components/ui/button";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
@@ -215,6 +216,17 @@ function HomeContent() {
             maxVisible={12}
           />
         </div>
+
+        {/* Active Filter Chips */}
+        <ActiveFilterChips
+          query={filters.query}
+          category={filters.category}
+          tags={filters.tags}
+          onRemoveQuery={() => setQuery("")}
+          onRemoveCategory={() => setCategory(null)}
+          onRemoveTag={(tag) => setTags(filters.tags.filter((t) => t !== tag))}
+          onClearAll={clearFilters}
+        />
 
         {/* Results count - contextual based on active filters */}
         <div className="flex items-center justify-between mb-8">

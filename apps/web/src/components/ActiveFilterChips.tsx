@@ -1,124 +1,113 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import { Search, Folder, Tag, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface FilterChip {
-  /** Unique identifier */
-  id: string;
-  /** Display label */
-  label: string;
-  /** Filter type (category, tag, difficulty, etc.) */
-  type: string;
-  /** Original value */
-  value: string;
-}
+import type { PromptCategory } from "@jeffreysprompts/core/prompts/types";
 
 interface ActiveFilterChipsProps {
-  /** List of active filters */
-  filters: FilterChip[];
-  /** Callback when a filter is removed */
-  onRemove: (filter: FilterChip) => void;
-  /** Callback to clear all filters */
-  onClearAll?: () => void;
-  /** Additional className */
+  query: string;
+  category: PromptCategory | null;
+  tags: string[];
+  onRemoveQuery: () => void;
+  onRemoveCategory: () => void;
+  onRemoveTag: (tag: string) => void;
+  onClearAll: () => void;
+}
+
+interface FilterChipProps {
+  label: string;
+  icon?: React.ReactNode;
+  onRemove: () => void;
   className?: string;
 }
 
-/**
- * ActiveFilterChips - Display and manage active filter selections.
- *
- * Features:
- * - Animated add/remove transitions
- * - Clear all button
- * - Filter type indicators
- * - Touch-friendly chip targets
- *
- * @example
- * ```tsx
- * <ActiveFilterChips
- *   filters={[
- *     { id: "cat-coding", label: "Coding", type: "category", value: "coding" },
- *     { id: "tag-react", label: "react", type: "tag", value: "react" },
- *   ]}
- *   onRemove={(filter) => removeFilter(filter)}
- *   onClearAll={() => clearAllFilters()}
- * />
- * ```
- */
-export function ActiveFilterChips({
-  filters,
-  onRemove,
-  onClearAll,
-  className,
-}: ActiveFilterChipsProps) {
-  if (filters.length === 0) {
-    return null;
-  }
-
+function FilterChip({ label, icon, onRemove, className }: FilterChipProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: "auto" }}
-      exit={{ opacity: 0, height: 0 }}
-      transition={{ duration: 0.2 }}
-      className={cn("flex flex-wrap items-center gap-2", className)}
+    <span
+      data-testid="filter-chip"
+      className={cn(
+        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full",
+        "bg-neutral-100 dark:bg-neutral-800 text-sm text-neutral-700 dark:text-neutral-300",
+        "group transition-colors hover:bg-neutral-200 dark:hover:bg-neutral-700",
+        className
+      )}
     >
-      <AnimatePresence mode="popLayout">
-        {filters.map((filter) => (
-          <motion.button
-            key={filter.id}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.15 }}
-            onClick={() => onRemove(filter)}
-            className={cn(
-              "inline-flex items-center gap-1.5 px-3 py-1.5",
-              "rounded-full text-sm font-medium",
-              "bg-indigo-100 dark:bg-indigo-900/30",
-              "text-indigo-700 dark:text-indigo-300",
-              "border border-indigo-200/50 dark:border-indigo-700/50",
-              "hover:bg-indigo-200 dark:hover:bg-indigo-800/40",
-              "transition-colors",
-              "min-h-[36px] touch-manipulation"
-            )}
-            aria-label={`Remove ${filter.type}: ${filter.label}`}
-          >
-            <span className="text-[10px] uppercase tracking-wider text-indigo-500 dark:text-indigo-400">
-              {filter.type}:
-            </span>
-            <span className="capitalize">{filter.label}</span>
-            <X className="w-3.5 h-3.5 ml-0.5" />
-          </motion.button>
-        ))}
-
-        {/* Clear all button */}
-        {onClearAll && filters.length > 1 && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.15, delay: 0.05 }}
-            onClick={onClearAll}
-            className={cn(
-              "inline-flex items-center gap-1 px-3 py-1.5",
-              "rounded-full text-sm font-medium",
-              "bg-zinc-100 dark:bg-zinc-800",
-              "text-zinc-600 dark:text-zinc-400",
-              "hover:bg-zinc-200 dark:hover:bg-zinc-700",
-              "transition-colors",
-              "min-h-[36px] touch-manipulation"
-            )}
-            aria-label="Clear all filters"
-          >
-            Clear all
-          </motion.button>
-        )}
-      </AnimatePresence>
-    </motion.div>
+      {icon && (
+        <span className="text-neutral-400 dark:text-neutral-500">{icon}</span>
+      )}
+      <span className="max-w-[150px] truncate">{label}</span>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="ml-0.5 p-0.5 rounded-full text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors"
+        aria-label={`Remove ${label} filter`}
+      >
+        <X className="w-3 h-3" />
+      </button>
+    </span>
   );
 }
 
-export default ActiveFilterChips;
+export function ActiveFilterChips({
+  query,
+  category,
+  tags,
+  onRemoveQuery,
+  onRemoveCategory,
+  onRemoveTag,
+  onClearAll,
+}: ActiveFilterChipsProps) {
+  const hasFilters = query || category || tags.length > 0;
+
+  if (!hasFilters) return null;
+
+  return (
+    <div
+      role="region"
+      aria-label="Active filters"
+      className="flex flex-wrap items-center gap-2 py-4 border-b border-neutral-200 dark:border-neutral-800"
+    >
+      <span className="text-sm text-neutral-500 dark:text-neutral-400 mr-1">
+        Active filters:
+      </span>
+
+      {/* Search query chip */}
+      {query && (
+        <FilterChip
+          label={`"${query}"`}
+          icon={<Search className="w-3 h-3" />}
+          onRemove={onRemoveQuery}
+        />
+      )}
+
+      {/* Category chip */}
+      {category && (
+        <FilterChip
+          label={category}
+          icon={<Folder className="w-3 h-3" />}
+          onRemove={onRemoveCategory}
+          className="capitalize"
+        />
+      )}
+
+      {/* Tag chips */}
+      {tags.map((tag) => (
+        <FilterChip
+          key={tag}
+          label={tag}
+          icon={<Tag className="w-3 h-3" />}
+          onRemove={() => onRemoveTag(tag)}
+        />
+      ))}
+
+      {/* Clear all */}
+      <button
+        type="button"
+        onClick={onClearAll}
+        className="ml-2 text-xs text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors underline-offset-2 hover:underline"
+      >
+        Clear all
+      </button>
+    </div>
+  );
+}
