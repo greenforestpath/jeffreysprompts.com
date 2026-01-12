@@ -7,10 +7,12 @@ import {
 } from "@/lib/support/tickets";
 import {
   addSupportTicketReply,
+  addSupportTicketNote,
   createSupportTicket,
   getSupportTicket,
   getSupportTicketsForEmail,
 } from "@/lib/support/ticket-store";
+import { checkContentForSpam } from "@/lib/moderation/spam-check";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_NAME_LENGTH = 80;
@@ -135,6 +137,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid category or priority." }, { status: 400 });
   }
 
+  const spamCheck = checkContentForSpam(`${subject}\n\n${message}`);
+  if (spamCheck.isSpam) {
+    return NextResponse.json(
+      {
+        error: "Your message was flagged as potential spam. Please remove links or excessive formatting and try again.",
+        reasons: spamCheck.reasons,
+      },
+      { status: 400 }
+    );
+  }
+
   const ticket = createSupportTicket({
     name,
     email,
@@ -142,7 +155,16 @@ export async function POST(request: NextRequest) {
     message,
     category,
     priority,
+    status: spamCheck.requiresReview ? "pending" : "open",
   });
+
+  if (spamCheck.requiresReview) {
+    addSupportTicketNote({
+      ticketNumber: ticket.ticketNumber,
+      author: "support",
+      body: `Auto-flagged for review (${Math.round(spamCheck.confidence * 100)}% confidence): ${spamCheck.reasons.join("; ")}`,
+    });
+  }
 
   // In production, send confirmation email and notify support staff here.
 
@@ -156,6 +178,7 @@ export async function POST(request: NextRequest) {
       createdAt: ticket.createdAt,
       supportEmail: SUPPORT_EMAIL,
     },
+    reviewRequired: spamCheck.requiresReview,
     message: "Support request received.",
   });
 }
