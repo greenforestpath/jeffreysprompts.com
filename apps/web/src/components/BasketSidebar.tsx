@@ -171,12 +171,14 @@ export function BasketSidebar({ isOpen, onClose }: BasketSidebarProps) {
   };
 
   const handleClearBasket = () => {
+    const count = basketPrompts.length;
     clearBasket();
     toast({
       type: "info",
       title: "Basket cleared",
       message: "All items removed from basket",
     });
+    trackEvent("basket_clear", { count, source: "sidebar" });
   };
 
   return (
@@ -254,12 +256,12 @@ export function BasketSidebar({ isOpen, onClose }: BasketSidebarProps) {
                 {basketPrompts.map((prompt) => (
                   <motion.li
                     key={prompt.id}
-                    layout
-                    initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, x: -20 }}
+                    layout={!prefersReducedMotion}
+                    initial={prefersReducedMotion ? false : { opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, x: 20 }}
+                    exit={{ opacity: 0, x: prefersReducedMotion ? 0 : 20 }}
                     transition={{
-                      duration: 0.2,
+                      duration: prefersReducedMotion ? 0.1 : 0.2,
                       ease: [0.25, 0.1, 0.25, 1],
                     }}
                     className="flex items-center justify-between gap-2 p-2 rounded-md bg-muted/50 hover:bg-muted transition-colors overflow-hidden"
