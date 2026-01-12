@@ -40,7 +40,7 @@ const REPORT_REASONS = [
 
 const MAX_DETAILS_LENGTH = 500;
 
-interface ReportDialogProps {
+export interface ReportDialogProps {
   contentType: ReportContentType;
   contentId: string;
   contentTitle?: string;
