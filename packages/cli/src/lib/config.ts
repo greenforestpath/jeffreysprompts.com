@@ -126,7 +126,7 @@ function applyEnvOverrides(config: JfpConfig): JfpConfig {
   };
 }
 
-function loadStoredConfig(): JfpConfig {
+export function loadStoredConfig(): JfpConfig {
   const configFile = getConfigFile();
   const defaultConfig = createDefaultConfig();
 

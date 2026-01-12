@@ -33,7 +33,10 @@ export async function renderCommand(id: string, options: RenderOptions) {
       console.error(chalk.red(`Prompt not found: ${id}`));
     }
     process.exit(1);
+    return;
   }
+
+  const promptData = prompt;
 
   // Parse CLI variables
   let variables = parseVariables(process.argv);
@@ -41,7 +44,7 @@ export async function renderCommand(id: string, options: RenderOptions) {
   // Process variable values based on their types
   const processedVars: Record<string, string> = {};
   for (const [name, value] of Object.entries(variables)) {
-    const varDef = prompt.variables?.find((v) => v.name === name);
+    const varDef = promptData.variables?.find((v) => v.name === name);
     try {
       processedVars[name] = processVariableValue(value, varDef);
     } catch (err) {
@@ -56,9 +59,9 @@ export async function renderCommand(id: string, options: RenderOptions) {
   variables = processedVars;
 
   // Interactive fill mode: prompt for missing variables
-  if (options.fill && prompt.variables?.length) {
-    const contentVars = extractVariables(prompt.content);
-    const promptVars = prompt.variables.filter((v) => contentVars.includes(v.name));
+  if (options.fill && promptData.variables?.length) {
+    const contentVars = extractVariables(promptData.content);
+    const promptVars = promptData.variables.filter((v) => contentVars.includes(v.name));
 
     for (const varDef of promptVars) {
       if (variables[varDef.name] === undefined || variables[varDef.name] === "") {
@@ -79,7 +82,7 @@ export async function renderCommand(id: string, options: RenderOptions) {
   }
 
   // Check for missing required variables
-  const missing = getMissingVariables(prompt, variables);
+  const missing = getMissingVariables(promptData, variables);
   if (missing.length > 0) {
     if (shouldOutputJson(options)) {
       console.log(JSON.stringify({
@@ -113,8 +116,9 @@ export async function renderCommand(id: string, options: RenderOptions) {
     const readLimit = maxContext + 1024;
 
     // Create a timeout promise that rejects if stdin takes too long
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error("stdin_timeout")), STDIN_TIMEOUT_MS);
+      timeoutId = setTimeout(() => reject(new Error("stdin_timeout")), STDIN_TIMEOUT_MS);
     });
 
     // Read stdin with timeout protection and size limit
@@ -141,6 +145,10 @@ export async function renderCommand(id: string, options: RenderOptions) {
         process.exit(1);
       }
       throw err;
+    } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     }
     context = Buffer.concat(chunks).toString("utf-8");
     contextSource = "stdin";
@@ -164,7 +172,7 @@ export async function renderCommand(id: string, options: RenderOptions) {
   }
 
   // Render the prompt with variables
-  let rendered = renderPrompt(prompt, variables);
+  let rendered = renderPrompt(promptData, variables);
 
   // Append context if provided
   if (context) {
@@ -180,8 +188,8 @@ export async function renderCommand(id: string, options: RenderOptions) {
   // Output
   if (shouldOutputJson(options)) {
     console.log(JSON.stringify({
-      id: prompt.id,
-      title: prompt.title,
+      id: promptData.id,
+      title: promptData.title,
       rendered,
       variables: Object.keys(variables).length > 0 ? variables : undefined,
       context: context ? { source: contextSource, truncated, characters: context.length } : undefined,

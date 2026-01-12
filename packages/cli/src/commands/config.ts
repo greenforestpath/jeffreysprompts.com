@@ -7,7 +7,14 @@
 
 import chalk from "chalk";
 import boxen from "boxen";
-import { loadConfig, saveConfig, getConfigDir, createDefaultConfig, type JfpConfig } from "../lib/config";
+import {
+  loadConfig,
+  loadStoredConfig,
+  saveConfig,
+  getConfigDir,
+  createDefaultConfig,
+  type JfpConfig,
+} from "../lib/config";
 import { shouldOutputJson } from "../lib/utils";
 import { join } from "path";
 
@@ -73,7 +80,7 @@ function parseValue(value: string): ConfigValue {
 
   // Number
   const num = Number(value);
-  if (!isNaN(num) && value.trim() !== "") return num;
+  if (!Number.isNaN(num) && value.trim() !== "") return num;
 
   // String (default)
   return value;
@@ -124,7 +131,9 @@ export async function configListCommand(options: ConfigOptions = {}): Promise<vo
     }
 
     const displayKey = key.split(".").slice(1).join(".");
-    content += `  ${displayKey.padEnd(maxKeyLength - section!.length - 1)} ${chalk.dim("=")} ${chalk.yellow(value)}\n`;
+    const sectionLabel = section ?? "";
+    const padding = Math.max(0, maxKeyLength - sectionLabel.length - 1);
+    content += `  ${displayKey.padEnd(padding)} ${chalk.dim("=")} ${chalk.yellow(value)}\n`;
   }
 
   console.log(boxen(content, {
@@ -171,7 +180,7 @@ export async function configSetCommand(
   value: string,
   options: ConfigOptions = {}
 ): Promise<void> {
-  const config = loadConfig() as unknown as Record<string, unknown>;
+  const config = loadStoredConfig() as unknown as Record<string, unknown>;
 
   // Validate that the key exists in the default config
   const defaults = createDefaultConfig() as unknown as Record<string, unknown>;
