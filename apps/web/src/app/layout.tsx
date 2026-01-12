@@ -4,6 +4,7 @@ import { Providers } from "@/components/Providers";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { JsonLd, websiteJsonLd, softwareAppJsonLd } from "@/components/JsonLd";
+import { SkipLink } from "@/components/ui/skip-link";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -96,8 +97,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
+          <SkipLink targetId="main-content" />
           <Nav />
-          <main className="min-h-screen">{children}</main>
+          <main id="main-content" tabIndex={-1} className="min-h-screen focus:outline-none">
+            {children}
+          </main>
           <Footer />
         </Providers>
       </body>

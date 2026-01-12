@@ -15,6 +15,7 @@ import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { useFilterState } from "@/hooks/useFilterState";
 import { FeaturedPromptsSection } from "@/components/landing";
 import { trackEvent } from "@/lib/analytics";
+import { useAnnounceCount } from "@/hooks/useAnnounce";
 import type { Prompt, PromptCategory } from "@jeffreysprompts/core/prompts/types";
 
 function PromptGridFallback({ onRefresh }: { onRefresh: () => void }) {
@@ -47,6 +48,9 @@ function HomeContent() {
     category: PromptCategory | null;
     tags: string[];
   } | null>(null);
+
+  // Screen reader announcements for filter results
+  const announceResults = useAnnounceCount();
 
   // Compute category counts
   const categoryCounts = useMemo(() => {
@@ -164,6 +168,14 @@ function HomeContent() {
 
     previousFiltersRef.current = filters;
   }, [filters]);
+
+  // Announce filtered results count to screen readers
+  useEffect(() => {
+    // Only announce when filters are active (not on initial load)
+    if (hasActiveFilters) {
+      announceResults(filteredPrompts.length, "prompt", "prompts");
+    }
+  }, [filteredPrompts.length, hasActiveFilters, announceResults]);
 
   const handleRefresh = useCallback(() => {
     if (typeof window !== "undefined") {
