@@ -41,8 +41,8 @@ function getHelpData() {
     commands: {
       listing_searching: [
         { name: "list", description: "List all prompts", options: ["--category", "--tag", "--mine", "--saved", "--json"] },
-        { name: "search <query>", description: "Search prompts by query", options: ["--limit", "--json"] },
-        { name: "suggest <task>", description: "Suggest prompts for a task", options: ["--limit", "--json"] },
+        { name: "search <query>", description: "Search prompts by query", options: ["--limit", "--mine", "--saved", "--all", "--local", "--json"] },
+        { name: "suggest <task>", description: "Suggest prompts for a task", options: ["--limit", "--semantic", "--json"] },
       ],
       viewing: [
         { name: "show <id>", description: "Show prompt details", options: ["--json", "--raw"] },
@@ -93,7 +93,7 @@ function getHelpData() {
       { command: "jfp install idea-wizard readme-reviser", description: "Install multiple prompts as skills" },
       { command: "jfp completion --shell zsh", description: "Generate zsh completion script" },
       { command: "jfp render my-prompt --VAR=value", description: "Render prompt with variable substitution" },
-      { command: "jfp list --json | jq '.[] | .id'", description: "Get all prompt IDs with jq" },
+      { command: "jfp list --json | jq -r '.prompts[].id'", description: "Get all prompt IDs with jq" },
       { command: "jfp suggest 'write a readme' --json", description: "Get prompt suggestions in JSON" },
     ],
   };
@@ -187,7 +187,7 @@ JeffreysPrompts CLI v${version}
   sections.push(formatExample("jfp completion --shell zsh", "Generate zsh completion script"));
   sections.push(formatExample("jfp render my-prompt --VAR=value", "Render with variables"));
   sections.push(formatExample("jfp copy idea-wizard --fill", "Copy with interactive variable fill"));
-  sections.push(formatExample("jfp list --json | jq '.[] | .id'", "Pipe JSON to jq"));
+  sections.push(formatExample("jfp list --json | jq -r '.prompts[].id'", "Pipe JSON to jq"));
   sections.push("");
 
   // Global options
