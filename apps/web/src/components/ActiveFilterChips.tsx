@@ -41,10 +41,10 @@ function FilterChip({ label, ariaLabel, icon, onRemove, className }: FilterChipP
       <button
         type="button"
         onClick={onRemove}
-        className="ml-0.5 p-0.5 rounded-full text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-500"
+        className="ml-0.5 p-0.5 rounded-full text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-500 touch-manipulation"
         aria-label={ariaLabel}
       >
-        <X className="w-3 h-3" />
+        <X className="w-3 h-3" aria-hidden="true" />
       </button>
     </span>
   );
@@ -109,7 +109,7 @@ export function ActiveFilterChips({
       <button
         type="button"
         onClick={onClearAll}
-        className="ml-2 text-xs text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-500 rounded px-1"
+        className="ml-2 text-xs text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-500 rounded px-1 touch-manipulation"
         aria-label="Clear all active filters"
       >
         Clear all
