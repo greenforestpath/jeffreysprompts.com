@@ -4,10 +4,10 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { WifiOff, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useServiceWorker } from "@/hooks/useServiceWorker";
-
 interface OfflineBannerProps {
   className?: string;
+  isOffline: boolean;
+  isRegistered: boolean;
 }
 
 /**
@@ -21,8 +21,7 @@ interface OfflineBannerProps {
  * - Re-appears if user goes online and then offline again
  * - Non-intrusive fixed positioning at bottom
  */
-export function OfflineBanner({ className }: OfflineBannerProps) {
-  const { isOffline, isRegistered } = useServiceWorker();
+export function OfflineBanner({ className, isOffline, isRegistered }: OfflineBannerProps) {
   const [dismissed, setDismissed] = useState(false);
 
   if (!isOffline || !isRegistered) {

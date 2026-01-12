@@ -31,7 +31,7 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
   // Register service worker for PWA offline support
-  useServiceWorker();
+  const serviceWorker = useServiceWorker();
   const router = useRouter();
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
@@ -161,7 +161,10 @@ export function Providers({ children }: ProvidersProps) {
             shortcuts={shortcuts}
           />
           <BottomTabBar onOpenSearch={openSpotlight} />
-          <OfflineBanner />
+          <OfflineBanner
+            isOffline={serviceWorker.isOffline}
+            isRegistered={serviceWorker.isRegistered}
+          />
           <InstallPrompt />
           <Toaster />
         </BasketProvider>
