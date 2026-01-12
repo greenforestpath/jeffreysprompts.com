@@ -20,6 +20,8 @@ import {
   SUPPORT_CATEGORIES,
   SUPPORT_PRIORITIES,
   SUPPORT_EMAIL,
+  getSupportCategoryLabel,
+  getSupportPriorityLabel,
   type SupportCategory,
   type SupportPriority,
 } from "@/lib/support/tickets";
@@ -83,7 +85,7 @@ export function ContactForm() {
   const [formError, setFormError] = useState<string | null>(null);
   const [ticketInfo, setTicketInfo] = useState<LocalSupportTicket | null>(null);
 
-  const emailIsValid = useMemo(() => /[^\s@]+@[^\s@]+\.[^\s@]+/.test(email.trim()), [email]);
+  const emailIsValid = useMemo(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()), [email]);
   const canSubmit = Boolean(name.trim() && emailIsValid && subject.trim() && message.trim());
 
   const resetForm = useCallback(() => {
@@ -189,8 +191,8 @@ export function ContactForm() {
               A confirmation email will follow shortly.
             </p>
             <div className="flex flex-wrap gap-2">
-              <Badge variant="secondary">{ticketInfo.category}</Badge>
-              <Badge variant="outline">{ticketInfo.priority}</Badge>
+              <Badge variant="secondary">{getSupportCategoryLabel(ticketInfo.category)}</Badge>
+              <Badge variant="outline">{getSupportPriorityLabel(ticketInfo.priority)}</Badge>
             </div>
           </div>
         </div>
@@ -303,6 +305,17 @@ export function ContactForm() {
           rows={6}
           required
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="support-attachment">Attachments (optional)</Label>
+        <div className="flex flex-wrap items-center gap-3">
+          <Input id="support-attachment" type="file" disabled />
+          <Badge variant="secondary">Coming soon</Badge>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          For now, include links or screenshots directly in your message.
+        </p>
       </div>
 
       <div className="hidden" aria-hidden="true">

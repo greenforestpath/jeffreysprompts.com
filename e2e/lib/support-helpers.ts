@@ -47,6 +47,7 @@ export const HELP_CATEGORIES = [
 export const SUPPORT_CATEGORIES = [
   "billing",
   "technical",
+  "feedback",
   "feature",
   "bug",
   "account",
