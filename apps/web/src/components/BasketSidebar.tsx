@@ -10,6 +10,8 @@ import {
   Copy,
   Check,
   ShoppingBasket,
+  Sparkles,
+  Search,
 } from "lucide-react";
 import { useBasket } from "@/hooks/use-basket";
 import { Button } from "./ui/button";
@@ -198,11 +200,37 @@ export function BasketSidebar({ isOpen, onClose }: BasketSidebarProps) {
         {/* Items list */}
         <div className="flex-1 overflow-y-auto p-4">
           {basketPrompts.length === 0 ? (
-            <div className="text-center text-muted-foreground py-8">
-              <ShoppingBasket className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p>Your basket is empty</p>
-              <p className="text-sm mt-1">
-                Add prompts to export them together
+            <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
+              {/* Illustrated empty state with decorative sparkle */}
+              <div className="relative mb-6">
+                <div className="w-20 h-20 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                  <ShoppingBasket className="h-10 w-10 text-neutral-400 dark:text-neutral-500" />
+                </div>
+                <Sparkles className="absolute -top-1 -right-1 h-5 w-5 text-amber-400" aria-hidden="true" />
+              </div>
+
+              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
+                Your basket is empty
+              </h3>
+
+              <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6 max-w-[240px]">
+                Save prompts here to download or install them all at once.
+              </p>
+
+              {/* CTA to close sidebar and browse */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onClose}
+                className="gap-2"
+              >
+                <Search className="w-4 h-4" aria-hidden="true" />
+                Browse prompts
+              </Button>
+
+              {/* Hint for mobile users */}
+              <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-4 sm:hidden">
+                Tip: Swipe right on any prompt card to add it
               </p>
             </div>
           ) : (
