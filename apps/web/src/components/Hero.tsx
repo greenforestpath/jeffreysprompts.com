@@ -176,6 +176,7 @@ export function Hero({
                 aria-pressed={selectedCategory === null}
                 className={cn(
                   "inline-flex items-center rounded-full px-4 py-2 text-sm font-medium",
+                  "min-h-[44px] sm:min-h-0 touch-manipulation",
                   "transition-colors",
                   "focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 dark:focus-visible:ring-white",
                   selectedCategory === null
@@ -193,6 +194,7 @@ export function Hero({
                   aria-pressed={selectedCategory === category}
                   className={cn(
                     "inline-flex items-center rounded-full px-4 py-2 text-sm font-medium capitalize",
+                    "min-h-[44px] sm:min-h-0 touch-manipulation",
                     "transition-colors",
                     "focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 dark:focus-visible:ring-white",
                     selectedCategory === category
