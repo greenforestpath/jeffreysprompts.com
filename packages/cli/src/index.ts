@@ -1,5 +1,16 @@
 import cac from "cac";
 import { version } from "../package.json";
+
+// Handle --no-color flag early (before chalk is imported)
+// Check both the standard NO_COLOR env and JFP_NO_COLOR
+if (
+  process.argv.includes("--no-color") ||
+  process.env.NO_COLOR ||
+  process.env.JFP_NO_COLOR
+) {
+  process.env.NO_COLOR = "1";
+}
+
 import { listCommand } from "./commands/list";
 import { searchCommand } from "./commands/search";
 import { showCommand } from "./commands/show";
@@ -22,6 +33,7 @@ import {
   doctorCommand,
   aboutCommand,
 } from "./commands/utilities";
+import { randomCommand } from "./commands/random";
 import { helpCommand } from "./commands/help";
 import { serveCommand } from "./commands/serve";
 import { updateCliCommand } from "./commands/update-cli";
@@ -52,6 +64,9 @@ import {
 } from "./commands/skills";
 
 export const cli = cac("jfp");
+
+// Global options (applied to all commands)
+cli.option("--no-color", "Disable colored output");
 
 cli
   .command("list", "List all prompts")
@@ -343,6 +358,14 @@ cli
   .command("i", "Interactive mode - fzf-style prompt picker")
   .alias("interactive")
   .action(interactiveCommand);
+
+cli
+  .command("random", "Get a random prompt for discovery")
+  .option("--category <category>", "Filter by category")
+  .option("--tag <tag>", "Filter by tag")
+  .option("--copy", "Copy to clipboard")
+  .option("--json", "Output JSON")
+  .action(randomCommand);
 
 cli
   .command("categories", "List all categories with counts")
