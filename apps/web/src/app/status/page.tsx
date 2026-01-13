@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export const revalidate = 30;
 
 const STATUS_COLORS: Record<string, string> = {
-  operational: "bg-green-500",
+  operational: "bg-emerald-500",
   degraded: "bg-yellow-500",
   partial_outage: "bg-orange-500",
   major_outage: "bg-red-500",
@@ -31,7 +31,7 @@ const INCIDENT_STATUS_COLORS: Record<string, string> = {
   investigating: "bg-red-500",
   identified: "bg-orange-500",
   monitoring: "bg-yellow-500",
-  resolved: "bg-green-500",
+  resolved: "bg-emerald-500",
 };
 
 function StatusIndicator({ status }: { status: string }) {
@@ -45,7 +45,7 @@ function StatusIndicator({ status }: { status: string }) {
 
 function OverallStatus({ status, message }: { status: string; message: string }) {
   const bgColor = {
-    operational: "bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800",
+    operational: "bg-emerald-50 dark:bg-emerald-950 border-emerald-200 dark:border-emerald-800",
     degraded: "bg-yellow-50 dark:bg-yellow-950 border-yellow-200 dark:border-yellow-800",
     partial_outage: "bg-orange-50 dark:bg-orange-950 border-orange-200 dark:border-orange-800",
     major_outage: "bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800",
@@ -218,7 +218,7 @@ export default async function StatusPage() {
                           Resolved {new Date(incident.resolvedAt ?? incident.createdAt).toLocaleDateString()}
                         </p>
                       </div>
-                      <Badge variant="outline" className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                      <Badge variant="outline" className="bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200">
                         Resolved
                       </Badge>
                     </div>

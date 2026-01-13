@@ -171,7 +171,7 @@ export default async function StatusHistoryPage() {
                                 variant="outline"
                                 className={`text-xs mb-1 ${
                                   index === incident.updates.length - 1
-                                    ? "bg-green-100 dark:bg-green-900"
+                                    ? "bg-emerald-100 dark:bg-emerald-900"
                                     : ""
                                 }`}
                               >

@@ -46,7 +46,7 @@ export function CodeBlock({
             aria-label={copied ? "Copied" : "Copy code"}
           >
             {copied ? (
-              <Check className="h-4 w-4 text-green-400" />
+              <Check className="h-4 w-4 text-emerald-400" />
             ) : (
               <Copy className="h-4 w-4 text-neutral-400" />
             )}
@@ -67,7 +67,7 @@ export function CodeBlock({
               aria-label={copied ? "Copied" : "Copy code"}
             >
               {copied ? (
-                <Check className="h-4 w-4 text-green-400" />
+                <Check className="h-4 w-4 text-emerald-400" />
               ) : (
                 <Copy className="h-4 w-4 text-neutral-400" />
               )}
