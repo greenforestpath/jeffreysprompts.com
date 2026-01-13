@@ -3,11 +3,14 @@
 import { Github, Menu, X, Sparkles, ShoppingBasket, Crown } from "lucide-react";
 import { ViewTransitionLink } from "./ViewTransitionLink";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import { ThemeToggle } from "./theme-toggle";
 import { BasketSidebar } from "./BasketSidebar";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 import { useBasket } from "@/hooks/use-basket";
+import { cn } from "@/lib/utils";
 
 // Pro site URL - use env var if available, otherwise default
 const PRO_URL = process.env.NEXT_PUBLIC_PRO_URL ?? "https://pro.jeffreysprompts.com";
@@ -20,7 +23,13 @@ const navLinks = [
   { href: "/contribute", label: "Contribute" },
 ];
 
+function isActiveRoute(pathname: string, href: string): boolean {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function Nav() {
+  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [basketOpen, setBasketOpen] = useState(false);
   const { items } = useBasket();
@@ -45,16 +54,35 @@ export function Nav() {
         </ViewTransitionLink>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-6">
-          {navLinks.map((link) => (
-            <ViewTransitionLink
-              key={link.href}
-              href={link.href}
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {link.label}
-            </ViewTransitionLink>
-          ))}
+        <div className="hidden md:flex items-center gap-1">
+          {navLinks.map((link) => {
+            const isActive = isActiveRoute(pathname, link.href);
+            return (
+              <ViewTransitionLink
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "relative px-3 py-1.5 text-sm font-medium transition-colors",
+                  isActive
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {link.label}
+                {isActive && (
+                  <motion.div
+                    layoutId="nav-active-indicator"
+                    className="absolute inset-x-1 -bottom-[13px] h-0.5 bg-primary rounded-full"
+                    transition={{
+                      type: "spring",
+                      stiffness: 500,
+                      damping: 30,
+                    }}
+                  />
+                )}
+              </ViewTransitionLink>
+            );
+          })}
         </div>
 
         {/* Right side actions */}
@@ -131,16 +159,27 @@ export function Nav() {
               </SheetHeader>
               <div className="flex h-full flex-col">
                 <nav className="flex flex-col px-5 py-2" aria-label="Mobile navigation">
-                  {navLinks.map((link) => (
-                    <ViewTransitionLink
-                      key={link.href}
-                      href={link.href}
-                      className="block min-h-[44px] py-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground touch-manipulation"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {link.label}
-                    </ViewTransitionLink>
-                  ))}
+                  {navLinks.map((link) => {
+                    const isActive = isActiveRoute(pathname, link.href);
+                    return (
+                      <ViewTransitionLink
+                        key={link.href}
+                        href={link.href}
+                        className={cn(
+                          "relative flex items-center min-h-[44px] py-3 text-sm font-medium transition-colors touch-manipulation",
+                          isActive
+                            ? "text-foreground"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {isActive && (
+                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-full" />
+                        )}
+                        <span className={cn(isActive && "pl-3")}>{link.label}</span>
+                      </ViewTransitionLink>
+                    );
+                  })}
                 </nav>
 
                 <div className="mt-auto border-t border-border/60 px-5 py-3">

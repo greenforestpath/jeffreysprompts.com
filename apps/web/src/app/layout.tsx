@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "@/components/Providers";
 import { Nav } from "@/components/Nav";
+import { BottomNav } from "@/components/BottomNav";
 import { Footer } from "@/components/Footer";
 import { JsonLd, websiteJsonLd, softwareAppJsonLd } from "@/components/JsonLd";
 import { SkipLink } from "@/components/ui/skip-link";
@@ -99,10 +100,11 @@ export default function RootLayout({
         <Providers>
           <SkipLink targetId="main-content" />
           <Nav />
-          <main id="main-content" tabIndex={-1} className="min-h-screen focus:outline-none">
+          <main id="main-content" tabIndex={-1} className="min-h-screen pb-20 md:pb-0 focus:outline-none">
             {children}
           </main>
-          <Footer />
+          <Footer className="hidden md:block" />
+          <BottomNav />
         </Providers>
       </body>
     </html>

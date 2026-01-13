@@ -1,4 +1,7 @@
-import type { HTMLAttributes } from "react"
+"use client"
+
+import type { HTMLAttributes, ReactNode } from "react"
+import { AnimatePresence, motion } from "framer-motion"
 
 import { cn } from "@/lib/utils"
 
@@ -132,6 +135,111 @@ function SkeletonInput({
   )
 }
 
+/**
+ * SkeletonContainer - Wrapper that cross-fades between skeleton and content
+ *
+ * Usage:
+ * ```tsx
+ * <SkeletonContainer
+ *   isLoading={isLoading}
+ *   skeleton={<SkeletonCard />}
+ * >
+ *   <ActualContent />
+ * </SkeletonContainer>
+ * ```
+ */
+interface SkeletonContainerProps {
+  /** Whether to show the skeleton or the children */
+  isLoading: boolean
+  /** The skeleton placeholder to show while loading */
+  skeleton: ReactNode
+  /** The actual content to show when loaded */
+  children: ReactNode
+  /** Additional class names for the container */
+  className?: string
+  /** Animation duration in ms (default: 300) */
+  duration?: number
+}
+
+function SkeletonContainer({
+  isLoading,
+  skeleton,
+  children,
+  className,
+  duration = 300,
+}: SkeletonContainerProps) {
+  // Check for reduced motion preference
+  const prefersReducedMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+
+  const transitionDuration = prefersReducedMotion ? 0 : duration / 1000
+
+  return (
+    <div className={cn("relative", className)}>
+      <AnimatePresence mode="wait" initial={false}>
+        {isLoading ? (
+          <motion.div
+            key="skeleton"
+            initial={{ opacity: prefersReducedMotion ? 1 : 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: transitionDuration }}
+          >
+            {skeleton}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="content"
+            initial={{ opacity: prefersReducedMotion ? 1 : 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: transitionDuration }}
+          >
+            {children}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+/**
+ * SkeletonFade - Simple fade-in wrapper for content that was loading
+ *
+ * Usage:
+ * ```tsx
+ * {isLoading ? <Skeleton /> : <SkeletonFade><Content /></SkeletonFade>}
+ * ```
+ */
+interface SkeletonFadeProps {
+  children: ReactNode
+  className?: string
+  /** Animation duration in ms (default: 300) */
+  duration?: number
+}
+
+function SkeletonFade({
+  children,
+  className,
+  duration = 300,
+}: SkeletonFadeProps) {
+  const prefersReducedMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+
+  return (
+    <motion.div
+      className={className}
+      initial={{ opacity: prefersReducedMotion ? 1 : 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: prefersReducedMotion ? 0 : duration / 1000 }}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
 export {
   Skeleton,
   SkeletonText,
@@ -139,4 +247,6 @@ export {
   SkeletonAvatar,
   SkeletonButton,
   SkeletonInput,
+  SkeletonContainer,
+  SkeletonFade,
 }

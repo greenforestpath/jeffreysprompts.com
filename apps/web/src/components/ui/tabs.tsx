@@ -2,19 +2,63 @@
 
 import * as React from "react"
 import * as TabsPrimitive from "@radix-ui/react-tabs"
+import { motion, AnimatePresence } from "framer-motion"
 
 import { cn } from "@/lib/utils"
 
+// Context for sharing active tab state between TabsList and triggers
+interface TabsContextValue {
+  activeTab: string | undefined
+  setActiveTab: (value: string) => void
+  layoutId: string
+}
+
+const TabsContext = React.createContext<TabsContextValue | null>(null)
+
+function useTabsContext() {
+  const context = React.useContext(TabsContext)
+  return context
+}
+
+// Generate unique ID for layoutId to prevent conflicts between multiple Tabs instances
+function useUniqueId() {
+  const id = React.useId()
+  return `tabs-indicator-${id}`
+}
+
 function Tabs({
   className,
+  defaultValue,
+  value,
+  onValueChange,
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.Root>) {
+  const [activeTab, setActiveTab] = React.useState(defaultValue ?? value)
+  const layoutId = useUniqueId()
+
+  // Sync with controlled value
+  React.useEffect(() => {
+    if (value !== undefined) {
+      setActiveTab(value)
+    }
+  }, [value])
+
+  const handleValueChange = React.useCallback((newValue: string) => {
+    setActiveTab(newValue)
+    onValueChange?.(newValue)
+  }, [onValueChange])
+
   return (
-    <TabsPrimitive.Root
-      data-slot="tabs"
-      className={cn("flex flex-col gap-2", className)}
-      {...props}
-    />
+    <TabsContext.Provider value={{ activeTab, setActiveTab, layoutId }}>
+      <TabsPrimitive.Root
+        data-slot="tabs"
+        className={cn("flex flex-col gap-2", className)}
+        defaultValue={defaultValue}
+        value={value}
+        onValueChange={handleValueChange}
+        {...props}
+      />
+    </TabsContext.Provider>
   )
 }
 
@@ -26,7 +70,7 @@ function TabsList({
     <TabsPrimitive.List
       data-slot="tabs-list"
       className={cn(
-        "bg-muted text-muted-foreground inline-flex min-h-11 w-fit items-center justify-center rounded-lg p-[3px]",
+        "bg-muted text-muted-foreground relative inline-flex min-h-11 w-fit items-center justify-center rounded-lg p-[3px]",
         className
       )}
       {...props}
@@ -36,17 +80,60 @@ function TabsList({
 
 function TabsTrigger({
   className,
+  value,
+  children,
   ...props
-}: React.ComponentProps<typeof TabsPrimitive.Trigger>) {
+}: React.ComponentProps<typeof TabsPrimitive.Trigger> & { value: string }) {
+  const context = useTabsContext()
+  const isActive = context?.activeTab === value
+
+  // Check for reduced motion preference
+  const prefersReducedMotion = React.useMemo(() => {
+    if (typeof window === "undefined") return false
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  }, [])
+
   return (
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
+      value={value}
       className={cn(
-        "data-[state=active]:bg-background dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 text-foreground dark:text-muted-foreground inline-flex min-h-[40px] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-3 py-1.5 text-sm font-medium whitespace-nowrap touch-manipulation transition-all duration-150 focus-visible:ring-[3px] focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm active:scale-[0.97] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "relative z-10 inline-flex min-h-[40px] flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium whitespace-nowrap touch-manipulation transition-colors duration-150",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        "disabled:pointer-events-none disabled:opacity-50",
+        "active:scale-[0.97]",
+        "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        isActive
+          ? "text-foreground"
+          : "text-muted-foreground hover:text-foreground/80",
         className
       )}
       {...props}
-    />
+    >
+      {/* Sliding background indicator */}
+      <AnimatePresence>
+        {isActive && context && (
+          <motion.div
+            layoutId={context.layoutId}
+            className="absolute inset-0 rounded-md bg-background shadow-sm dark:bg-input/30 dark:border dark:border-input"
+            initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0 }}
+            transition={
+              prefersReducedMotion
+                ? { duration: 0 }
+                : {
+                    type: "spring",
+                    stiffness: 500,
+                    damping: 30,
+                  }
+            }
+          />
+        )}
+      </AnimatePresence>
+      {/* Content */}
+      <span className="relative z-10">{children}</span>
+    </TabsPrimitive.Trigger>
   )
 }
 

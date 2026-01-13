@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Sparkles, Twitter, Github, ExternalLink, Mail } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const productLinks = [
   { href: "/", label: "Browse Prompts" },
@@ -27,11 +28,15 @@ const ecosystemLinks = [
   { href: "https://agent-flywheel.com", label: "agent-flywheel.com", external: true },
 ];
 
-export function Footer() {
+interface FooterProps {
+  className?: string;
+}
+
+export function Footer({ className }: FooterProps) {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-border/40 bg-muted/30">
+    <footer className={cn("border-t border-border/40 bg-muted/30", className)}>
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-6">
           {/* Brand */}

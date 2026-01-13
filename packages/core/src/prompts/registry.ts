@@ -272,7 +272,7 @@ Always keep in mind, and track in this plan document, changes you will need to m
     ],
   },
   {
-    id: "100-to-10-filter",
+    id: "hundred-to-ten-filter",
     title: "The 100-to-10 Filter",
     description: "Generate 100 ideas, then ruthlessly filter to the 10 most brilliant",
     category: "ideation",
