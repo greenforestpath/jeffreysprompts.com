@@ -1,24 +1,65 @@
 import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
-const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement> & { hover?: boolean }>(
-  ({ className, hover = false, ...props }, ref) => (
-    <div
-      ref={ref}
-      data-slot="card"
-      className={cn(
-        "bg-card text-card-foreground flex flex-col rounded-xl border shadow-sm",
-        "transition-all duration-200 ease-out",
-        hover && [
+/**
+ * Card hover variants for different interaction styles
+ * - none: No hover effects (default)
+ * - lift: Lifts up with enhanced shadow
+ * - glow: Adds a colored glow effect
+ * - scale: Subtle scale increase
+ * - subtle: Very subtle lift without border change
+ */
+const cardVariants = cva(
+  [
+    "bg-card text-card-foreground flex flex-col rounded-xl border shadow-sm",
+    "transition-all duration-200 ease-out",
+  ],
+  {
+    variants: {
+      hover: {
+        none: "",
+        lift: [
           "hover:shadow-lg hover:-translate-y-1",
           "hover:border-primary/30",
           "dark:hover:shadow-primary/5",
-          // Touch-friendly: scale feedback on tap
           "touch-manipulation active:scale-[0.98] active:shadow-md",
         ],
-        className
-      )}
+        glow: [
+          "hover:shadow-[0_0_20px_rgba(var(--primary-rgb),0.15)]",
+          "hover:border-primary/40",
+          "dark:hover:shadow-[0_0_30px_rgba(var(--primary-rgb),0.2)]",
+          "touch-manipulation active:scale-[0.98]",
+        ],
+        scale: [
+          "hover:scale-[1.02] hover:shadow-md",
+          "hover:border-border/80",
+          "touch-manipulation active:scale-[0.98]",
+        ],
+        subtle: [
+          "hover:shadow-md hover:-translate-y-0.5",
+          "hover:bg-card/80",
+          "touch-manipulation active:scale-[0.99]",
+        ],
+      },
+    },
+    defaultVariants: {
+      hover: "none",
+    },
+  }
+)
+
+export interface CardProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof cardVariants> {}
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, hover, ...props }, ref) => (
+    <div
+      ref={ref}
+      data-slot="card"
+      className={cn(cardVariants({ hover }), className)}
       {...props}
     />
   )
@@ -131,4 +172,5 @@ export {
   CardDescription,
   CardContent,
   FeatureCard,
+  cardVariants,
 }

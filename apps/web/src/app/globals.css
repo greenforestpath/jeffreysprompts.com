@@ -3207,3 +3207,145 @@ html.theme-transitioning *::after {
 @supports not (view-transition-name: none) {
   /* No additional styles needed - navigation works normally without transitions */
 }
+
+/* ============================================================================
+   UI/UX POLISH UTILITIES - Stripe-Level Polish
+   Additional utilities for world-class interactions
+   ============================================================================ */
+
+/* --- STAGGER ANIMATIONS --- */
+/* Use these classes to stagger entrance animations on lists */
+.stagger-1 { animation-delay: 50ms; }
+.stagger-2 { animation-delay: 100ms; }
+.stagger-3 { animation-delay: 150ms; }
+.stagger-4 { animation-delay: 200ms; }
+.stagger-5 { animation-delay: 250ms; }
+.stagger-6 { animation-delay: 300ms; }
+.stagger-7 { animation-delay: 350ms; }
+.stagger-8 { animation-delay: 400ms; }
+
+/* --- KEYBOARD HINTS --- */
+/* Styled keyboard shortcut indicators */
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.25rem;
+  padding: 0 0.375rem;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--muted-foreground);
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 0.25rem;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.dark .kbd {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* --- SPRING HOVER EFFECTS --- */
+/* Apply spring-like hover effects to interactive elements */
+.hover-spring {
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.hover-spring:hover {
+  transform: scale(1.02);
+}
+
+.hover-spring:active {
+  transform: scale(0.98);
+}
+
+/* More subtle version */
+.hover-spring-subtle {
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.hover-spring-subtle:hover {
+  transform: scale(1.01);
+}
+
+.hover-spring-subtle:active {
+  transform: scale(0.99);
+}
+
+/* --- THUMB ZONE SPACING --- */
+/* Add bottom padding to account for mobile bottom navigation */
+.thumb-zone {
+  padding-bottom: 5rem; /* 80px - matches BottomNav height + safe area */
+}
+
+@media (min-width: 768px) {
+  .thumb-zone {
+    padding-bottom: 0;
+  }
+}
+
+/* --- GLOW EFFECTS --- */
+/* Primary color glow for featured items */
+.glow-primary {
+  box-shadow: 0 0 20px rgba(var(--primary-rgb, 139, 92, 246), 0.3);
+}
+
+.glow-primary-lg {
+  box-shadow: 0 0 40px rgba(var(--primary-rgb, 139, 92, 246), 0.4);
+}
+
+.dark .glow-primary {
+  box-shadow: 0 0 25px rgba(var(--primary-rgb, 139, 92, 246), 0.4);
+}
+
+.dark .glow-primary-lg {
+  box-shadow: 0 0 50px rgba(var(--primary-rgb, 139, 92, 246), 0.5);
+}
+
+/* --- GLASS MORPHISM --- */
+/* Modern frosted glass effect */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.dark .glass {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.glass-subtle {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.dark .glass-subtle {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* --- REDUCED MOTION GLOBAL OVERRIDE --- */
+/* Ensure all animations respect user preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .stagger-1, .stagger-2, .stagger-3, .stagger-4,
+  .stagger-5, .stagger-6, .stagger-7, .stagger-8 {
+    animation-delay: 0ms !important;
+  }
+
+  .hover-spring:hover,
+  .hover-spring-subtle:hover {
+    transform: none;
+  }
+}
