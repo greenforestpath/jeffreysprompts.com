@@ -82,8 +82,11 @@ export function searchPrompts(
     return true;
   });
 
-  // 2. Map to full results with highlighting (only for survivors)
-  const results: SearchResult[] = filteredMatches.map(({ id, score }) => {
+  // 2. Slice FIRST to avoid expensive tokenization on results we won't show
+  const topMatches = filteredMatches.slice(0, limit);
+
+  // 3. Map to full results with highlighting (only for survivors)
+  const results: SearchResult[] = topMatches.map(({ id, score }) => {
     const prompt = promptsMap.get(id)!; // Known to exist from filter step
 
     // Determine which fields matched (check both original query and expanded synonyms)
@@ -91,6 +94,7 @@ export function searchPrompts(
     
     // Tokenize fields for accurate matching (aligns with BM25 logic)
     // We use a Set for O(1) lookups during the check
+    const idTokens = new Set(tokenize(prompt.id));
     const titleTokens = new Set(tokenize(prompt.title));
     const descTokens = new Set(tokenize(prompt.description));
     const tagTokens = new Set(prompt.tags.flatMap(t => tokenize(t)));
@@ -100,6 +104,9 @@ export function searchPrompts(
 
     // Check if any search term matches any token in the field
     for (const term of searchTokens) {
+      if (!matchedFields.includes("id") && idTokens.has(term)) {
+        matchedFields.push("id");
+      }
       if (!matchedFields.includes("title") && titleTokens.has(term)) {
         matchedFields.push("title");
       }
@@ -117,7 +124,7 @@ export function searchPrompts(
     return { prompt, score, matchedFields };
   });
 
-  return results.slice(0, limit);
+  return results;
 }
 
 /**

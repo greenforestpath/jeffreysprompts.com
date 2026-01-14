@@ -33,6 +33,8 @@ export function buildIndex(prompts: Prompt[]): BM25Index {
   for (const prompt of prompts) {
     // Combine searchable fields with weights baked into token frequency
     const textParts = [
+      // ID gets 5x weight (matches exact slug parts)
+      prompt.id, prompt.id, prompt.id, prompt.id, prompt.id,
       // Title gets 3x weight
       prompt.title, prompt.title, prompt.title,
       // Description gets 2x weight
