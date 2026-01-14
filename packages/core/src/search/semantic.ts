@@ -172,10 +172,13 @@ async function loadTransformerPipeline(options: SemanticOptions = {}): Promise<u
 
   transformerState.loading = (async () => {
     try {
-      // Dynamic import to avoid bundling transformers if not used
-      // Note: @xenova/transformers must be installed separately as an optional peer dependency
-      // @ts-expect-error - Optional dependency, may not be installed
-      const { pipeline, env } = await import("@xenova/transformers");
+      // Dynamic import without a static module reference so bundlers don't
+      // require the optional dependency at build time.
+      // eslint-disable-next-line no-new-func -- avoid static import for optional dependency
+      const importer = new Function("modulePath", "return import(modulePath)") as (
+        modulePath: string
+      ) => Promise<{ pipeline: (task: string, model: string, options?: { quantized?: boolean }) => Promise<unknown>; env: { cacheDir: string; allowLocalModels: boolean } }>;
+      const { pipeline, env } = await importer("@xenova/transformers");
 
       // Configure cache path
       env.cacheDir = cachePath;
