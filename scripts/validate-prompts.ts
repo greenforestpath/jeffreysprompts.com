@@ -41,12 +41,12 @@ function validate(): ValidationError[] {
     }
     ids.add(prompt.id);
 
-    // ID format check (lowercase kebab-case, starting with letter)
-    if (!/^[a-z][a-z0-9-]*$/.test(prompt.id)) {
+    // ID format check (lowercase kebab-case, starting with letter, no trailing hyphen)
+    if (!/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(prompt.id)) {
       errors.push({
         id: prompt.id,
         type: "format",
-        message: "ID must be lowercase kebab-case starting with a letter",
+        message: "ID must be lowercase kebab-case starting with a letter and no trailing hyphens",
       });
     }
 
