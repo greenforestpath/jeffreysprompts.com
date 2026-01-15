@@ -11,7 +11,7 @@ import { writeFileSync } from "fs";
 import Table from "cli-table3";
 import boxen from "boxen";
 import chalk from "chalk";
-import { apiClient, requiresPremium, isAuthError } from "../lib/api-client";
+import { ApiClient, isAuthError } from "../lib/api-client";
 import { isLoggedIn, loadCredentials } from "../lib/credentials";
 import { getOfflinePromptById, normalizePromptCategory } from "../lib/offline";
 import { isSafeSkillId, shouldOutputJson } from "../lib/utils";
@@ -65,7 +65,11 @@ function writeJson(payload: Record<string, unknown>): void {
   console.log(JSON.stringify(payload));
 }
 
-function writeJsonError(code: string, message: string, extra: Record<string, unknown> = {}): void {
+function writeJsonError(
+  code: string,
+  message: string,
+  extra: Record<string, unknown> = {}
+): void {
   writeJson({ error: true, code, message, ...extra });
 }
 
@@ -145,8 +149,11 @@ function buildPromptFromOffline(id: string): Prompt | null {
  * Check if user is logged in and show appropriate message if not
  * Returns false if not logged in (and command should exit)
  */
-async function requireAuth(options: { json?: boolean }): Promise<boolean> {
-  const loggedIn = await isLoggedIn();
+async function requireAuth(
+  options: { json?: boolean },
+  env = process.env
+): Promise<boolean> {
+  const loggedIn = await isLoggedIn(env);
 
   if (!loggedIn) {
     if (shouldOutputJson(options)) {
@@ -167,8 +174,11 @@ async function requireAuth(options: { json?: boolean }): Promise<boolean> {
  * Check if user has premium tier
  * Returns false if free tier (and command should exit)
  */
-async function requirePremium(options: { json?: boolean }): Promise<boolean> {
-  const creds = await loadCredentials();
+async function requirePremium(
+  options: { json?: boolean },
+  env = process.env
+): Promise<boolean> {
+  const creds = await loadCredentials(env);
 
   if (creds?.tier !== "premium") {
     if (shouldOutputJson(options)) {
@@ -185,14 +195,25 @@ async function requirePremium(options: { json?: boolean }): Promise<boolean> {
   return true;
 }
 
+/**
+ * Helper to check if request requires premium tier
+ */
+function isPremiumError(response: { status: number; error?: string }): boolean {
+  return (
+    response.status === 403 &&
+    (response.error?.toLowerCase().includes("premium") ?? false)
+  );
+}
+
 async function resolvePromptForExport(
   promptId: string,
-  options: CollectionExportOptions
+  options: CollectionExportOptions,
+  env = process.env
 ): Promise<{ prompt?: Prompt; source?: string; error?: string }> {
   // Try local dynamic registry first
   const registry = await loadRegistry();
   const localPrompt = registry.prompts.find((p) => p.id === promptId);
-  
+
   if (localPrompt) {
     return { prompt: localPrompt, source: "local" };
   }
@@ -202,23 +223,34 @@ async function resolvePromptForExport(
     return { prompt: offlinePrompt, source: "offline" };
   }
 
-  const response = await apiClient.get<unknown>(`/cli/prompts/${encodeURIComponent(promptId)}`);
+  const apiClient = new ApiClient({ env });
+  const response = await apiClient.get<unknown>(
+    `/cli/prompts/${encodeURIComponent(promptId)}`
+  );
 
   if (!response.ok) {
     if (isAuthError(response)) {
       if (shouldOutputJson(options)) {
-        writeJsonError("auth_expired", "Session expired. Please run 'jfp login' again.");
+        writeJsonError(
+          "auth_expired",
+          "Session expired. Please run 'jfp login' again."
+        );
       } else {
         console.log(chalk.yellow("Session expired. Please run 'jfp login' again."));
       }
       process.exit(1);
     }
 
-    if (requiresPremium(response)) {
+    if (isPremiumError(response)) {
       if (shouldOutputJson(options)) {
-        writeJsonError("premium_required", "Exporting collections requires a premium subscription");
+        writeJsonError(
+          "premium_required",
+          "Exporting collections requires a premium subscription"
+        );
       } else {
-        console.log(chalk.yellow("Exporting collections requires a premium subscription"));
+        console.log(
+          chalk.yellow("Exporting collections requires a premium subscription")
+        );
       }
       process.exit(1);
     }
@@ -242,25 +274,35 @@ async function resolvePromptForExport(
 /**
  * List all user collections
  */
-export async function collectionsCommand(options: CollectionsListOptions): Promise<void> {
-  await requireAuth(options);
-  await requirePremium(options);
+export async function collectionsCommand(
+  options: CollectionsListOptions,
+  env = process.env
+): Promise<void> {
+  await requireAuth(options, env);
+  await requirePremium(options, env);
 
+  const apiClient = new ApiClient({ env });
   const response = await apiClient.get<CollectionItem[]>("/cli/collections");
 
   if (!response.ok) {
     if (isAuthError(response)) {
       if (shouldOutputJson(options)) {
-        writeJsonError("auth_expired", "Session expired. Please run 'jfp login' again.");
+        writeJsonError(
+          "auth_expired",
+          "Session expired. Please run 'jfp login' again."
+        );
       } else {
         console.log(chalk.yellow("Session expired. Please run 'jfp login' again."));
       }
       process.exit(1);
     }
 
-    if (requiresPremium(response)) {
+    if (isPremiumError(response)) {
       if (shouldOutputJson(options)) {
-        writeJsonError("premium_required", "Collections require a premium subscription");
+        writeJsonError(
+          "premium_required",
+          "Collections require a premium subscription"
+        );
       } else {
         console.log(chalk.yellow("Collections require a premium subscription"));
       }
@@ -270,7 +312,9 @@ export async function collectionsCommand(options: CollectionsListOptions): Promi
     if (shouldOutputJson(options)) {
       writeJsonError("api_error", response.error || "Failed to fetch collections");
     } else {
-      console.log(chalk.red("Failed to fetch collections: " + (response.error || "Unknown error")));
+      console.log(
+        chalk.red("Failed to fetch collections: " + (response.error || "Unknown error"))
+      );
     }
     process.exit(1);
   }
@@ -284,7 +328,11 @@ export async function collectionsCommand(options: CollectionsListOptions): Promi
 
   if (collections.length === 0) {
     console.log(chalk.dim("You don't have any collections yet."));
-    console.log(chalk.dim("Create a collection at jeffreysprompts.com or use 'jfp collections <name> --add <prompt-id>'"));
+    console.log(
+      chalk.dim(
+        "Create a collection at jeffreysprompts.com or use 'jfp collections <name> --add <prompt-id>'"
+      )
+    );
     return;
   }
 
@@ -302,7 +350,11 @@ export async function collectionsCommand(options: CollectionsListOptions): Promi
   }
 
   console.log(table.toString());
-  console.log(chalk.dim(`\nFound ${collections.length} collections. Use "jfp collections <name>" for details.`));
+  console.log(
+    chalk.dim(
+      `\nFound ${collections.length} collections. Use "jfp collections <name>" for details.`
+    )
+  );
 }
 
 /**
@@ -310,23 +362,27 @@ export async function collectionsCommand(options: CollectionsListOptions): Promi
  */
 export async function collectionShowCommand(
   name: string,
-  options: CollectionShowOptions
+  options: CollectionShowOptions,
+  env = process.env
 ): Promise<void> {
-  await requireAuth(options);
-  await requirePremium(options);
+  await requireAuth(options, env);
+  await requirePremium(options, env);
 
   // Handle --add flag
   if (options.add) {
-    return addToCollection(name, options.add, options);
+    return addToCollection(name, options.add, options, env);
   }
 
   // Handle --export flag
   if (options.export) {
-    return exportCollectionCommand(name, options);
+    return exportCollectionCommand(name, options, env);
   }
 
+  const apiClient = new ApiClient({ env });
   // Fetch collection details
-  const response = await apiClient.get<CollectionDetail>(`/cli/collections/${encodeURIComponent(name)}`);
+  const response = await apiClient.get<CollectionDetail>(
+    `/cli/collections/${encodeURIComponent(name)}`
+  );
 
   if (!response.ok) {
     if (response.status === 404) {
@@ -341,7 +397,10 @@ export async function collectionShowCommand(
 
     if (isAuthError(response)) {
       if (shouldOutputJson(options)) {
-        writeJsonError("auth_expired", "Session expired. Please run 'jfp login' again.");
+        writeJsonError(
+          "auth_expired",
+          "Session expired. Please run 'jfp login' again."
+        );
       } else {
         console.log(chalk.yellow("Session expired. Please run 'jfp login' again."));
       }
@@ -351,7 +410,11 @@ export async function collectionShowCommand(
     if (shouldOutputJson(options)) {
       writeJsonError("api_error", response.error || "Failed to fetch collection");
     } else {
-      console.log(chalk.red("Failed to fetch collection: " + (response.error || "Unknown error")));
+      console.log(
+        chalk.red(
+          "Failed to fetch collection: " + (response.error || "Unknown error")
+        )
+      );
     }
     process.exit(1);
   }
@@ -376,7 +439,11 @@ export async function collectionShowCommand(
   content += "\n";
 
   content += chalk.green("Prompts:") + " " + collection.promptCount + "\n";
-  content += chalk.green("Updated:") + " " + new Date(collection.updatedAt).toLocaleDateString() + "\n";
+  content +=
+    chalk.green("Updated:") +
+    " " +
+    new Date(collection.updatedAt).toLocaleDateString() +
+    "\n";
 
   if (collection.prompts.length > 0) {
     content += "\n" + chalk.dim("─".repeat(50)) + "\n\n";
@@ -385,7 +452,10 @@ export async function collectionShowCommand(
     for (const prompt of collection.prompts) {
       content += "  " + chalk.cyan("•") + " " + chalk.bold(prompt.title) + "\n";
       content += "    " + chalk.dim(prompt.description) + "\n";
-      content += "    " + chalk.dim("ID: " + prompt.id + " | Category: " + prompt.category) + "\n\n";
+      content +=
+        "    " +
+        chalk.dim("ID: " + prompt.id + " | Category: " + prompt.category) +
+        "\n\n";
     }
   } else {
     content += "\n" + chalk.dim("This collection is empty.") + "\n";
@@ -399,7 +469,9 @@ export async function collectionShowCommand(
     })
   );
 
-  console.log(chalk.dim("\nAdd a prompt: jfp collections " + name + " --add <prompt-id>"));
+  console.log(
+    chalk.dim("\nAdd a prompt: jfp collections " + name + " --add <prompt-id>")
+  );
   console.log(chalk.dim("Export prompts: jfp collections " + name + " --export"));
 }
 
@@ -408,10 +480,11 @@ export async function collectionShowCommand(
  */
 export async function collectionCreateCommand(
   name: string,
-  options: CollectionCreateOptions
+  options: CollectionCreateOptions,
+  env = process.env
 ): Promise<void> {
-  await requireAuth(options);
-  await requirePremium(options);
+  await requireAuth(options, env);
+  await requirePremium(options, env);
 
   const trimmedName = name.trim();
   if (!trimmedName) {
@@ -424,15 +497,18 @@ export async function collectionCreateCommand(
     process.exit(1);
   }
 
-  const response = await apiClient.post<CollectionItem | { collection: CollectionItem }>(
-    "/cli/collections",
-    { name: trimmedName, description: options.description }
-  );
+  const apiClient = new ApiClient({ env });
+  const response = await apiClient.post<
+    CollectionItem | { collection: CollectionItem }
+  >("/cli/collections", { name: trimmedName, description: options.description });
 
   if (!response.ok) {
     if (response.status === 409) {
       if (shouldOutputJson(options)) {
-        writeJsonError("already_exists", `Collection already exists: ${trimmedName}`);
+        writeJsonError(
+          "already_exists",
+          `Collection already exists: ${trimmedName}`
+        );
       } else {
         console.log(chalk.yellow(`Collection already exists: ${trimmedName}`));
       }
@@ -441,16 +517,22 @@ export async function collectionCreateCommand(
 
     if (isAuthError(response)) {
       if (shouldOutputJson(options)) {
-        writeJsonError("auth_expired", "Session expired. Please run 'jfp login' again.");
+        writeJsonError(
+          "auth_expired",
+          "Session expired. Please run 'jfp login' again."
+        );
       } else {
         console.log(chalk.yellow("Session expired. Please run 'jfp login' again."));
       }
       process.exit(1);
     }
 
-    if (requiresPremium(response)) {
+    if (isPremiumError(response)) {
       if (shouldOutputJson(options)) {
-        writeJsonError("premium_required", "Collections require a premium subscription");
+        writeJsonError(
+          "premium_required",
+          "Collections require a premium subscription"
+        );
       } else {
         console.log(chalk.yellow("Collections require a premium subscription"));
       }
@@ -460,13 +542,18 @@ export async function collectionCreateCommand(
     if (shouldOutputJson(options)) {
       writeJsonError("api_error", response.error || "Failed to create collection");
     } else {
-      console.log(chalk.red("Failed to create collection: " + (response.error || "Unknown error")));
+      console.log(
+        chalk.red(
+          "Failed to create collection: " + (response.error || "Unknown error")
+        )
+      );
     }
     process.exit(1);
   }
 
   const data = response.data as CollectionItem | { collection: CollectionItem };
-  const collection = (data as { collection?: CollectionItem }).collection ?? (data as CollectionItem);
+  const collection =
+    (data as { collection?: CollectionItem }).collection ?? (data as CollectionItem);
 
   if (shouldOutputJson(options)) {
     writeJson({
@@ -477,7 +564,9 @@ export async function collectionCreateCommand(
   }
 
   console.log(chalk.green(`Created collection "${collection.name}"`));
-  console.log(chalk.dim(`Add prompts with: jfp collections add ${collection.name} <prompt-id>`));
+  console.log(
+    chalk.dim(`Add prompts with: jfp collections add ${collection.name} <prompt-id>`)
+  );
 }
 
 /**
@@ -486,11 +575,12 @@ export async function collectionCreateCommand(
 export async function collectionAddCommand(
   name: string,
   promptId: string,
-  options: CollectionShowOptions
+  options: CollectionShowOptions,
+  env = process.env
 ): Promise<void> {
-  await requireAuth(options);
-  await requirePremium(options);
-  return addToCollection(name, promptId, options);
+  await requireAuth(options, env);
+  await requirePremium(options, env);
+  return addToCollection(name, promptId, options, env);
 }
 
 /**
@@ -498,12 +588,16 @@ export async function collectionAddCommand(
  */
 export async function exportCollectionCommand(
   name: string,
-  options: CollectionExportOptions
+  options: CollectionExportOptions,
+  env = process.env
 ): Promise<void> {
-  await requireAuth(options);
-  await requirePremium(options);
+  await requireAuth(options, env);
+  await requirePremium(options, env);
 
-  const response = await apiClient.get<CollectionDetail>(`/cli/collections/${encodeURIComponent(name)}`);
+  const apiClient = new ApiClient({ env });
+  const response = await apiClient.get<CollectionDetail>(
+    `/cli/collections/${encodeURIComponent(name)}`
+  );
 
   if (!response.ok) {
     if (response.status === 404) {
@@ -517,7 +611,10 @@ export async function exportCollectionCommand(
 
     if (isAuthError(response)) {
       if (shouldOutputJson(options)) {
-        writeJsonError("auth_expired", "Session expired. Please run 'jfp login' again.");
+        writeJsonError(
+          "auth_expired",
+          "Session expired. Please run 'jfp login' again."
+        );
       } else {
         console.log(chalk.yellow("Session expired. Please run 'jfp login' again."));
       }
@@ -527,7 +624,11 @@ export async function exportCollectionCommand(
     if (shouldOutputJson(options)) {
       writeJsonError("api_error", response.error || "Failed to fetch collection");
     } else {
-      console.log(chalk.red("Failed to fetch collection: " + (response.error || "Unknown error")));
+      console.log(
+        chalk.red(
+          "Failed to fetch collection: " + (response.error || "Unknown error")
+        )
+      );
     }
     process.exit(1);
   }
@@ -537,7 +638,12 @@ export async function exportCollectionCommand(
 
   if (promptIds.length === 0) {
     if (shouldOutputJson(options)) {
-      writeJson({ exported: [], failed: [], count: 0, collection: collection.name });
+      writeJson({
+        exported: [],
+        failed: [],
+        count: 0,
+        collection: collection.name,
+      });
     } else {
       console.log(chalk.dim(`Collection "${collection.name}" is empty.`));
     }
@@ -549,9 +655,12 @@ export async function exportCollectionCommand(
   const failed: Array<{ id: string; error: string }> = [];
 
   for (const promptId of promptIds) {
-    const resolved = await resolvePromptForExport(promptId, options);
+    const resolved = await resolvePromptForExport(promptId, options, env);
     if (!resolved.prompt) {
-      failed.push({ id: promptId, error: resolved.error || "Failed to resolve prompt" });
+      failed.push({
+        id: promptId,
+        error: resolved.error || "Failed to resolve prompt",
+      });
       continue;
     }
 
@@ -570,7 +679,10 @@ export async function exportCollectionCommand(
     }
 
     if (!isSafeSkillId(resolved.prompt.id)) {
-      failed.push({ id: resolved.prompt.id, error: "Unsafe prompt id for filename" });
+      failed.push({
+        id: resolved.prompt.id,
+        error: "Unsafe prompt id for filename",
+      });
       continue;
     }
 
@@ -579,7 +691,11 @@ export async function exportCollectionCommand(
 
     try {
       writeFileSync(filename, content);
-      exported.push({ id: resolved.prompt.id, file: filename, source: resolved.source });
+      exported.push({
+        id: resolved.prompt.id,
+        file: filename,
+        source: resolved.source,
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       failed.push({ id: resolved.prompt.id, error: message });
@@ -590,12 +706,18 @@ export async function exportCollectionCommand(
   }
 
   if (shouldOutputJson(options)) {
-    console.log(JSON.stringify({
-      success: failed.length === 0,
-      collection: collection.name,
-      exported,
-      failed: failed.length > 0 ? failed : undefined,
-    }, null, 2));
+    console.log(
+      JSON.stringify(
+        {
+          success: failed.length === 0,
+          collection: collection.name,
+          exported,
+          failed: failed.length > 0 ? failed : undefined,
+        },
+        null,
+        2
+      )
+    );
     if (failed.length > 0) {
       process.exit(1);
     }
@@ -604,7 +726,11 @@ export async function exportCollectionCommand(
 
   if (!options.stdout) {
     if (exported.length > 0) {
-      console.log(chalk.green(`Exported ${exported.length} prompt(s) from "${collection.name}".`));
+      console.log(
+        chalk.green(
+          `Exported ${exported.length} prompt(s) from "${collection.name}".`
+        )
+      );
     }
     if (failed.length > 0) {
       console.log(chalk.red(`Failed to export ${failed.length} prompt(s).`));
@@ -619,17 +745,22 @@ export async function exportCollectionCommand(
 async function addToCollection(
   collectionName: string,
   promptId: string,
-  options: CollectionShowOptions
+  options: CollectionShowOptions,
+  env = process.env
 ): Promise<void> {
   // Try to resolve prompt details from local registry (may not include premium prompts)
   const registry = await loadRegistry();
   const prompt = registry.prompts.find((p) => p.id === promptId);
   const promptTitle = prompt?.title ?? promptId;
 
-  const response = await apiClient.post<{ success: boolean; collection: string; promptId: string }>(
-    `/cli/collections/${encodeURIComponent(collectionName)}/prompts`,
-    { promptId }
-  );
+  const apiClient = new ApiClient({ env });
+  const response = await apiClient.post<{
+    success: boolean;
+    collection: string;
+    promptId: string;
+  }>(`/cli/collections/${encodeURIComponent(collectionName)}/prompts`, {
+    promptId,
+  });
 
   if (!response.ok) {
     if (response.status === 404) {
@@ -655,33 +786,50 @@ async function addToCollection(
           message: `Prompt "${promptTitle}" is already in collection "${collectionName}"`,
         });
       } else {
-        console.log(chalk.yellow(`Prompt "${promptTitle}" is already in collection "${collectionName}"`));
+        console.log(
+          chalk.yellow(
+            `Prompt "${promptTitle}" is already in collection "${collectionName}"`
+          )
+        );
       }
       return;
     }
 
     if (isAuthError(response)) {
       if (shouldOutputJson(options)) {
-        writeJsonError("auth_expired", "Session expired. Please run 'jfp login' again.");
+        writeJsonError(
+          "auth_expired",
+          "Session expired. Please run 'jfp login' again."
+        );
       } else {
         console.log(chalk.yellow("Session expired. Please run 'jfp login' again."));
       }
       process.exit(1);
     }
 
-    if (requiresPremium(response)) {
+    if (isPremiumError(response)) {
       if (shouldOutputJson(options)) {
-        writeJsonError("premium_required", "Adding to collections requires a premium subscription");
+        writeJsonError(
+          "premium_required",
+          "Adding to collections requires a premium subscription"
+        );
       } else {
-        console.log(chalk.yellow("Adding to collections requires a premium subscription"));
+        console.log(
+          chalk.yellow("Adding to collections requires a premium subscription")
+        );
       }
       process.exit(1);
     }
 
     if (shouldOutputJson(options)) {
-      writeJsonError("api_error", response.error || "Failed to add prompt to collection");
+      writeJsonError(
+        "api_error",
+        response.error || "Failed to add prompt to collection"
+      );
     } else {
-      console.log(chalk.red("Failed to add prompt: " + (response.error || "Unknown error")));
+      console.log(
+        chalk.red("Failed to add prompt: " + (response.error || "Unknown error"))
+      );
     }
     process.exit(1);
   }
@@ -695,6 +843,8 @@ async function addToCollection(
       message: `Added "${promptTitle}" to collection "${collectionName}"`,
     });
   } else {
-    console.log(chalk.green(`Added "${promptTitle}" to collection "${collectionName}"`));
+    console.log(
+      chalk.green(`Added "${promptTitle}" to collection "${collectionName}"`)
+    );
   }
 }
