@@ -101,8 +101,8 @@ export function checkForUpdatesInBackground(): void {
 
       // Compare versions
       if (compareVersions(version, latestVersion) < 0) {
-        // Don't pollute JSON output
-        if (process.argv.includes("--json")) return;
+        // Don't pollute JSON output or break MCP server (serve mode)
+        if (process.argv.includes("--json") || process.argv.includes("serve")) return;
 
         // Use setImmediate/setTimeout to print after CLI output settles
         setTimeout(() => {
