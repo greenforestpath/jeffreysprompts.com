@@ -18,8 +18,8 @@ export const MAX_FILE_VAR_SIZE = 102400;
 export function parseVariables(args: string[]): Record<string, string> {
   const vars: Record<string, string> = {};
   for (const arg of args) {
-    // First char must be A-Z (not underscore) to match template extraction pattern
-    const match = arg.match(/^--([A-Z][A-Z0-9_]*)=(.*)$/);
+    // First char must be a-z or A-Z (not underscore) to match template extraction pattern
+    const match = arg.match(/^--([a-zA-Z][a-zA-Z0-9_]*)=(.*)$/);
     if (match) {
       vars[match[1]] = match[2];
     }
