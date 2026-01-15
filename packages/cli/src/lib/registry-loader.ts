@@ -7,9 +7,11 @@ import type { Prompt } from "@jeffreysprompts/core/prompts/types";
 import type { Bundle } from "@jeffreysprompts/core/prompts/bundles";
 import type { Workflow } from "@jeffreysprompts/core/prompts/workflows";
 import { prompts as bundledPrompts, bundles as bundledBundles, workflows as bundledWorkflows } from "@jeffreysprompts/core/prompts";
+import { PromptSchema } from "@jeffreysprompts/core/prompts/schema";
 import type { RegistryPayload } from "@jeffreysprompts/core/export";
 import { loadConfig } from "./config";
 import { readOfflineLibrary, normalizePromptCategory } from "./offline";
+import chalk from "chalk";
 
 export interface RegistryMeta {
   version: string;
@@ -102,12 +104,24 @@ function loadLocalPrompts(dir: string): Prompt[] {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     if (!entry.isFile() || !entry.name.endsWith(".json")) continue;
     const path = join(dir, entry.name);
-    const parsed = readJsonFile<Prompt | Prompt[]>(path);
+    const parsed = readJsonFile<unknown>(path);
     if (!parsed) continue;
-    if (Array.isArray(parsed)) {
-      prompts.push(...parsed);
-    } else {
-      prompts.push(parsed);
+
+    const items = Array.isArray(parsed) ? parsed : [parsed];
+    for (const item of items) {
+      const result = PromptSchema.safeParse(item);
+      if (result.success) {
+        prompts.push(result.data as Prompt);
+      } else {
+        // Warn about invalid local prompts but don't crash
+        // Only warn if it looks somewhat like a prompt (has id/title) to avoid noise
+        if (item && typeof item === "object" && "id" in item) {
+          console.warn(
+            chalk.yellow(`Warning: Invalid local prompt in ${entry.name}:`),
+            result.error.errors[0]?.message
+          );
+        }
+      }
     }
   }
   return prompts;
