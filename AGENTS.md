@@ -35,6 +35,50 @@ If that audit trail is missing, then you must act as if the operation never happ
 
 ---
 
+## CRITICAL: Vercel Subdomain Aliases
+
+**This project has multiple domains that MUST all point to the same production deployment:**
+
+| Domain | Purpose |
+|--------|---------|
+| `jeffreysprompts.com` | Main production site |
+| `pro.jeffreysprompts.com` | Pro/paid tier subdomain |
+
+### The Problem That Must NEVER Happen Again
+
+On 2026-01-16, `pro.jeffreysprompts.com` was pointing to an **old deployment** (6 days stale) while the main site had newer CSS chunks. This caused CSS to completely break on the pro subdomain because the old deployment referenced non-existent CSS chunk hashes.
+
+### Mandatory Deployment Protocol
+
+**After ANY production deployment, you MUST verify ALL domains are updated:**
+
+```bash
+# 1. Deploy to production
+vercel --prod
+
+# 2. Get the new production URL
+PROD_URL=$(vercel ls --prod 2>/dev/null | head -1)
+
+# 3. Verify BOTH domains serve the same CSS chunks
+curl -s "https://jeffreysprompts.com" | grep -oP '/_next/static/chunks/[^"]+\.css' | sort -u
+curl -s "https://pro.jeffreysprompts.com" | grep -oP '/_next/static/chunks/[^"]+\.css' | sort -u
+
+# 4. If they differ, re-alias the pro subdomain:
+vercel alias set $PROD_URL pro.jeffreysprompts.com
+```
+
+### Verification Checklist
+
+After every deployment:
+- [ ] Main site loads correctly
+- [ ] Pro subdomain loads correctly
+- [ ] CSS chunk hashes match between domains
+- [ ] No 404s on static assets
+
+**If CSS looks broken on any subdomain, the alias is stale. Fix it immediately.**
+
+---
+
 ## Node / JS Toolchain
 
 - Use **bun** for everything JS/TS.
