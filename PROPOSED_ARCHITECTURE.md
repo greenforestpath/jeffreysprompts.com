@@ -1,9 +1,9 @@
 # PROPOSED_ARCHITECTURE.md
 
 ## Overview
-Port `jfp` to a Rust workspace with a single binary crate and supporting modules. Preserve CLI UX, add SQLite + JSONL offline storage with explicit sync and recovery commands.
+Port `jfp` to an idiomatic Rust workspace while preserving CLI behavior and output formats. Use SQLite as the primary store with JSONL exports for human/Git workflows. Leverage existing /dp libraries for MCP, SQLite modeling, and rich terminal output.
 
-## Workspace Layout
+## Workspace Layout (proposed)
 ```
 crates/
   jfp/
@@ -13,61 +13,72 @@ crates/
       cli/
       commands/
       config/
+      auth/
+      registry/
       storage/
-      net/
+      offline/
       search/
       export/
+      mcp/
       ui/
 ```
 
-## Crates / Dependencies (proposed)
-- CLI + parsing: `clap`
-- Serialization: `serde`, `serde_json`, `serde_yaml`
-- HTTP: `reqwest` (async)
-- SQLite: `rusqlite`
-- Sync + locks: `fs4`
-- Hashing: `sha2`, `hex`
-- Time: `time` or `chrono`
-- Temp files: `tempfile`
-- TTY / color: `atty`, `owo-colors`
+## Local Library Leverage (explicit)
+- `/dp/fastmcp_rust`:
+  - Use `fastmcp-server` + `fastmcp-protocol` for `jfp serve` MCP implementation.
+- `/dp/sqlmodel_rust`:
+  - Use `sqlmodel-sqlite` for schema modeling and migrations instead of raw SQL.
+- `/dp/rich_rust`:
+  - Use `rich_rust` for table, box, and colorized output instead of ad-hoc ANSI.
+- `/dp/beads_rust`:
+  - Mirror sync + JSONL patterns (atomic writes, hashing, lock discipline).
 
-## Data Flow
-1. Load config (`~/.config/jfp/config.json`), apply env overrides.
-2. Initialize storage (SQLite + JSONL metadata).
-3. Load registry cache (SQLite or JSON; remote fetch if stale).
-4. Execute command handler (search/show/install/etc).
-5. On mutating actions, update SQLite and optionally export JSONL.
+## Core Dependencies (beyond /dp)
+- CLI: `clap` (derive), `clap_complete`.
+- Serialization: `serde`, `serde_json`, `serde_yaml`.
+- HTTP: `reqwest` (async) or `ureq` (sync) consistent with chosen runtime.
+- SQLite: `sqlmodel-sqlite` (via /dp/sqlmodel_rust) + `rusqlite` under the hood.
+- Locking: `fs4` for cross-process locks.
+- Hashing: `sha2`, `hex`.
+- Time: `chrono` or `time`.
+- Temp files: `tempfile`.
 
 ## Storage Design
-### SQLite (Primary)
-- `registry_prompts`: id, title, description, content, category, tags (JSON), author, version, created, updated_at, featured
-- `registry_bundles`: id, title, version, prompt_ids (JSON)
-- `registry_workflows`: id, title, steps (JSON)
-- `saved_prompts`: id, title, content, description, category, tags, saved_at
-- `notes`: prompt_id, note_id, content, created_at
-- `collections`: id, name, created_at
-- `collection_prompts`: collection_id, prompt_id, added_at
-- `sync_meta`: schema_version, last_synced_at, source_of_truth, jsonl_sha256, record_count
+SQLite (primary):
+- `registry_prompts` (public + cached)
+- `registry_bundles`
+- `registry_workflows`
+- `saved_prompts`
+- `notes`
+- `collections`
+- `collection_prompts`
+- `sync_meta` (schema_version, last_synced_at, source_of_truth, jsonl_sha256, record_count)
 
-### JSONL (Backup / Export)
-- `~/.config/jfp/library/library.jsonl` for saved prompts
-- `~/.config/jfp/library/library.meta.json` for markers
+JSONL (backup/export):
+- `~/.config/jfp/library/library.jsonl`
+- `~/.config/jfp/library/library.meta.json`
 
-## Sync & Recovery
-- Sync is **one‑way** from SQLite to JSONL (default) or reverse via explicit `import-jsonl`.
-- Use `fs4` lock file to serialize syncs.
-- Use atomic temp file writes with `tempfile::persist()`.
-- `jfp db check` exposes `PRAGMA integrity_check`.
+## Sync + Recovery
+- One-way sync: SQLite -> JSONL by default.
+- Lock file: `~/.config/jfp/locks/sync.lock`.
+- Atomic JSONL write via temp file + fsync + rename.
+- Recovery commands:
+  - `jfp export-jsonl`
+  - `jfp import-jsonl`
+  - `jfp db check`
 
-## CLI Parser + Command Structure
-- `cli/mod.rs` builds clap app; maps to command handlers in `commands/`.
-- Each command returns a structured `CommandResult` with:
-  - `exit_code`
-  - `output_json` (optional)
-  - `output_text` (optional)
+## CLI Behavior Targets
+- Preserve JSON output shapes and error codes from `EXISTING_JFP_STRUCTURE.md`.
+- Preserve TTY formatting semantics (tables, boxes, highlights).
+- Preserve auto-JSON behavior when stdout is not a TTY.
 
-## Compatibility Targets
-- JSON output parity with Bun CLI for `list`, `search`, `show`, `install`, `export`, `status`.
-- Error shapes preserved (notably `show` not_found).
-- TTY formatting approximates current output (colors optional).
+## MCP Server (jfp serve)
+- Expose `prompt://<id>` resources.
+- Tools:
+  - `search_prompts` (query/category/tags/limit)
+  - `render_prompt` (id, variables, context)
+- Use `fastmcp_rust` for protocol + stdio transport.
 
+## Notes on Rust Toolchain
+- Edition 2024.
+- Latest nightly as per porting skill guidance.

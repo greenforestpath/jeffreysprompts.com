@@ -12,6 +12,12 @@ Port the `jfp` CLI from Bun/TypeScript to an idiomatic Rust CLI while preserving
 - No new product features beyond parity unless explicitly requested.
 - No web app migration to Rust.
 
+## Libraries to Leverage
+- `/dp/fastmcp_rust` for MCP server (`jfp serve`) implementation.
+- `/dp/sqlmodel_rust` for SQLite modeling/migrations.
+- `/dp/rich_rust` for terminal UI (tables/boxes/colors).
+- `/dp/beads_rust` for JSONL + SQLite sync patterns.
+
 ## Phases
 ### Phase 1 — Planning (this phase)
 - Create spec docs: `EXISTING_JFP_STRUCTURE.md`, `PROPOSED_ARCHITECTURE.md`.

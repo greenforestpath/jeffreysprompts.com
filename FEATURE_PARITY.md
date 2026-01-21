@@ -11,6 +11,7 @@ Status key: pending | wip | done | deferred
 | Core | show | pending | |
 | Core | copy | pending | |
 | Core | render | pending | |
+| Core | interactive (i) | pending | |
 | Skills | install | pending | |
 | Skills | uninstall | pending | |
 | Skills | installed | pending | |
@@ -37,5 +38,6 @@ Status key: pending | wip | done | deferred
 | Premium | notes | pending | |
 | Premium | collections | pending | |
 | Tooling | completion | pending | |
+| Tooling | config (list/get/set/reset/path) | pending | |
 | Tooling | update-cli | pending | |
 | Tooling | update-check-internal | pending | |

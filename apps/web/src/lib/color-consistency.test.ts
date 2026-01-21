@@ -84,6 +84,8 @@ const indigoAllowlist = [
   "app/contact/",
   // Documentation components with indigo accents
   "components/docs/",
+  // Onboarding components use indigo for brand accent
+  "components/onboarding/",
 ];
 
 // Files allowed to use arbitrary text sizes (for badges and compact labels)
@@ -91,6 +93,7 @@ const arbitraryTextAllowlist = [
   "components/Nav.tsx", // Badge counter needs text-[10px]
   "components/mobile/BottomTabBar.tsx", // Tab labels need text-[10px]
   "components/BottomNav.tsx", // Bottom navigation labels need text-[10px]
+  "components/onboarding/", // Compact gesture hint labels need text-[10px]
 ];
 
 describe("Color Palette Consistency", () => {

@@ -11,7 +11,9 @@ import { Button } from "@/components/ui/button";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { useServiceWorker } from "@/hooks/useServiceWorker";
 import { useKeyboardShortcuts, type KeyboardShortcut } from "@/hooks/useKeyboardShortcuts";
+import { useOnboarding } from "@/hooks/useOnboarding";
 import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal";
+import { FirstVisitWelcome } from "@/components/onboarding";
 import { BottomTabBar } from "@/components/mobile/BottomTabBar";
 import { AnalyticsProvider } from "@/components/AnalyticsProvider";
 import { OfflineBanner } from "@/components/offline-banner";
@@ -32,6 +34,7 @@ export function Providers({ children }: ProvidersProps) {
   const serviceWorker = useServiceWorker();
   const router = useRouter();
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const { isFirstVisit, completeFirstVisit } = useOnboarding();
 
   const openSpotlight = useCallback(() => {
     if (typeof window !== "undefined") {
@@ -165,6 +168,10 @@ export function Providers({ children }: ProvidersProps) {
             hasUpdate={serviceWorker.hasUpdate}
           />
           <Toaster />
+          <FirstVisitWelcome
+            show={isFirstVisit}
+            onDismiss={completeFirstVisit}
+          />
         </BasketProvider>
       </ToastProvider>
     </ThemeProvider>
