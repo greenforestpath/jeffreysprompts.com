@@ -270,6 +270,106 @@ test.describe("Roadmap - Voting", () => {
       await expect(voteCount).toHaveText("157");
     });
   });
+
+  test("prevents duplicate votes from same user via API", async ({ page, logger }) => {
+    const featureId = SEED_FEATURES.customCategories;
+    const userId = `test-user-${Date.now()}`;
+
+    await logger.step("navigate to feature page to initialize store", async () => {
+      await gotoFeatureDetail(page, featureId);
+    });
+
+    await logger.step("first vote should succeed", async () => {
+      const response = await page.request.post(`/api/roadmap/${featureId}/vote`, {
+        data: { userId },
+      });
+      expect(response.ok()).toBe(true);
+      const json = await response.json();
+      expect(json.success).toBe(true);
+      expect(json.voteCount).toBeGreaterThan(0);
+    });
+
+    await logger.step("duplicate vote should fail", async () => {
+      const response = await page.request.post(`/api/roadmap/${featureId}/vote`, {
+        data: { userId },
+      });
+      expect(response.ok()).toBe(false);
+      expect(response.status()).toBe(400);
+      const json = await response.json();
+      expect(json.error).toBe("vote_failed");
+      expect(json.message).toBe("Already voted");
+    });
+  });
+
+  test("prevents duplicate votes across multiple requests", async ({ page, logger }) => {
+    const featureId = SEED_FEATURES.analyticsInsights;
+    const userId = `duplicate-test-${Date.now()}`;
+
+    await logger.step("navigate to feature page to initialize store", async () => {
+      await gotoFeatureDetail(page, featureId);
+    });
+
+    await logger.step("get initial vote count via API", async () => {
+      const response = await page.request.get(`/api/roadmap/${featureId}?userId=${userId}`);
+      expect(response.ok()).toBe(true);
+      const json = await response.json();
+      expect(json.hasVoted).toBe(false);
+    });
+
+    await logger.step("submit first vote", async () => {
+      const response = await page.request.post(`/api/roadmap/${featureId}/vote`, {
+        data: { userId },
+      });
+      expect(response.ok()).toBe(true);
+    });
+
+    await logger.step("verify hasVoted is now true", async () => {
+      const response = await page.request.get(`/api/roadmap/${featureId}?userId=${userId}`);
+      expect(response.ok()).toBe(true);
+      const json = await response.json();
+      expect(json.hasVoted).toBe(true);
+    });
+
+    await logger.step("second vote attempt should be rejected", async () => {
+      const response = await page.request.post(`/api/roadmap/${featureId}/vote`, {
+        data: { userId },
+      });
+      expect(response.ok()).toBe(false);
+      expect(response.status()).toBe(400);
+    });
+  });
+
+  test("can remove vote via DELETE", async ({ page, logger }) => {
+    const featureId = SEED_FEATURES.importExport;
+    const userId = `unvote-test-${Date.now()}`;
+
+    await logger.step("navigate to feature page to initialize store", async () => {
+      await gotoFeatureDetail(page, featureId);
+    });
+
+    await logger.step("vote for the feature", async () => {
+      const response = await page.request.post(`/api/roadmap/${featureId}/vote`, {
+        data: { userId },
+      });
+      expect(response.ok()).toBe(true);
+    });
+
+    await logger.step("remove vote via DELETE", async () => {
+      const response = await page.request.delete(`/api/roadmap/${featureId}/vote`, {
+        data: { userId },
+      });
+      expect(response.ok()).toBe(true);
+      const json = await response.json();
+      expect(json.success).toBe(true);
+    });
+
+    await logger.step("verify can vote again after removing", async () => {
+      const response = await page.request.post(`/api/roadmap/${featureId}/vote`, {
+        data: { userId },
+      });
+      expect(response.ok()).toBe(true);
+    });
+  });
 });
 
 test.describe("Roadmap - Feature Submission", () => {
@@ -553,6 +653,163 @@ test.describe("Roadmap - Mobile Responsiveness", () => {
     await logger.step("verify form can be filled on mobile", async () => {
       await getTitleInput(page).fill("Mobile test feature");
       await expect(getTitleInput(page)).toHaveValue("Mobile test feature");
+    });
+  });
+});
+
+test.describe("Roadmap - Admin Controls", () => {
+  // These tests use the admin API with dev bypass enabled
+  // In production, JFP_ADMIN_TOKEN would be required
+
+  test("admin can update feature status via API", async ({ page, logger }) => {
+    const featureId = SEED_FEATURES.offlineMode;
+
+    await logger.step("navigate to feature page to initialize store", async () => {
+      await gotoFeatureDetail(page, featureId);
+    });
+
+    await logger.step("verify initial status is under_review", async () => {
+      const response = await page.request.get(`/api/roadmap/${featureId}`);
+      expect(response.ok()).toBe(true);
+      const json = await response.json();
+      expect(json.feature.status).toBe("under_review");
+    });
+
+    await logger.step("admin updates status to declined", async () => {
+      const response = await page.request.patch(`/api/admin/roadmap/${featureId}`, {
+        data: {
+          status: "declined",
+          statusNote: "This feature won't be implemented due to technical constraints.",
+        },
+        headers: {
+          "x-jfp-admin-role": "admin",
+        },
+      });
+      expect(response.ok()).toBe(true);
+      const json = await response.json();
+      expect(json.success).toBe(true);
+      expect(json.feature.status).toBe("declined");
+      expect(json.feature.statusNote).toContain("technical constraints");
+    });
+
+    await logger.step("verify feature now shows as declined", async () => {
+      const response = await page.request.get(`/api/roadmap/${featureId}`);
+      expect(response.ok()).toBe(true);
+      const json = await response.json();
+      expect(json.feature.status).toBe("declined");
+    });
+  });
+
+  test("admin can change feature status through lifecycle", async ({ page, logger }) => {
+    const featureId = SEED_FEATURES.apiAccess;
+
+    await logger.step("navigate to feature page to initialize store", async () => {
+      await gotoFeatureDetail(page, featureId);
+    });
+
+    await logger.step("verify initial status is planned", async () => {
+      const response = await page.request.get(`/api/roadmap/${featureId}`);
+      const json = await response.json();
+      expect(json.feature.status).toBe("planned");
+    });
+
+    await logger.step("move to in_progress", async () => {
+      const response = await page.request.patch(`/api/admin/roadmap/${featureId}`, {
+        data: { status: "in_progress" },
+        headers: { "x-jfp-admin-role": "admin" },
+      });
+      expect(response.ok()).toBe(true);
+      const json = await response.json();
+      expect(json.feature.status).toBe("in_progress");
+    });
+
+    await logger.step("mark as shipped", async () => {
+      const response = await page.request.patch(`/api/admin/roadmap/${featureId}`, {
+        data: { status: "shipped" },
+        headers: { "x-jfp-admin-role": "admin" },
+      });
+      expect(response.ok()).toBe(true);
+      const json = await response.json();
+      expect(json.feature.status).toBe("shipped");
+      expect(json.feature.shippedAt).toBeDefined();
+    });
+  });
+
+  test("admin can set planned quarter when planning feature", async ({ page, logger }) => {
+    const featureId = SEED_FEATURES.analyticsInsights;
+
+    await logger.step("navigate to feature page to initialize store", async () => {
+      await gotoFeatureDetail(page, featureId);
+    });
+
+    await logger.step("set status to planned with quarter", async () => {
+      const response = await page.request.patch(`/api/admin/roadmap/${featureId}`, {
+        data: {
+          status: "planned",
+          plannedQuarter: "Q2 2026",
+        },
+        headers: { "x-jfp-admin-role": "admin" },
+      });
+      expect(response.ok()).toBe(true);
+      const json = await response.json();
+      expect(json.feature.status).toBe("planned");
+      expect(json.feature.plannedQuarter).toBe("Q2 2026");
+    });
+  });
+
+  test("rejects invalid status values", async ({ page, logger }) => {
+    const featureId = SEED_FEATURES.customCategories;
+
+    await logger.step("navigate to feature page to initialize store", async () => {
+      await gotoFeatureDetail(page, featureId);
+    });
+
+    await logger.step("attempt to set invalid status", async () => {
+      const response = await page.request.patch(`/api/admin/roadmap/${featureId}`, {
+        data: { status: "invalid_status" },
+        headers: { "x-jfp-admin-role": "admin" },
+      });
+      expect(response.ok()).toBe(false);
+      expect(response.status()).toBe(400);
+      const json = await response.json();
+      expect(json.error).toBe("invalid_status");
+    });
+  });
+
+  test("returns 404 for non-existent feature", async ({ page, logger }) => {
+    await logger.step("navigate to roadmap page to initialize store", async () => {
+      await gotoRoadmap(page);
+    });
+
+    await logger.step("attempt to update non-existent feature", async () => {
+      const response = await page.request.patch("/api/admin/roadmap/feat-nonexistent", {
+        data: { status: "declined" },
+        headers: { "x-jfp-admin-role": "admin" },
+      });
+      expect(response.ok()).toBe(false);
+      expect(response.status()).toBe(404);
+      const json = await response.json();
+      expect(json.error).toBe("not_found");
+    });
+  });
+
+  test("admin can view feature with admin details", async ({ page, logger }) => {
+    const featureId = SEED_FEATURES.promptVersionHistory;
+
+    await logger.step("navigate to feature page to initialize store", async () => {
+      await gotoFeatureDetail(page, featureId);
+    });
+
+    await logger.step("admin can fetch feature details", async () => {
+      const response = await page.request.get(`/api/admin/roadmap/${featureId}`, {
+        headers: { "x-jfp-admin-role": "admin" },
+      });
+      expect(response.ok()).toBe(true);
+      const json = await response.json();
+      expect(json.success).toBe(true);
+      expect(json.feature).toBeDefined();
+      expect(json.feature.id).toBe(featureId);
+      expect(json.adminRole).toBeDefined();
     });
   });
 });
