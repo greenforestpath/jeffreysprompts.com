@@ -33,6 +33,10 @@ crates/
 - `/dp/beads_rust`:
   - Mirror sync + JSONL patterns (atomic writes, hashing, lock discipline).
 
+## Optional / Deferred Libraries
+- `/dp/charmed_rust`: consider for richer `jfp i` TUI later; not required for parity.
+- `/dp/asupersync`, `/dp/fastapi_rust`, `/dp/opentui_rust`: not planned for this CLI port.
+
 ## Core Dependencies (beyond /dp)
 - CLI: `clap` (derive), `clap_complete`.
 - Serialization: `serde`, `serde_json`, `serde_yaml`.

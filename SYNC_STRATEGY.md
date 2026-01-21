@@ -3,6 +3,7 @@
 ## Source of Truth
 - **Primary**: SQLite
 - **Rationale**: fast local queries + ACID writes for search/offline use. JSONL remains a human‑readable export and Git‑friendly backup.
+- **JSONL location**: `~/.config/jfp/library/library.jsonl` with meta `~/.config/jfp/library/library.meta.json`.
 
 ## Sync Triggers
 - **On command**: `jfp sync` performs the authoritative sync cycle.

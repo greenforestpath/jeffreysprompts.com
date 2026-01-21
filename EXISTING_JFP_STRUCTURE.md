@@ -11,6 +11,8 @@
 ## 2) Global Output Rules and Exit Codes
 - JSON output rule: `shouldOutputJson(options)` returns true if `options.json === true` OR `!process.stdout.isTTY`.
 - Color disable: `--no-color`, `NO_COLOR`, or `JFP_NO_COLOR`.
+- Skill ID safety regex (`isSafeSkillId`): `^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$` (used by install/uninstall).
+- Path traversal guard: `resolveSafeChildPath(root, child)` throws `Unsafe path: <child>` if child escapes root.
 - Exit codes observed:
   - `1` for most errors
   - `2` for invalid skill IDs in `uninstall`
@@ -92,6 +94,7 @@ user_id: string
 - Directory perms: `0700` (mkdir with mode).
 - File perms: `0600` (writeFile with mode).
 - Atomic write via temp file + rename.
+- `loadCredentials` validates via Zod; invalid/corrupt file => returns `null` and continues.
 
 ### Expiry and Refresh
 - Expiry check uses 5-minute buffer.
@@ -101,6 +104,7 @@ user_id: string
 
 ### Env Override
 - `JFP_TOKEN` bypasses credentials file and supplies token directly (no user info).
+- `JFP_DEBUG` enables debug logs to stderr.
 
 ## 5) API Client
 File: `packages/cli/src/lib/api-client.ts`
@@ -178,8 +182,10 @@ File: `packages/cli/src/lib/manifest.ts`
 ## 9) Variable Handling
 File: `packages/cli/src/lib/variables.ts`
 
-- CLI variable flags: `--VAR=value` where `VAR` must start with A-Z or a-z, then alnum/underscore.
+- CLI variable flags: `--VAR=value` must match regex `^--([a-zA-Z][a-zA-Z0-9_]*)=(.*)$`.
+- Max file var size: `MAX_FILE_VAR_SIZE = 102400` bytes (100KB).
 - File variable max size: 100KB; if larger, read first 100KB and append truncation notice.
+- Truncation message suffix: `"[File truncated to 102400 bytes from <SIZE> bytes]"`.
 - Prompting uses `@inquirer/prompts` for select, multiline, file, path, text.
 - For `file` type: reads file content. For `path` type: passes raw value.
 - Dynamic defaults from `getDynamicDefaults(process.cwd())` (CWD, PROJECT_NAME).
@@ -316,10 +322,15 @@ File: `packages/cli/src/lib/variables.ts`
   - Starts local HTTP server on 127.0.0.1; callback `/callback`.
   - Expected query params: `token`, `email`, `tier`, `expires_at`, `user_id`, `refresh_token`.
   - Saves credentials; renders success/error HTML pages.
+  - Server listens on port `0` (OS-assigned); binds `127.0.0.1`.
+  - Missing `expires_at` defaults to now + 24h ISO string.
+  - `tier` defaults to `"free"` unless `tier === "premium"`.
 - Remote flow (device code):
   - POST `${JFP_PREMIUM_URL}/api/cli/device-code` with `{ client_id: "jfp-cli" }`.
   - Poll POST `${JFP_PREMIUM_URL}/api/cli/device-token` with `{ device_code, client_id: "jfp-cli" }`.
   - Handles errors: `authorization_pending`, `slow_down`, `expired_token`, `access_denied`.
+  - Poll interval: `max((interval ?? 2) * 1000, 2000)`; max attempts = `min(60, timeout/pollInterval)`.
+  - `slow_down` sleeps extra 5s before retry.
 
 ### logout / whoami
 - `logout`: if `JFP_TOKEN` set -> error `env_token`.
@@ -334,8 +345,12 @@ File: `packages/cli/src/lib/variables.ts`
 ### sync
 - Options: `--force`, `--status`, `--json`.
 - `--status` prints sync metadata and auth status.
+- `--status` JSON includes `synced`, `lastSync`, `promptCount`, `libraryPath`, `authenticated`, `user`.
 - GET `/cli/sync?since=<lastSync>` unless `--force`.
 - Writes `prompts.json` and `sync.meta.json` (version `1.0.0`).
+- Incremental merge (when not `--force`): replace existing prompts by id from server, keep others, then append new.
+- `syncedAt` uses `last_modified` from server or `new Date().toISOString()`.
+- JSON output: `{ synced, newPrompts, totalPrompts, force, syncedAt }`.
 
 ### notes
 - GET `/cli/notes/<promptId>` to list.
@@ -370,11 +385,21 @@ File: `packages/cli/src/lib/variables.ts`
 - Tools:
   - `search_prompts` (query/category/tags/limit)
   - `render_prompt` (id, variables, context)
+- `--config` prints Claude Desktop config snippet.
 
 ### update-cli
 - Checks latest GitHub release and updates binary.
+- Options: `--check`, `--force`, `--json`.
 - Hidden command `update-check-internal` updates cached version info.
 - Uses SHA256 checksum validation.
+- Self-update only for compiled binaries; if running via bun/node, prints error and exits.
+- GitHub repo: `Dicklesworthstone/jeffreysprompts.com` (release API `/releases/latest`).
+- Asset name mapping:
+  - darwin arm64: `jfp-darwin-arm64`; darwin x64: `jfp-darwin-x64`
+  - linux arm64: `jfp-linux-arm64`; linux x64: `jfp-linux-x64`
+  - win32 x64: `jfp-windows-x64.exe`
+- Checksum sources: `SHA256SUMS.txt` or `<asset>.sha256` in release assets.
+- Update flow: download to `<current>.update-<rand>`, verify checksum, replace with `.bak` rollback, chmod 755 (non-win32), verify by running `--version` within 5s.
 
 ### help
 - Prints structured help; JSON uses `getHelpData()`.

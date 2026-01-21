@@ -18,6 +18,12 @@ Port the `jfp` CLI from Bun/TypeScript to an idiomatic Rust CLI while preserving
 - `/dp/rich_rust` for terminal UI (tables/boxes/colors).
 - `/dp/beads_rust` for JSONL + SQLite sync patterns.
 
+## Libraries Considered (Decision)
+- `/dp/asupersync`: not needed for a mostly sync CLI; keep std/tokio unless async complexity grows.
+- `/dp/fastapi_rust`: server framework; not relevant to CLI port.
+- `/dp/charmed_rust`: possible future upgrade for `jfp i` TUI; defer until baseline parity.
+- `/dp/opentui_rust`: rendering engine overkill for current CLI scope.
+
 ## Phases
 ### Phase 1 — Planning (this phase)
 - Create spec docs: `EXISTING_JFP_STRUCTURE.md`, `PROPOSED_ARCHITECTURE.md`.
