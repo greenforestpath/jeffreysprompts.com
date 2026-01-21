@@ -15,7 +15,13 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/components/ui/toast";
+import type {
+  ReportPriority,
+  ReportPriorityLevel,
+  ReportSlaStatus,
+} from "@/lib/reporting/report-store";
 
 interface ModerationReport {
   id: string;
@@ -32,6 +38,7 @@ interface ModerationReport {
   reviewedAt?: string | null;
   reviewedBy?: string | null;
   action?: string | null;
+  priority?: ReportPriority | null;
 }
 
 interface ReportsResponse {
@@ -80,6 +87,40 @@ function formatAuthError(code?: string): string {
   }
 }
 
+function formatDuration(ms: number): string {
+  const totalMinutes = Math.max(0, Math.floor(ms / 60000));
+  const days = Math.floor(totalMinutes / (60 * 24));
+  const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+  const minutes = totalMinutes % 60;
+
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+}
+
+function formatSla(deadlineAt?: string | null, status?: ReportSlaStatus): string {
+  if (!deadlineAt || !status) return "SLA unknown";
+  const deadlineMs = new Date(deadlineAt).getTime();
+  if (Number.isNaN(deadlineMs)) return "SLA unknown";
+  const deltaMs = deadlineMs - Date.now();
+  const label = formatDuration(Math.abs(deltaMs));
+  if (status === "breach") return `SLA breached ${label} ago`;
+  return `SLA due in ${label}`;
+}
+
+function formatPriorityLabel(level: ReportPriorityLevel): string {
+  switch (level) {
+    case "critical":
+      return "Critical";
+    case "high":
+      return "High";
+    case "medium":
+      return "Medium";
+    default:
+      return "Low";
+  }
+}
+
 export default function AdminModerationPage() {
   const { error: toastError, success: toastSuccess } = useToast();
   const [reports, setReports] = useState<ModerationReport[]>([]);
@@ -91,6 +132,7 @@ export default function AdminModerationPage() {
     status: "all",
     contentType: "all",
     reason: "all",
+    priority: "all",
   });
 
   const loadReports = useCallback(async () => {
@@ -102,6 +144,8 @@ export default function AdminModerationPage() {
         status: filters.status,
         contentType: filters.contentType,
         reason: filters.reason,
+        priority: filters.priority,
+        sort: "priority",
       });
       const response = await fetch(`/api/admin/reports?${params.toString()}`, {
         cache: "no-store",
@@ -171,6 +215,7 @@ export default function AdminModerationPage() {
         createdAt: formatAge(report.createdAt),
         contentAuthor:
           report.contentAuthor?.name ?? report.contentAuthor?.email ?? "Unknown author",
+        priority: report.priority ?? null,
       })),
     [reports]
   );
@@ -263,6 +308,19 @@ export default function AdminModerationPage() {
                 <option value="copyright">Copyright</option>
                 <option value="harmful">Harmful</option>
                 <option value="other">Other</option>
+              </select>
+              <select
+                className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm dark:border-neutral-800 dark:bg-neutral-900"
+                value={filters.priority}
+                onChange={(event) =>
+                  setFilters((prev) => ({ ...prev, priority: event.target.value }))
+                }
+              >
+                <option value="all">All priorities</option>
+                <option value="critical">Critical</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
               </select>
             </div>
             <div className="flex items-center gap-2">
@@ -381,10 +439,15 @@ function ReportCard({
     status: string;
     createdAt: string;
     contentAuthor: string;
+    priority: ReportPriority | null;
   };
   onAction: (reportId: string, action: "dismiss" | "warn" | "remove" | "ban") => void;
   busy: boolean;
 }) {
+  const priority = report.priority;
+  const priorityLevel: ReportPriorityLevel = priority?.level ?? "low";
+  const priorityLabel = formatPriorityLabel(priorityLevel);
+
   const reasonColors: Record<string, string> = {
     "Spam or misleading content": "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400",
     "Copyright violation": "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400",
@@ -392,6 +455,22 @@ function ReportCard({
     "Contains harmful content": "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400",
     "Other": "bg-neutral-100 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300",
   };
+
+  const priorityColors: Record<ReportPriorityLevel, string> = {
+    critical: "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400",
+    high: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400",
+    medium: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400",
+    low: "bg-neutral-100 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300",
+  };
+
+  const slaColors: Record<ReportSlaStatus, string> = {
+    ok: "text-neutral-500",
+    warning: "text-amber-600 dark:text-amber-400",
+    breach: "text-red-600 dark:text-red-400",
+  };
+
+  const slaText = priority ? formatSla(priority.slaDeadlineAt, priority.slaStatus) : "SLA unknown";
+  const slaClassName = priority ? slaColors[priority.slaStatus] : "text-neutral-500";
 
   return (
     <Card className={report.status === "pending" ? "border-amber-200 dark:border-amber-500/30" : ""}>
@@ -419,7 +498,37 @@ function ReportCard({
             </div>
 
             <div className="ml-11 space-y-2">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                {priority && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Badge className={priorityColors[priorityLevel]}>
+                        {priorityLabel}
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs text-xs">
+                      <div className="space-y-1">
+                        <div className="font-medium">Priority score: {priority.score}</div>
+                        <div>Reports: {priority.reportCount} (+{priority.breakdown.reportCountScore})</div>
+                        <div>Reason impact: +{priority.breakdown.reasonScore}</div>
+                        <div>Age impact: +{priority.breakdown.ageScore}</div>
+                        <div>Reporter boost: {priority.breakdown.reporterBoost >= 0 ? "+" : ""}{priority.breakdown.reporterBoost}</div>
+                        <div>Author tier: {priority.authorTier} ({priority.breakdown.authorTierPenalty})</div>
+                        {priority.breakdown.escalationBoost > 0 && (
+                          <div>Escalation: +{priority.breakdown.escalationBoost}</div>
+                        )}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+                {priority?.escalatedAt && (
+                  <Badge
+                    variant="outline"
+                    className="border-red-300 text-red-600 dark:border-red-500/50 dark:text-red-400"
+                  >
+                    Escalated
+                  </Badge>
+                )}
                 <Badge className={reasonColors[report.reason] ?? reasonColors["Other"]}>
                   {report.reason}
                 </Badge>
@@ -438,9 +547,11 @@ function ReportCard({
                 {report.details}
               </p>
 
-              <div className="flex items-center gap-4 text-xs text-neutral-500">
+              <div className="flex flex-wrap items-center gap-4 text-xs text-neutral-500">
                 <span>Reported by: {report.reportedBy}</span>
+                {priority && <span>Reports: {priority.reportCount}</span>}
                 <span>{report.createdAt}</span>
+                {priority && <span className={slaClassName}>{slaText}</span>}
               </div>
             </div>
           </div>

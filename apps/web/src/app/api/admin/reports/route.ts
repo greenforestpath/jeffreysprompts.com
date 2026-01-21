@@ -15,6 +15,8 @@ import {
  * - status: Filter by status (pending, reviewed, actioned, dismissed)
  * - contentType: Filter by content type (prompt, collection, skill)
  * - reason: Filter by reason
+ * - priority: Filter by priority level (critical, high, medium, low)
+ * - sort: Sort order (priority, recent)
  * - page, limit: Pagination
  *
  * In production, this would query the database with proper auth.
@@ -33,6 +35,8 @@ export async function GET(request: NextRequest) {
   const status = searchParams.get("status") ?? "pending";
   const contentType = searchParams.get("contentType") ?? "all";
   const reason = searchParams.get("reason") ?? "all";
+  const priority = searchParams.get("priority") ?? "all";
+  const sort = searchParams.get("sort") ?? "priority";
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
   const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
 
@@ -40,6 +44,8 @@ export async function GET(request: NextRequest) {
     status: status === "all" ? "all" : (status as "pending" | "reviewed" | "actioned" | "dismissed"),
     contentType: contentType === "all" ? "all" : (contentType as "prompt" | "bundle" | "workflow" | "collection"),
     reason: reason === "all" ? "all" : (reason as "spam" | "offensive" | "copyright" | "harmful" | "other"),
+    priority: priority === "all" ? "all" : (priority as "critical" | "high" | "medium" | "low"),
+    sort: sort === "recent" ? "recent" : "priority",
     page,
     limit,
   });
@@ -49,6 +55,8 @@ export async function GET(request: NextRequest) {
     status: status === "all" ? "all" : (status as "pending" | "reviewed" | "actioned" | "dismissed"),
     contentType: contentType === "all" ? "all" : (contentType as "prompt" | "bundle" | "workflow" | "collection"),
     reason: reason === "all" ? "all" : (reason as "spam" | "offensive" | "copyright" | "harmful" | "other"),
+    priority: priority === "all" ? "all" : (priority as "critical" | "high" | "medium" | "low"),
+    sort: sort === "recent" ? "recent" : "priority",
     page: 1,
     limit: 10000,
   }).length;
@@ -76,6 +84,7 @@ export async function GET(request: NextRequest) {
     reviewedAt: report.reviewedAt ?? null,
     reviewedBy: report.reviewedBy ?? null,
     action: report.action ?? null,
+    priority: report.priority,
   }));
 
   return NextResponse.json({
