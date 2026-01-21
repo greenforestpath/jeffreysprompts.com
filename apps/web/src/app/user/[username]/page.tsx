@@ -10,6 +10,7 @@ import {
   MapPin,
   Share2,
   Sparkles,
+  Star,
   Twitter,
   Github,
 } from "lucide-react";
@@ -19,68 +20,12 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { isValidUsername } from "@/lib/username";
-
-// Mock user data - in production, this would come from API
-const MOCK_USERS: Record<string, UserProfile> = {
-  jeffreyemanuel: {
-    username: "jeffreyemanuel",
-    displayName: "Jeffrey Emanuel",
-    avatar: null, // Will show initials
-    bio: "Creator of JeffreysPrompts. Building tools for AI-native workflows.",
-    location: "San Francisco, CA",
-    website: "https://jeffreysprompts.com",
-    twitter: "doodlestein",
-    github: "jeffreyemanuel",
-    joinDate: "2024-01-01",
-    isPublic: true,
-    badges: ["creator", "early_adopter"],
-    stats: {
-      prompts: 42,
-      packs: 3,
-      skills: 8,
-      savesReceived: 1234,
-    },
-  },
-  demo_user: {
-    username: "demo_user",
-    displayName: "Demo User",
-    avatar: null,
-    bio: "Just exploring the platform!",
-    location: null,
-    website: null,
-    twitter: null,
-    github: null,
-    joinDate: "2024-06-15",
-    isPublic: true,
-    badges: [],
-    stats: {
-      prompts: 5,
-      packs: 0,
-      skills: 2,
-      savesReceived: 23,
-    },
-  },
-};
-
-interface UserProfile {
-  username: string;
-  displayName: string;
-  avatar: string | null;
-  bio: string | null;
-  location: string | null;
-  website: string | null;
-  twitter: string | null;
-  github: string | null;
-  joinDate: string;
-  isPublic: boolean;
-  badges: string[];
-  stats: {
-    prompts: number;
-    packs: number;
-    skills: number;
-    savesReceived: number;
-  };
-}
+import {
+  getPublicProfile,
+  type PublicUserProfile,
+  type BadgeType,
+  BADGE_CONFIG,
+} from "@/lib/profile/profile-store";
 
 // Mock prompt data
 const MOCK_PROMPTS = [
@@ -93,9 +38,9 @@ interface PageProps {
   params: Promise<{ username: string }>;
 }
 
-async function getUser(username: string): Promise<UserProfile | null> {
-  // In production, fetch from API
-  return MOCK_USERS[username] ?? null;
+async function getUser(username: string): Promise<PublicUserProfile | null> {
+  // Get profile from store
+  return getPublicProfile(username);
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -142,24 +87,8 @@ export default async function UserProfilePage({ params }: PageProps) {
   const user = await getUser(username);
 
   if (!user) {
+    // getPublicProfile returns null for both non-existent and private profiles
     notFound();
-  }
-
-  if (!user.isPublic) {
-    return (
-      <div className="container max-w-4xl mx-auto px-4 py-16">
-        <Card>
-          <CardContent className="py-16 text-center">
-            <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
-              Private Profile
-            </h1>
-            <p className="mt-2 text-neutral-600 dark:text-neutral-400">
-              This user has set their profile to private.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
   }
 
   return (
@@ -278,7 +207,11 @@ export default async function UserProfilePage({ params }: PageProps) {
                 <StatItem label="Prompts" value={user.stats.prompts} />
                 <StatItem label="Packs" value={user.stats.packs} />
                 <StatItem label="Skills" value={user.stats.skills} />
-                <StatItem label="Saves Received" value={user.stats.savesReceived} />
+                {user.reputationScore !== null ? (
+                  <StatItem label="Reputation" value={user.reputationScore} />
+                ) : (
+                  <StatItem label="Saves Received" value={user.stats.savesReceived} />
+                )}
               </div>
             </div>
           </CardContent>
@@ -441,36 +374,17 @@ function UserAvatar({
   );
 }
 
-function ReputationBadge({ type }: { type: string }) {
-  const config: Record<string, { label: string; color: string; icon?: typeof Sparkles }> = {
-    creator: {
-      label: "Creator",
-      color: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border-amber-200 dark:border-amber-500/30",
-      icon: Sparkles,
-    },
-    early_adopter: {
-      label: "Early Adopter",
-      color: "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400 border-purple-200 dark:border-purple-500/30",
-    },
-    premium: {
-      label: "Premium",
-      color: "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400 border-indigo-200 dark:border-indigo-500/30",
-    },
-    verified: {
-      label: "Verified",
-      color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30",
-    },
-  };
+function ReputationBadge({ type }: { type: BadgeType }) {
+  const config = BADGE_CONFIG[type];
+  if (!config) return null;
 
-  const badge = config[type];
-  if (!badge) return null;
-
-  const Icon = badge.icon;
+  // Special icon for creator badge
+  const showIcon = type === "creator" || type === "featured_author";
 
   return (
-    <Badge variant="outline" className={cn("gap-1", badge.color)}>
-      {Icon && <Icon className="h-3 w-3" />}
-      {badge.label}
+    <Badge variant="outline" className={cn("gap-1 border", config.color)}>
+      {showIcon && <Sparkles className="h-3 w-3" />}
+      {config.label}
     </Badge>
   );
 }
