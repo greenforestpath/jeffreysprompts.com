@@ -13,34 +13,53 @@ import { cn } from "@/lib/utils"
  */
 const cardVariants = cva(
   [
-    "bg-card text-card-foreground flex flex-col rounded-xl border shadow-sm",
-    "transition-all duration-200 ease-out",
+    "bg-card text-card-foreground flex flex-col rounded-xl border",
+    // Base shadow with subtle depth
+    "shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.06)]",
+    // Buttery smooth transition with custom cubic-bezier
+    "transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)]",
+    // Dark mode shadow adjustment
+    "dark:shadow-[0_1px_3px_rgba(0,0,0,0.2),0_1px_2px_rgba(0,0,0,0.15)]",
   ],
   {
     variants: {
       hover: {
         none: "",
         lift: [
-          "hover:shadow-lg hover:-translate-y-1",
-          "hover:border-primary/30",
-          "dark:hover:shadow-primary/5",
-          "touch-manipulation active:scale-[0.98] active:shadow-md",
+          // Smooth lift with enhanced shadow progression
+          "hover:-translate-y-1.5",
+          "hover:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_8px_10px_-6px_rgba(0,0,0,0.04)]",
+          "hover:border-border/60",
+          // Subtle background shift for depth perception
+          "hover:bg-card/95",
+          "dark:hover:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.4),0_8px_10px_-6px_rgba(0,0,0,0.2)]",
+          "dark:hover:border-border/40",
+          // Touch feedback with spring-like return
+          "touch-manipulation active:scale-[0.98] active:shadow-[0_2px_4px_rgba(0,0,0,0.08)] active:translate-y-0",
+          "active:transition-all active:duration-100",
         ],
         glow: [
-          "hover:shadow-[0_0_20px_rgba(var(--primary-rgb),0.15)]",
-          "hover:border-primary/40",
-          "dark:hover:shadow-[0_0_30px_rgba(var(--primary-rgb),0.2)]",
-          "touch-manipulation active:scale-[0.98]",
+          // Elegant glow with color shift
+          "hover:shadow-[0_0_0_1px_var(--primary)/10,0_4px_16px_var(--primary)/12,0_8px_24px_var(--primary)/8]",
+          "hover:border-primary/30",
+          "dark:hover:shadow-[0_0_0_1px_var(--primary)/15,0_4px_20px_var(--primary)/20,0_12px_32px_var(--primary)/12]",
+          "dark:hover:border-primary/40",
+          "touch-manipulation active:scale-[0.98] active:shadow-[0_0_0_1px_var(--primary)/20,0_2px_8px_var(--primary)/10]",
         ],
         scale: [
-          "hover:scale-[1.02] hover:shadow-md",
-          "hover:border-border/80",
-          "touch-manipulation active:scale-[0.98]",
+          // Refined scale with subtle shadow enhancement
+          "hover:scale-[1.015] hover:-translate-y-0.5",
+          "hover:shadow-[0_8px_20px_-5px_rgba(0,0,0,0.08),0_4px_8px_-4px_rgba(0,0,0,0.04)]",
+          "hover:border-border/50",
+          "touch-manipulation active:scale-[0.98] active:translate-y-0",
         ],
         subtle: [
-          "hover:shadow-md hover:-translate-y-0.5",
-          "hover:bg-card/80",
-          "touch-manipulation active:scale-[0.99]",
+          // Whisper-quiet lift for understated elegance
+          "hover:-translate-y-0.5",
+          "hover:shadow-[0_4px_12px_-4px_rgba(0,0,0,0.06),0_2px_4px_-2px_rgba(0,0,0,0.04)]",
+          "hover:bg-card/98",
+          "dark:hover:shadow-[0_4px_12px_-4px_rgba(0,0,0,0.3),0_2px_4px_-2px_rgba(0,0,0,0.2)]",
+          "touch-manipulation active:scale-[0.995] active:translate-y-0",
         ],
       },
     },
