@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Sparkles, ArrowRight, FileText } from "lucide-react";
 import { WorkflowBuilder } from "@/components/workflow-builder";
@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { trackHistoryView } from "@/lib/history/client";
 import { workflows, type Workflow } from "@jeffreysprompts/core/prompts";
 import { getPrompt } from "@jeffreysprompts/core/prompts";
 import { generateWorkflowMarkdown } from "@jeffreysprompts/core/export";
@@ -104,9 +105,15 @@ interface WorkflowCardProps {
 function WorkflowCard({ workflow }: WorkflowCardProps) {
   const [expanded, setExpanded] = useState(false);
 
+  useEffect(() => {
+    if (!expanded) return;
+    trackHistoryView({ resourceType: "workflow", resourceId: workflow.id, source: "workflow_expand" });
+  }, [expanded, workflow.id]);
+
   const handleCopy = () => {
     const markdown = generateWorkflowMarkdown(workflow);
     navigator.clipboard.writeText(markdown);
+    trackHistoryView({ resourceType: "workflow", resourceId: workflow.id, source: "workflow_copy" });
   };
 
   return (
@@ -130,12 +137,12 @@ function WorkflowCard({ workflow }: WorkflowCardProps) {
               )}
             </div>
           </div>
-          <ArrowRight
-            className={cn(
-              "w-5 h-5 text-neutral-400 transition-transform",
-              expanded && "rotate-90"
-            )}
-          />
+            <ArrowRight
+              className={cn(
+                "w-5 h-5 text-neutral-400 transition-transform",
+                expanded && "rotate-90"
+              )}
+            />
         </div>
       </button>
 
