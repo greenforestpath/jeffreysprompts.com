@@ -1,4 +1,6 @@
-import type { Metadata } from "next";
+"use client";
+
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Flag,
   AlertTriangle,
@@ -8,19 +10,51 @@ import {
   MessageSquare,
   Clock,
   Filter,
+  RefreshCw,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  getReportReasonLabel,
-  getReportStats,
-  listContentReports,
-} from "@/lib/reporting/report-store";
+import { useToast } from "@/components/ui/toast";
 
-export const metadata: Metadata = {
-  title: "Content Moderation | Admin",
-  description: "Review and moderate reported content.",
+interface ModerationReport {
+  id: string;
+  contentType: string;
+  contentId: string;
+  contentTitle?: string;
+  contentAuthor?: { id?: string; email?: string; name?: string };
+  reporter?: { id?: string; email?: string; name?: string };
+  reason: string;
+  reasonLabel?: string;
+  details?: string;
+  status: "pending" | "reviewed" | "actioned" | "dismissed" | string;
+  createdAt: string;
+  reviewedAt?: string | null;
+  reviewedBy?: string | null;
+  action?: string | null;
+}
+
+interface ReportsResponse {
+  reports: ModerationReport[];
+  stats: {
+    pending: number;
+    reviewed: number;
+    actioned: number;
+    dismissed: number;
+  };
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+const EMPTY_STATS = {
+  pending: 0,
+  reviewed: 0,
+  actioned: 0,
+  dismissed: 0,
 };
 
 function formatAge(iso: string): string {
@@ -33,21 +67,113 @@ function formatAge(iso: string): string {
   return `${Math.floor(ms / 86400000)} days ago`;
 }
 
-export default function AdminModerationPage() {
-  const reports = listContentReports({ status: "all", limit: 50 });
-  const stats = getReportStats();
+function formatAuthError(code?: string): string {
+  switch (code) {
+    case "admin_token_not_configured":
+      return "Admin token not configured. Set JFP_ADMIN_TOKEN or enable JFP_ADMIN_DEV_BYPASS for local dev.";
+    case "unauthorized":
+      return "Unauthorized. Provide a valid admin token in the request headers.";
+    case "forbidden":
+      return "Access denied. Your admin role lacks permission.";
+    default:
+      return "Unable to load reports.";
+  }
+}
 
-  const viewReports = reports.map((report) => ({
-    id: report.id,
-    contentType: report.contentType,
-    contentTitle: report.contentTitle ?? "Untitled content",
-    reportedBy: report.reporter.email ?? report.reporter.name ?? "Anonymous",
-    reason: getReportReasonLabel(report.reason),
-    details: report.details ?? "No additional details provided.",
-    status: report.status,
-    createdAt: formatAge(report.createdAt),
-    contentAuthor: "Unknown author",
-  }));
+export default function AdminModerationPage() {
+  const { error: toastError, success: toastSuccess } = useToast();
+  const [reports, setReports] = useState<ModerationReport[]>([]);
+  const [stats, setStats] = useState(EMPTY_STATS);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [actioningId, setActioningId] = useState<string | null>(null);
+  const [filters, setFilters] = useState({
+    status: "all",
+    contentType: "all",
+    reason: "all",
+  });
+
+  const loadReports = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
+
+    try {
+      const params = new URLSearchParams({
+        status: filters.status,
+        contentType: filters.contentType,
+        reason: filters.reason,
+      });
+      const response = await fetch(`/api/admin/reports?${params.toString()}`, {
+        cache: "no-store",
+      });
+      const payload = (await response.json().catch(() => null)) as ReportsResponse & { error?: string } | null;
+
+      if (!response.ok) {
+        setReports([]);
+        setStats(EMPTY_STATS);
+        setLoadError(formatAuthError(payload?.error));
+        return;
+      }
+
+      setReports(payload?.reports ?? []);
+      setStats(payload?.stats ?? EMPTY_STATS);
+    } catch {
+      setReports([]);
+      setStats(EMPTY_STATS);
+      setLoadError("Unable to load reports.");
+    } finally {
+      setLoading(false);
+    }
+  }, [filters]);
+
+  useEffect(() => {
+    loadReports();
+  }, [loadReports]);
+
+  const handleAction = useCallback(
+    async (reportId: string, action: "dismiss" | "warn" | "remove" | "ban") => {
+      setActioningId(reportId);
+      try {
+        const response = await fetch("/api/admin/reports", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reportId, action }),
+        });
+        const payload = await response.json().catch(() => null);
+
+        if (!response.ok) {
+          toastError("Action failed", payload?.error ?? "Unable to update report.");
+          return;
+        }
+
+        toastSuccess("Report updated", `Action: ${action}`);
+        await loadReports();
+      } catch {
+        toastError("Action failed", "Unable to update report.");
+      } finally {
+        setActioningId(null);
+      }
+    },
+    [loadReports, toastError, toastSuccess]
+  );
+
+  const viewReports = useMemo(
+    () =>
+      reports.map((report) => ({
+        id: report.id,
+        contentType: report.contentType,
+        contentTitle: report.contentTitle ?? "Untitled content",
+        reportedBy:
+          report.reporter?.email ?? report.reporter?.name ?? "Anonymous",
+        reason: report.reasonLabel ?? report.reason,
+        details: report.details ?? "No additional details provided.",
+        status: report.status,
+        createdAt: formatAge(report.createdAt),
+        contentAuthor:
+          report.contentAuthor?.name ?? report.contentAuthor?.email ?? "Unknown author",
+      })),
+    [reports]
+  );
 
   return (
     <div className="space-y-6">
@@ -93,47 +219,102 @@ export default function AdminModerationPage() {
       <Card>
         <CardContent className="p-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Filter className="h-4 w-4 text-neutral-400" />
               <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                 Filter:
               </span>
-              <select className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm dark:border-neutral-800 dark:bg-neutral-900">
+              <select
+                className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm dark:border-neutral-800 dark:bg-neutral-900"
+                value={filters.status}
+                onChange={(event) =>
+                  setFilters((prev) => ({ ...prev, status: event.target.value }))
+                }
+              >
                 <option value="pending">Pending</option>
                 <option value="reviewed">Reviewed</option>
+                <option value="actioned">Actioned</option>
+                <option value="dismissed">Dismissed</option>
                 <option value="all">All</option>
               </select>
-              <select className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm dark:border-neutral-800 dark:bg-neutral-900">
+              <select
+                className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm dark:border-neutral-800 dark:bg-neutral-900"
+                value={filters.contentType}
+                onChange={(event) =>
+                  setFilters((prev) => ({ ...prev, contentType: event.target.value }))
+                }
+              >
                 <option value="all">All types</option>
                 <option value="prompt">Prompts</option>
+                <option value="bundle">Bundles</option>
+                <option value="workflow">Workflows</option>
                 <option value="collection">Collections</option>
-                <option value="skill">Skills</option>
               </select>
-              <select className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm dark:border-neutral-800 dark:bg-neutral-900">
+              <select
+                className="h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm dark:border-neutral-800 dark:bg-neutral-900"
+                value={filters.reason}
+                onChange={(event) =>
+                  setFilters((prev) => ({ ...prev, reason: event.target.value }))
+                }
+              >
                 <option value="all">All reasons</option>
                 <option value="spam">Spam</option>
-                <option value="inappropriate">Inappropriate</option>
+                <option value="offensive">Inappropriate</option>
                 <option value="copyright">Copyright</option>
                 <option value="harmful">Harmful</option>
                 <option value="other">Other</option>
               </select>
             </div>
-            <Badge variant="secondary" className="bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400">
-              {stats.pending} pending
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge
+                variant="secondary"
+                className="bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400"
+              >
+                {stats.pending} pending
+              </Badge>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={loadReports}
+                disabled={loading}
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Refresh
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
 
+      {loadError && (
+        <Card>
+          <CardContent className="flex flex-col gap-3 p-6">
+            <p className="text-sm text-neutral-700 dark:text-neutral-300">
+              {loadError}
+            </p>
+            <div>
+              <Button size="sm" onClick={loadReports}>
+                Retry
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Reports queue */}
       <div className="space-y-4">
         {viewReports.map((report) => (
-          <ReportCard key={report.id} report={report} />
+          <ReportCard
+            key={report.id}
+            report={report}
+            onAction={handleAction}
+            busy={loading || actioningId === report.id}
+          />
         ))}
       </div>
 
-      {/* Empty state for when queue is clear */}
-      {viewReports.length === 0 && (
+      {/* Empty state */}
+      {!loading && viewReports.length === 0 && !loadError && (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <CheckCircle className="h-12 w-12 text-emerald-500" />
@@ -187,6 +368,8 @@ function ModerationStatCard({
 
 function ReportCard({
   report,
+  onAction,
+  busy,
 }: {
   report: {
     id: string;
@@ -199,6 +382,8 @@ function ReportCard({
     createdAt: string;
     contentAuthor: string;
   };
+  onAction: (reportId: string, action: "dismiss" | "warn" | "remove" | "ban") => void;
+  busy: boolean;
 }) {
   const reasonColors: Record<string, string> = {
     "Spam or misleading content": "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400",
@@ -239,7 +424,10 @@ function ReportCard({
                   {report.reason}
                 </Badge>
                 {report.status === "pending" && (
-                  <Badge variant="outline" className="border-amber-300 text-amber-600 dark:border-amber-500/50 dark:text-amber-400">
+                  <Badge
+                    variant="outline"
+                    className="border-amber-300 text-amber-600 dark:border-amber-500/50 dark:text-amber-400"
+                  >
                     <AlertTriangle className="mr-1 h-3 w-3" />
                     Pending
                   </Badge>
@@ -259,21 +447,39 @@ function ReportCard({
 
           {/* Actions */}
           <div className="flex flex-wrap items-center gap-2 lg:flex-col lg:items-end">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" disabled={busy}>
               <Eye className="mr-2 h-4 w-4" />
               View Content
             </Button>
             {report.status === "pending" && (
               <>
-                <Button variant="outline" size="sm" className="text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-500/10">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-500/10"
+                  onClick={() => onAction(report.id, "dismiss")}
+                  disabled={busy}
+                >
                   <CheckCircle className="mr-2 h-4 w-4" />
                   Dismiss
                 </Button>
-                <Button variant="outline" size="sm" className="text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-500/10">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-500/10"
+                  onClick={() => onAction(report.id, "warn")}
+                  disabled={busy}
+                >
                   <MessageSquare className="mr-2 h-4 w-4" />
                   Warn
                 </Button>
-                <Button variant="outline" size="sm" className="text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
+                  onClick={() => onAction(report.id, "remove")}
+                  disabled={busy}
+                >
                   <XCircle className="mr-2 h-4 w-4" />
                   Remove
                 </Button>
