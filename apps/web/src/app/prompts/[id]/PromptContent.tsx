@@ -21,6 +21,9 @@ import {
   Hash,
   User,
   Sparkles,
+  ThumbsUp,
+  ThumbsDown,
+  Share2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,10 +33,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/toast";
 import { ReportDialog } from "@/components/reporting/ReportDialog";
+import { ShareDialog, type ShareLink } from "@/components/sharing/ShareDialog";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { RelatedPrompts } from "@/components/RelatedPrompts";
 import { ChangelogAccordion } from "@/components/ChangelogAccordion";
 import { trackEvent } from "@/lib/analytics";
+import type { RatingSummary, RatingValue } from "@/lib/ratings/rating-store";
 import {
   renderPrompt,
   extractVariables,
@@ -54,6 +59,12 @@ export function PromptContent({ prompt }: PromptContentProps) {
   const { success, error } = useToast();
   const [copied, setCopied] = useState(false);
   const [context, setContext] = useState("");
+  const [ratingSummary, setRatingSummary] = useState<RatingSummary | null>(null);
+  const [userRating, setUserRating] = useState<RatingValue | null>(null);
+  const [ratingUserId, setRatingUserId] = useState<string | null>(null);
+  const [ratingBusy, setRatingBusy] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [existingShare, setExistingShare] = useState<ShareLink | null>(null);
   const copiedResetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Store variable values in localStorage
@@ -91,6 +102,38 @@ export function PromptContent({ prompt }: PromptContentProps) {
   useEffect(() => {
     trackEvent("prompt_view", { id: prompt.id, source: "prompt_page" });
   }, [prompt.id]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const key = "jfp-rating-user-id";
+    let stored = window.localStorage.getItem(key);
+    if (!stored) {
+      stored = crypto.randomUUID();
+      window.localStorage.setItem(key, stored);
+    }
+    setRatingUserId(stored);
+  }, []);
+
+  useEffect(() => {
+    if (!ratingUserId) return;
+    const params = new URLSearchParams({
+      contentType: "prompt",
+      contentId: prompt.id,
+      userId: ratingUserId,
+    });
+    fetch(`/api/ratings?${params.toString()}`, { cache: "no-store" })
+      .then((response) => response.json())
+      .then((payload) => {
+        if (payload?.summary) {
+          setRatingSummary(payload.summary);
+        }
+        setUserRating(payload?.userRating ?? null);
+      })
+      .catch(() => {
+        setRatingSummary(null);
+        setUserRating(null);
+      });
+  }, [prompt.id, ratingUserId]);
 
   useEffect(() => {
     return () => {
@@ -159,6 +202,39 @@ export function PromptContent({ prompt }: PromptContentProps) {
     [setVariableValues]
   );
 
+  const handleRating = useCallback(
+    async (value: RatingValue) => {
+      if (!ratingUserId || ratingBusy) return;
+      if (userRating === value) return;
+      setRatingBusy(true);
+      try {
+        const response = await fetch("/api/ratings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contentType: "prompt",
+            contentId: prompt.id,
+            userId: ratingUserId,
+            value,
+          }),
+        });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok) {
+          error(payload?.error ?? "Unable to submit rating.");
+          return;
+        }
+        setRatingSummary(payload?.summary ?? null);
+        setUserRating(payload?.rating?.value ?? value);
+        trackEvent("prompt_rating", { id: prompt.id, value });
+      } catch {
+        error("Unable to submit rating.");
+      } finally {
+        setRatingBusy(false);
+      }
+    },
+    [error, prompt.id, ratingBusy, ratingUserId, userRating]
+  );
+
   return (
     <div className="container max-w-4xl mx-auto py-8 px-4">
       {/* Back navigation */}
@@ -186,6 +262,41 @@ export function PromptContent({ prompt }: PromptContentProps) {
         </div>
         <h1 className="text-3xl font-bold mb-2">{prompt.title}</h1>
         <p className="text-lg text-muted-foreground mb-4">{prompt.description}</p>
+
+        <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-4">
+          <span className="text-xs uppercase tracking-wide text-muted-foreground">Rating</span>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon-sm"
+              aria-pressed={userRating === "up"}
+              onClick={() => handleRating("up")}
+              disabled={!ratingUserId || ratingBusy}
+              className={userRating === "up" ? "border-emerald-300 text-emerald-600" : ""}
+            >
+              <ThumbsUp className="h-4 w-4" />
+            </Button>
+            <span className="min-w-[2ch] text-neutral-700 dark:text-neutral-300">
+              {ratingSummary?.upvotes ?? 0}
+            </span>
+            <Button
+              variant="outline"
+              size="icon-sm"
+              aria-pressed={userRating === "down"}
+              onClick={() => handleRating("down")}
+              disabled={!ratingUserId || ratingBusy}
+              className={userRating === "down" ? "border-rose-300 text-rose-600" : ""}
+            >
+              <ThumbsDown className="h-4 w-4" />
+            </Button>
+            <span className="min-w-[2ch] text-neutral-700 dark:text-neutral-300">
+              {ratingSummary?.downvotes ?? 0}
+            </span>
+          </div>
+          <Badge variant="secondary">
+            {ratingSummary?.total ? `${ratingSummary.approvalRate}% approval` : "No ratings yet"}
+          </Badge>
+        </div>
 
         {/* Meta info */}
         <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
@@ -311,6 +422,15 @@ export function PromptContent({ prompt }: PromptContentProps) {
               <Download className="h-4 w-4" />
               Download
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShareDialogOpen(true)}
+              className="gap-2"
+            >
+              <Share2 className="h-4 w-4" />
+              Share
+            </Button>
             <ReportDialog
               contentType="prompt"
               contentId={prompt.id}
@@ -368,6 +488,18 @@ export function PromptContent({ prompt }: PromptContentProps) {
       <ChangelogAccordion changelog={prompt.changelog} />
 
       <RelatedPrompts promptId={prompt.id} />
+
+      {/* Share Dialog */}
+      <ShareDialog
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+        contentType="prompt"
+        contentId={prompt.id}
+        contentTitle={prompt.title}
+        existingShare={existingShare}
+        onShareCreated={(share) => setExistingShare(share)}
+        onShareRevoked={() => setExistingShare(null)}
+      />
     </div>
   );
 }
