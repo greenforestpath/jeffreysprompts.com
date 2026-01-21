@@ -11,6 +11,7 @@ import { Badge } from "./ui/badge"
 import { useToast } from "@/components/ui/toast"
 import { useLocalStorage } from "@/hooks/useLocalStorage"
 import { useIsSmallScreen } from "@/hooks/useIsMobile"
+import { trackHistoryView } from "@/lib/history/client"
 
 // ============================================================================
 // Constants
@@ -170,6 +171,7 @@ export function SpotlightSearch({
       const filtered = prev.filter(s => s.toLowerCase() !== searchQuery.toLowerCase())
       return [searchQuery, ...filtered].slice(0, MAX_RECENT_SEARCHES)
     })
+    trackHistoryView({ resourceType: "search", searchQuery: searchQuery.trim(), source: "spotlight" })
   }, [setRecentSearches])
 
   // Clear recent searches

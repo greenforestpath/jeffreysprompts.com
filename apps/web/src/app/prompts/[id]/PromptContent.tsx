@@ -38,6 +38,7 @@ import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { RelatedPrompts } from "@/components/RelatedPrompts";
 import { ChangelogAccordion } from "@/components/ChangelogAccordion";
 import { trackEvent } from "@/lib/analytics";
+import { trackHistoryView } from "@/lib/history/client";
 import type { RatingSummary, RatingValue } from "@/lib/ratings/rating-store";
 import {
   renderPrompt,
@@ -101,6 +102,7 @@ export function PromptContent({ prompt }: PromptContentProps) {
 
   useEffect(() => {
     trackEvent("prompt_view", { id: prompt.id, source: "prompt_page" });
+    trackHistoryView({ resourceType: "prompt", resourceId: prompt.id, source: "prompt_page" });
   }, [prompt.id]);
 
   useEffect(() => {

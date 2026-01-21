@@ -51,6 +51,7 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
+import { trackHistoryView } from "@/lib/history/client";
 import { copyToClipboard } from "@/lib/clipboard";
 import {
   renderPrompt,
@@ -139,6 +140,11 @@ export function PromptDetailModal({
     },
     [setVariableValues]
   );
+
+  useEffect(() => {
+    if (!prompt || !open) return;
+    trackHistoryView({ resourceType: "prompt", resourceId: prompt.id, source: "modal" });
+  }, [prompt, open]);
 
   // Copy to clipboard
   const handleCopy = useCallback(async () => {
