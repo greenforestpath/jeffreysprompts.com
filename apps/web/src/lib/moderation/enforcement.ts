@@ -9,9 +9,11 @@ import {
   checkUserStatus,
   getModerationReasonLabel,
   getActionTypeLabel,
+  getModerationAction,
   type UserStatus,
   type ActionType,
 } from "./action-store";
+import { canAppealAction, getAppealByActionId } from "./appeal-store";
 
 export interface EnforcementResult {
   allowed: boolean;
@@ -31,6 +33,7 @@ export interface SuspensionInfo {
   endsAt: string | null;
   timeRemaining: string | null;
   canAppeal: boolean;
+  actionId: string | null;
 }
 
 /**
@@ -128,6 +131,21 @@ export function getSuspensionInfo(userId: string): SuspensionInfo | null {
     }
   }
 
+  // Determine if user can appeal this action
+  let canAppeal = false;
+  if (!isBanned && status.actionId) {
+    const action = getModerationAction(status.actionId);
+    if (action) {
+      // Check if an appeal already exists
+      const existingAppeal = getAppealByActionId(status.actionId);
+      if (!existingAppeal) {
+        // Check if within appeal window
+        const appealCheck = canAppealAction(status.actionId, action.createdAt);
+        canAppeal = appealCheck.canAppeal;
+      }
+    }
+  }
+
   return {
     isSuspended,
     isBanned,
@@ -138,7 +156,8 @@ export function getSuspensionInfo(userId: string): SuspensionInfo | null {
     actionTypeLabel: status.actionType ? getActionTypeLabel(status.actionType) : "Suspension",
     endsAt: status.endsAt ?? null,
     timeRemaining,
-    canAppeal: !isBanned, // Banned users cannot appeal
+    canAppeal,
+    actionId: status.actionId ?? null,
   };
 }
 

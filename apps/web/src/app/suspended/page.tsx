@@ -14,6 +14,9 @@ interface SuspendedPageProps {
     reason?: string;
     until?: string;
     type?: string;
+    actionId?: string;
+    userId?: string;
+    email?: string;
   }>;
 }
 
@@ -22,9 +25,18 @@ export default async function SuspendedPage({ searchParams }: SuspendedPageProps
   const suspensionType = params.type ?? "suspended";
   const reason = params.reason ?? "policy violation";
   const until = params.until;
+  const actionId = params.actionId;
+  const userId = params.userId;
+  const userEmail = params.email;
 
   const isBanned = suspensionType === "ban" || suspensionType === "banned";
   const isIndefinite = suspensionType === "indefinite" || !until;
+
+  // Build appeal URL if we have the required params
+  const canBuildAppealUrl = !isBanned && actionId && userId && userEmail;
+  const appealUrl = canBuildAppealUrl
+    ? `/appeals/new?actionId=${actionId}&userId=${userId}&email=${encodeURIComponent(userEmail)}`
+    : "/contact?subject=suspension-appeal";
 
   let endDateText = "indefinitely";
   if (until && !isBanned) {
@@ -117,7 +129,7 @@ export default async function SuspendedPage({ searchParams }: SuspendedPageProps
             <div className="flex flex-col gap-3">
               {!isBanned && (
                 <Button asChild>
-                  <Link href="/contact?subject=suspension-appeal" className="gap-2">
+                  <Link href={appealUrl} className="gap-2">
                     <Mail className="h-4 w-4" />
                     Submit Appeal
                   </Link>
