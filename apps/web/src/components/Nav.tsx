@@ -1,6 +1,6 @@
 "use client";
 
-import { Github, Menu, X, Sparkles, ShoppingBasket, Crown } from "lucide-react";
+import { Github, Menu, X, Sparkles, ShoppingBasket, Crown, LayoutGrid } from "lucide-react";
 import { ViewTransitionLink } from "./ViewTransitionLink";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { usePathname } from "next/navigation";
@@ -99,6 +99,9 @@ export function Nav() {
   const [basketOpen, setBasketOpen] = useState(false);
   const { items } = useBasket();
   const { isHidden, isScrolled } = useScrollHeader();
+  const openPromptDeck = useCallback(() => {
+    window.dispatchEvent(new Event("jfp:open-prompt-deck"));
+  }, []);
 
   return (
     <header
@@ -160,6 +163,17 @@ export function Nav() {
 
         {/* Right side actions */}
         <div className="flex items-center gap-1 sm:gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="hidden md:inline-flex gap-2 h-9 px-3"
+            onClick={openPromptDeck}
+            aria-label="Open prompt deck"
+            title="Prompt Deck (Cmd+Shift+P)"
+          >
+            <LayoutGrid className="h-4 w-4" />
+            Prompt Deck
+          </Button>
           {/* Pro links - desktop only */}
           <a
             href={`${PRO_URL}/login`}

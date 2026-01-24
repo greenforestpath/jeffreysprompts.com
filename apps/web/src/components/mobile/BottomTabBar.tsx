@@ -9,6 +9,7 @@ import {
   Package,
   Search,
   Workflow,
+  LayoutGrid,
   Menu,
   X,
   Gift,
@@ -39,10 +40,11 @@ interface MoreMenuItem {
   label: string;
   icon: typeof Home;
   href?: string;
-  action?: "basket";
+  action?: "basket" | "prompt-deck";
 }
 
 const moreMenuItems: MoreMenuItem[] = [
+  { label: "Prompt Deck", icon: LayoutGrid, action: "prompt-deck" },
   { label: "Basket", icon: ShoppingBag, action: "basket" },
   { label: "Pricing", icon: CreditCard, href: "/pricing" },
   { label: "Contribute", icon: Gift, href: "/contribute" },
@@ -133,6 +135,9 @@ export function BottomTabBar({ onOpenSearch, className }: BottomTabBarProps) {
     (item: MoreMenuItem) => {
       if (item.action === "basket") {
         window.dispatchEvent(new CustomEvent("toggle-basket"));
+      }
+      if (item.action === "prompt-deck") {
+        window.dispatchEvent(new Event("jfp:open-prompt-deck"));
       }
       haptic.light();
       setMenuOpen(false);

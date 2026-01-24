@@ -24,6 +24,10 @@ const SpotlightSearch = dynamic(
   () => import("./SpotlightSearch").then((mod) => mod.SpotlightSearch),
   { ssr: false }
 );
+const PromptDeckOverlay = dynamic(
+  () => import("./PromptDeckOverlay").then((mod) => mod.PromptDeckOverlay),
+  { ssr: false }
+);
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -41,6 +45,11 @@ export function Providers({ children }: ProvidersProps) {
       window.dispatchEvent(new Event("jfp:open-spotlight"));
     }
   }, []);
+  const openPromptDeck = useCallback(() => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("jfp:open-prompt-deck"));
+    }
+  }, []);
 
   const shortcuts = useMemo<KeyboardShortcut[]>(
     () => [
@@ -51,6 +60,14 @@ export function Providers({ children }: ProvidersProps) {
         handler: openSpotlight,
         global: true,
         category: "Search",
+      },
+      {
+        id: "prompt-deck",
+        description: "Open prompt deck",
+        keys: "cmd+shift+p",
+        handler: openPromptDeck,
+        global: true,
+        category: "Actions",
       },
       {
         id: "search-focus",
@@ -119,7 +136,7 @@ export function Providers({ children }: ProvidersProps) {
         category: "Navigation",
       },
     ],
-    [openSpotlight, router]
+    [openSpotlight, openPromptDeck, router]
   );
 
   useKeyboardShortcuts(shortcuts);
@@ -154,6 +171,9 @@ export function Providers({ children }: ProvidersProps) {
           </Suspense>
           <ErrorBoundary fallback={spotlightFallback}>
             <SpotlightSearch />
+          </ErrorBoundary>
+          <ErrorBoundary fallback={null}>
+            <PromptDeckOverlay />
           </ErrorBoundary>
           <KeyboardShortcutsModal
             isOpen={shortcutsOpen}
