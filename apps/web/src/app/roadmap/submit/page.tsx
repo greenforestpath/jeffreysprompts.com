@@ -29,7 +29,7 @@ export default function SubmitFeaturePage() {
         </div>
         <h1 className="text-2xl font-bold mb-2">Submit a Feature Request</h1>
         <p className="text-muted-foreground">
-          Have an idea for Jeffrey's Prompts? We'd love to hear it! Share your
+          Have an idea for Jeffrey&apos;s Prompts? We&apos;d love to hear it! Share your
           suggestion and let the community vote.
         </p>
       </div>

@@ -142,7 +142,7 @@ export default function RoadmapPage() {
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold mb-2">Product Roadmap</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          See what we're building and help shape the future. Vote on features
+          See what we&apos;re building and help shape the future. Vote on features
           you want or submit your own ideas.
         </p>
       </div>

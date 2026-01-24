@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   getOrCreateReferralCode,
-  getReferralCodeByUserId,
   getReferralUrl,
   REFERRAL_CONSTANTS,
 } from "@/lib/referral/referral-store";

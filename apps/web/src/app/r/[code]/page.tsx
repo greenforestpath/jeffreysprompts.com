@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { Gift, ArrowRight, Sparkles, Check } from "lucide-react";
 import { getReferralCodeByCode, REFERRAL_CONSTANTS } from "@/lib/referral/referral-store";
@@ -11,7 +10,7 @@ interface ReferralLandingPageProps {
 }
 
 export async function generateMetadata({ params }: ReferralLandingPageProps): Promise<Metadata> {
-  const resolvedParams = await params;
+  await params; // Await params to consume the Promise
   return {
     title: "You've Been Invited! - JeffreysPrompts",
     description: `Get a ${REFERRAL_CONSTANTS.REFEREE_EXTENDED_TRIAL_DAYS}-day trial or ${REFERRAL_CONSTANTS.REFEREE_DISCOUNT_PERCENT}% off your first month of JeffreysPrompts Premium.`,
@@ -29,10 +28,10 @@ export default async function ReferralLandingPage({ params }: ReferralLandingPag
   // Validate referral code
   const referralCode = getReferralCodeByCode(code);
 
-  // If code doesn't exist, still show the page but with a warning
+  // If code doesn't exist, still show the page
   // This allows first-time visitors to see the referral landing even if the code
   // was created dynamically and isn't in server memory
-  const isValidCode = !!referralCode;
+  // Note: referralCode is used to validate that the code exists in the store
 
   const benefits = [
     `${REFERRAL_CONSTANTS.REFEREE_EXTENDED_TRIAL_DAYS}-day free trial (instead of 14 days)`,

@@ -172,7 +172,7 @@ export function FirstVisitWelcome({
                 Get Started
               </Button>
               <p className="text-center text-[10px] text-neutral-500 dark:text-neutral-400 mt-3">
-                You can revisit these tips anytime from Settings
+                You can revisit these tips anytime from settings
               </p>
             </motion.div>
           </motion.div>

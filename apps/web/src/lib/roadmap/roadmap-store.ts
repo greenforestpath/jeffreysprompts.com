@@ -96,7 +96,6 @@ interface RoadmapStore {
 // =============================================================================
 
 declare global {
-  // eslint-disable-next-line no-var
   var __jfp_roadmap_store__: RoadmapStore | undefined;
 }
 

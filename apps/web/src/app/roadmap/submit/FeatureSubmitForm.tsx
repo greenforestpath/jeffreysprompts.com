@@ -135,7 +135,7 @@ export function FeatureSubmitForm() {
             maxLength={1000}
           />
           <p className="text-xs text-muted-foreground">
-            Explain who benefits and how they'd use this feature
+            Explain who benefits and how they&apos;d use this feature
           </p>
         </div>
 

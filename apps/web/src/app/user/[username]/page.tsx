@@ -10,7 +10,6 @@ import {
   MapPin,
   Share2,
   Sparkles,
-  Star,
   Twitter,
   Github,
 } from "lucide-react";
