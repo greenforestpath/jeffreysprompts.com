@@ -155,7 +155,9 @@ JeffreysPrompts.com is a **prompts showcase and distribution platform** with a c
 jeffreysprompts.com/
 ├── README.md
 ├── AGENTS.md
-├── PLAN_TO_MAKE_JEFFREYSPROMPTS_WEBAPP_AND_CLI_TOOL.md
+├── PLANS/
+│   └── PLAN_TO_MAKE_JEFFREYSPROMPTS_WEBAPP_AND_CLI_TOOL.md
+├── designs/
 ├── jfp.ts                        # CLI entrypoint (Bun-compiled)
 ├── jfp.test.ts                   # CLI tests
 ├── package.json                  # Root monorepo config

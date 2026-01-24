@@ -381,7 +381,8 @@ export const prompts: Prompt[] = [
 jeffreysprompts.com/
 ├── README.md
 ├── AGENTS.md                      # Rules for AI agents
-├── PLAN_TO_MAKE_...md             # Detailed implementation blueprint
+├── PLANS/                         # Design + planning docs
+├── designs/                       # UX/product design docs
 ├── package.json
 ├── bun.lock
 │
@@ -541,7 +542,7 @@ This project welcomes contributions, but please note:
 Before contributing:
 
 1. Read `AGENTS.md` for project conventions
-2. Read `PLAN_TO_MAKE_JEFFREYSPROMPTS_WEBAPP_AND_CLI_TOOL.md` for architecture context
+2. Read `PLANS/PLAN_TO_MAKE_JEFFREYSPROMPTS_WEBAPP_AND_CLI_TOOL.md` for architecture context
 3. Run quality gates before submitting
 
 ---

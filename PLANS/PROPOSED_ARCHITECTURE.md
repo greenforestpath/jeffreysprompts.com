@@ -72,7 +72,7 @@ JSONL (backup/export):
   - `jfp db check`
 
 ## CLI Behavior Targets
-- Preserve JSON output shapes and error codes from `EXISTING_JFP_STRUCTURE.md`.
+- Preserve JSON output shapes and error codes from `./EXISTING_JFP_STRUCTURE.md`.
 - Preserve TTY formatting semantics (tables, boxes, highlights).
 - Preserve auto-JSON behavior when stdout is not a TTY.
 

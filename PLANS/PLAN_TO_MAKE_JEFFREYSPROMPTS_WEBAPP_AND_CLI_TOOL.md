@@ -3418,7 +3418,8 @@ jfp install idea-wizard readme-reviser robot-mode-maker --bundle jeffrey-meta-pr
 jeffreysprompts.com/
 ├── README.md
 ├── AGENTS.md
-├── PLAN_TO_MAKE_JEFFREYSPROMPTS_WEBAPP_AND_CLI_TOOL.md
+├── PLANS/
+│   └── PLAN_TO_MAKE_JEFFREYSPROMPTS_WEBAPP_AND_CLI_TOOL.md
 ├── package.json                          # Root monorepo config
 ├── bun.lock
 ├── vercel.json

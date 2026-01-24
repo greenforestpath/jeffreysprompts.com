@@ -26,9 +26,9 @@ Port the `jfp` CLI from Bun/TypeScript to an idiomatic Rust CLI while preserving
 
 ## Phases
 ### Phase 1 — Planning (this phase)
-- Create spec docs: `EXISTING_JFP_STRUCTURE.md`, `PROPOSED_ARCHITECTURE.md`.
+- Create spec docs: `./EXISTING_JFP_STRUCTURE.md`, `./PROPOSED_ARCHITECTURE.md`.
 - Create sync docs: `SYNC_STRATEGY.md`, `RECOVERY_RUNBOOK.md`.
-- Establish feature parity checklist: `FEATURE_PARITY.md`.
+- Establish feature parity checklist: `./FEATURE_PARITY.md`.
 
 ### Phase 2 — Spec Extraction
 - Deep‑dive each CLI subsystem, capturing:
@@ -68,7 +68,7 @@ Port the `jfp` CLI from Bun/TypeScript to an idiomatic Rust CLI while preserving
 - Confirm whether Rust CLI should **replace** or **coexist** with Bun CLI (default: coexist).
 
 ## Acceptance Criteria
-- All CLI commands documented in `EXISTING_JFP_STRUCTURE.md`
+- All CLI commands documented in `./EXISTING_JFP_STRUCTURE.md`
 - `SYNC_STRATEGY.md` and `RECOVERY_RUNBOOK.md` completed
 - Rust CLI reaches parity with Bun CLI outputs (JSON + TTY)
 - Sync + recovery validated (integrity checks + count/hash)
