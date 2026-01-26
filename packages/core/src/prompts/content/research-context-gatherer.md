@@ -1,13 +1,14 @@
 ---
-title: Research Context Gatherer
-description: Interview for research needs, gather codebase context, write complete research prompt to inbox
-category: workflow
-tags: [research, context, repoprompt, interview, inbox]
-author: Jeffrey Emanuel
-version: 0.1.0
-difficulty: intermediate
+id: "research-context-gatherer"
+title: "Research Context Gatherer"
+description: "Interview for research needs, gather codebase context, write complete research prompt to inbox"
+category: "workflow"
+tags: ["research", "context", "repoprompt", "interview", "inbox"]
+author: "Jeffrey Emanuel"
+version: "0.1.0"
+difficulty: "intermediate"
 featured: false
-created: 2026-01-26
+created: "2026-01-26"
 ---
 
 I have an ultra-powerful research assistant available. Before I send them a research task, I need to prepare a complete, well-formed research prompt with all relevant context.

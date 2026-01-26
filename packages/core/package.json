@@ -30,6 +30,10 @@
       "types": "./src/prompts/workflows.ts",
       "import": "./src/prompts/workflows.ts"
     },
+    "./prompts/schema": {
+      "types": "./src/prompts/schema.ts",
+      "import": "./src/prompts/schema.ts"
+    },
     "./search": {
       "types": "./src/search/index.ts",
       "import": "./src/search/index.ts"
@@ -65,11 +69,13 @@
     "src"
   ],
   "scripts": {
+    "build:prompts": "bun run scripts/build-registry.ts",
     "typecheck": "tsc --noEmit",
     "test": "bun test __tests__/"
   },
   "devDependencies": {
     "bun-types": "^1.3.5",
+    "gray-matter": "^4.0.3",
     "typescript": "^5.7.0"
   },
   "dependencies": {
