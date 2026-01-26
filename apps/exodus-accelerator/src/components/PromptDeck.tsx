@@ -49,7 +49,7 @@ export function PromptDeck() {
   }, []);
 
   const filteredPrompts = useMemo(() => {
-    let result = prompts;
+    let result = [...prompts];
 
     if (selectedCategory) {
       result = result.filter((p) => p.category === selectedCategory);
@@ -63,6 +63,9 @@ export function PromptDeck() {
         p.category.toLowerCase().includes(query)
       );
     }
+
+    // Sort alphabetically by title
+    result.sort((a, b) => a.title.localeCompare(b.title));
 
     return result;
   }, [selectedCategory, searchQuery]);
