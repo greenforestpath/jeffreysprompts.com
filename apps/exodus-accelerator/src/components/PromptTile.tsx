@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Copy,
   Check,
-  Info,
+  ChevronRight,
   Lightbulb,
   FileText,
   Bot,
@@ -20,18 +20,17 @@ import { cn } from "@/lib/utils";
 import { copyToClipboard } from "@/lib/clipboard";
 import { trackUsage } from "@/lib/usage";
 import { useToast } from "@/components/ui/toast";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { PromptDetailModal } from "./PromptDetailModal";
 
-const categoryConfig: Record<PromptCategory, { icon: typeof Lightbulb; color: string; bg: string; glow: string }> = {
-  ideation: { icon: Lightbulb, color: "text-amber-500", bg: "bg-amber-500/10", glow: "shadow-amber-500/20" },
-  documentation: { icon: FileText, color: "text-sky-500", bg: "bg-sky-500/10", glow: "shadow-sky-500/20" },
-  automation: { icon: Bot, color: "text-violet-500", bg: "bg-violet-500/10", glow: "shadow-violet-500/20" },
-  refactoring: { icon: Wrench, color: "text-emerald-500", bg: "bg-emerald-500/10", glow: "shadow-emerald-500/20" },
-  testing: { icon: FlaskConical, color: "text-cyan-500", bg: "bg-cyan-500/10", glow: "shadow-cyan-500/20" },
-  debugging: { icon: Bug, color: "text-rose-500", bg: "bg-rose-500/10", glow: "shadow-rose-500/20" },
-  workflow: { icon: GitBranch, color: "text-orange-500", bg: "bg-orange-500/10", glow: "shadow-orange-500/20" },
-  communication: { icon: MessageCircle, color: "text-blue-500", bg: "bg-blue-500/10", glow: "shadow-blue-500/20" },
+const categoryConfig: Record<PromptCategory, { icon: typeof Lightbulb; color: string; bg: string }> = {
+  ideation: { icon: Lightbulb, color: "text-amber-400", bg: "bg-amber-400/10" },
+  documentation: { icon: FileText, color: "text-sky-400", bg: "bg-sky-400/10" },
+  automation: { icon: Bot, color: "text-violet-400", bg: "bg-violet-400/10" },
+  refactoring: { icon: Wrench, color: "text-emerald-400", bg: "bg-emerald-400/10" },
+  testing: { icon: FlaskConical, color: "text-cyan-400", bg: "bg-cyan-400/10" },
+  debugging: { icon: Bug, color: "text-rose-400", bg: "bg-rose-400/10" },
+  workflow: { icon: GitBranch, color: "text-orange-400", bg: "bg-orange-400/10" },
+  communication: { icon: MessageCircle, color: "text-blue-400", bg: "bg-blue-400/10" },
 };
 
 interface PromptTileProps {
@@ -42,22 +41,22 @@ interface PromptTileProps {
 
 export function PromptTile({ prompt, index, usageCount = 0 }: PromptTileProps) {
   const [isCopied, setIsCopied] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { success, error } = useToast();
 
   const config = categoryConfig[prompt.category];
   const Icon = config.icon;
-  const displayNumber = index + 1;
 
-  const handleCopy = useCallback(async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleCopy = useCallback(async (e?: React.MouseEvent) => {
+    e?.stopPropagation();
 
     const result = await copyToClipboard(prompt.content);
 
     if (result.success) {
       setIsCopied(true);
       if ("vibrate" in navigator) navigator.vibrate(40);
-      success("Copied!", prompt.title);
+      success("Copied to clipboard", prompt.title);
       trackUsage(prompt.id, prompt.category);
       setTimeout(() => setIsCopied(false), 2000);
     } else {
@@ -65,147 +64,123 @@ export function PromptTile({ prompt, index, usageCount = 0 }: PromptTileProps) {
     }
   }, [prompt, success, error]);
 
-  const handleInfo = useCallback((e: React.MouseEvent) => {
+  const handleViewDetails = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     setIsModalOpen(true);
   }, []);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      handleCopy(e as unknown as React.MouseEvent);
-    }
-    if (e.key === "i") {
-      e.preventDefault();
-      setIsModalOpen(true);
-    }
-  }, [handleCopy]);
-
   return (
     <>
-      <Tooltip delayDuration={300}>
-        <TooltipTrigger asChild>
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.3,
-              delay: Math.min(index * 0.02, 0.2),
-              ease: [0.25, 0.1, 0.25, 1]
-            }}
-            className="relative group"
-          >
-            <div
-              role="button"
-              tabIndex={0}
-              onClick={handleCopy}
-              onKeyDown={handleKeyDown}
-              className={cn(
-                "relative w-full text-left rounded-xl p-3",
-                "border border-border/50 bg-card",
-                "transition-all duration-150 ease-out cursor-pointer",
-                "hover:-translate-y-0.5 hover:border-border",
-                "hover:shadow-md dark:hover:shadow-lg",
-                "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                isCopied && [
-                  "border-primary/60 ring-1 ring-primary/20",
-                  "shadow-[0_0_20px_-5px_hsl(var(--primary)/0.3)]",
-                ]
-              )}
-            >
-              {/* Number badge - keyboard shortcut */}
-              {displayNumber <= 9 && (
-                <div className="number-badge">
-                  {displayNumber}
-                </div>
-              )}
-
-              {/* Compact single-row layout */}
-              <div className="flex items-center gap-2.5 pl-6">
-                {/* Icon */}
-                <motion.span
-                  className={cn(
-                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-                    config.bg,
-                    "transition-shadow duration-200",
-                    "group-hover:shadow-md",
-                    config.glow
-                  )}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Icon className={cn("h-4 w-4", config.color)} />
-                </motion.span>
-
-                {/* Title - single line, truncated */}
-                <h3 className="flex-1 text-sm font-medium leading-tight text-foreground truncate pr-1">
-                  {prompt.title}
-                </h3>
-
-                {/* Action buttons - always visible on right */}
-                <div className="flex items-center gap-0.5 shrink-0">
-                  <motion.button
-                    type="button"
-                    onClick={handleInfo}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    className={cn(
-                      "flex h-7 w-7 items-center justify-center rounded-md",
-                      "text-muted-foreground/50 hover:text-muted-foreground",
-                      "hover:bg-muted/60 transition-colors",
-                      "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    )}
-                    aria-label="View prompt details"
-                  >
-                    <Info className="h-3.5 w-3.5" />
-                  </motion.button>
-
-                  <motion.button
-                    type="button"
-                    onClick={handleCopy}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    className={cn(
-                      "flex h-7 w-7 items-center justify-center rounded-md",
-                      isCopied
-                        ? "bg-emerald-500/10 text-emerald-500"
-                        : "text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/60",
-                      "transition-colors",
-                      "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    )}
-                    aria-label={isCopied ? "Copied" : "Copy prompt"}
-                  >
-                    {isCopied ? (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ type: "spring", stiffness: 500, damping: 25 }}
-                      >
-                        <Check className="h-3.5 w-3.5" />
-                      </motion.div>
-                    ) : (
-                      <Copy className="h-3.5 w-3.5" />
-                    )}
-                  </motion.button>
-                </div>
-              </div>
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{
+          duration: 0.4,
+          delay: Math.min(index * 0.025, 0.3),
+          ease: [0.23, 1, 0.32, 1]
+        }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className="group relative"
+      >
+        <motion.div
+          role="button"
+          tabIndex={0}
+          onClick={handleCopy}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              handleCopy();
+            }
+          }}
+          whileTap={{ scale: 0.98 }}
+          className={cn(
+            "relative w-full text-left cursor-pointer",
+            "rounded-xl p-4",
+            "bg-white/[0.03] hover:bg-white/[0.06]",
+            "border border-white/[0.06] hover:border-white/[0.1]",
+            "transition-all duration-200 ease-out",
+            "focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50",
+            isCopied && "border-emerald-500/40 bg-emerald-500/[0.05]"
+          )}
+        >
+          {/* Main content */}
+          <div className="flex items-start gap-3">
+            {/* Icon */}
+            <div className={cn(
+              "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+              config.bg,
+              "transition-transform duration-200",
+              isHovered && "scale-105"
+            )}>
+              <Icon className={cn("h-4.5 w-4.5", config.color)} strokeWidth={1.5} />
             </div>
-          </motion.div>
-        </TooltipTrigger>
-        <TooltipContent side="bottom" align="start" className="max-w-sm">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="uppercase tracking-wide font-medium">{prompt.category}</span>
-              {usageCount > 0 && (
-                <>
-                  <span>·</span>
-                  <span className="tabular-nums">{usageCount} {usageCount === 1 ? "use" : "uses"}</span>
-                </>
-              )}
+
+            {/* Text content */}
+            <div className="flex-1 min-w-0 pt-0.5">
+              <h3 className="text-[13px] font-medium text-white/90 leading-tight mb-1 pr-6">
+                {prompt.title}
+              </h3>
+              <p className="text-[11px] text-white/40 leading-relaxed line-clamp-2">
+                {prompt.description}
+              </p>
             </div>
-            <p className="text-sm leading-relaxed">{prompt.description}</p>
           </div>
-        </TooltipContent>
-      </Tooltip>
+
+          {/* Hover actions */}
+          <AnimatePresence>
+            {isHovered && !isCopied && (
+              <motion.div
+                initial={{ opacity: 0, x: 4 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 4 }}
+                transition={{ duration: 0.15 }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1"
+              >
+                <button
+                  type="button"
+                  onClick={handleViewDetails}
+                  className={cn(
+                    "flex h-7 w-7 items-center justify-center rounded-md",
+                    "text-white/40 hover:text-white/70 hover:bg-white/[0.06]",
+                    "transition-colors duration-150"
+                  )}
+                  aria-label="View details"
+                >
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Copy feedback */}
+          <AnimatePresence>
+            {isCopied && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                className="absolute right-3 top-1/2 -translate-y-1/2"
+              >
+                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-500/20">
+                  <Check className="h-3.5 w-3.5 text-emerald-400" strokeWidth={2.5} />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Category pill - subtle, bottom right */}
+          <div className="absolute bottom-2 right-3">
+            <span className={cn(
+              "text-[9px] font-medium uppercase tracking-wider",
+              "text-white/20 group-hover:text-white/30 transition-colors"
+            )}>
+              {prompt.category}
+            </span>
+          </div>
+        </motion.div>
+      </motion.div>
 
       <PromptDetailModal
         prompt={prompt}

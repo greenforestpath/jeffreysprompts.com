@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { X } from "lucide-react";
 import type { PromptCategory } from "@jeffreysprompts/core/prompts/types";
 import { cn } from "@/lib/utils";
 
@@ -19,82 +18,63 @@ export function CategoryFilter({ categories, selected, onChange, counts }: Categ
     <div
       role="group"
       aria-label="Filter by category"
-      className="flex flex-wrap items-center gap-2"
+      className="flex items-center gap-1 overflow-x-auto scrollbar-hide"
     >
-      <motion.button
-        type="button"
-        aria-pressed={selected === null}
+      <FilterButton
+        active={selected === null}
         onClick={() => onChange(null)}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        className={cn(
-          "inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium",
-          "transition-all duration-200",
-          "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-          selected === null
-            ? "bg-foreground text-background shadow-lg"
-            : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
-        )}
+        count={counts ? totalCount : undefined}
       >
         All
-        {counts && (
-          <span className={cn(
-            "text-xs tabular-nums",
-            selected === null ? "text-background/70" : "text-muted-foreground/60"
-          )}>
-            {totalCount}
-          </span>
-        )}
-      </motion.button>
+      </FilterButton>
 
       {categories.map((category) => (
-        <motion.button
+        <FilterButton
           key={category}
-          type="button"
-          aria-pressed={selected === category}
+          active={selected === category}
           onClick={() => onChange(category)}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className={cn(
-            "inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium capitalize",
-            "transition-all duration-200",
-            "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-            selected === category
-              ? "bg-foreground text-background shadow-lg"
-              : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
-          )}
+          count={counts?.[category]}
         >
           {category}
-          {counts?.[category] !== undefined && (
-            <span className={cn(
-              "text-xs tabular-nums",
-              selected === category ? "text-background/70" : "text-muted-foreground/60"
-            )}>
-              {counts[category]}
-            </span>
-          )}
-        </motion.button>
+        </FilterButton>
       ))}
-
-      {selected && (
-        <motion.button
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.8 }}
-          type="button"
-          onClick={() => onChange(null)}
-          className={cn(
-            "inline-flex items-center gap-1 rounded-full px-3 py-2 text-xs font-medium",
-            "text-muted-foreground hover:text-foreground",
-            "hover:bg-muted/60 transition-colors",
-            "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          )}
-          aria-label="Clear filter"
-        >
-          <X className="size-3" />
-          Clear
-        </motion.button>
-      )}
     </div>
+  );
+}
+
+interface FilterButtonProps {
+  children: React.ReactNode;
+  active: boolean;
+  onClick: () => void;
+  count?: number;
+}
+
+function FilterButton({ children, active, onClick, count }: FilterButtonProps) {
+  return (
+    <motion.button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      whileTap={{ scale: 0.97 }}
+      className={cn(
+        "relative inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5",
+        "text-[12px] font-medium capitalize whitespace-nowrap",
+        "transition-colors duration-150",
+        "focus:outline-none focus-visible:ring-1 focus-visible:ring-violet-500",
+        active
+          ? "text-white bg-white/[0.08]"
+          : "text-white/40 hover:text-white/60 hover:bg-white/[0.04]"
+      )}
+    >
+      {children}
+      {count !== undefined && (
+        <span className={cn(
+          "text-[10px] tabular-nums",
+          active ? "text-white/50" : "text-white/25"
+        )}>
+          {count}
+        </span>
+      )}
+    </motion.button>
   );
 }
