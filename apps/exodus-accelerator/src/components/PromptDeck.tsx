@@ -2,12 +2,13 @@
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Sparkles, X, Loader2, Plus } from "lucide-react";
+import { Search, Sparkles, X, Loader2, Plus, Lightbulb } from "lucide-react";
 import type { Prompt, PromptCategory } from "@jeffreysprompts/core/prompts/types";
 import { type UsageEvent } from "@/lib/usage";
 import { PromptTile } from "./PromptTile";
 import { CategoryFilter } from "./CategoryFilter";
 import { PromptEditor } from "./PromptEditor";
+import { SuggestionsPane } from "./SuggestionsPane";
 import { cn } from "@/lib/utils";
 
 // All valid categories (for filter UI)
@@ -35,6 +36,10 @@ export function PromptDeck() {
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingPrompt, setEditingPrompt] = useState<Prompt | undefined>(undefined);
 
+  // View state: prompts or suggestions
+  const [activeView, setActiveView] = useState<"prompts" | "suggestions">("prompts");
+  const [suggestionCount, setSuggestionCount] = useState(0);
+
   // Load prompts from API
   useEffect(() => {
     fetch("/api/prompts")
@@ -57,6 +62,18 @@ export function PromptDeck() {
       .then((events) => setUsageEvents(events))
       .catch(console.error);
   }, []);
+
+  // Load suggestion count
+  const loadSuggestionCount = useCallback(() => {
+    fetch("/api/prompts/suggestions")
+      .then((res) => res.json())
+      .then((data) => setSuggestionCount(data.pending || 0))
+      .catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    loadSuggestionCount();
+  }, [loadSuggestionCount]);
 
   // Focus search on "/" key
   useEffect(() => {
@@ -133,6 +150,46 @@ export function PromptDeck() {
       throw new Error(data.error);
     }
     reloadPrompts();
+  };
+
+  // Handle editing a suggestion - opens editor with parsed content
+  const handleEditSuggestion = (slug: string, content: string) => {
+    // Parse frontmatter from markdown content
+    const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+    if (!frontmatterMatch) return;
+
+    const frontmatter = frontmatterMatch[1];
+    const promptContent = frontmatterMatch[2].trim();
+
+    // Extract fields from frontmatter
+    const getValue = (key: string): string => {
+      const match = frontmatter.match(new RegExp(`^${key}:\\s*["']?([^"'\\n]+)["']?`, "m"));
+      return match ? match[1] : "";
+    };
+
+    const getList = (key: string): string[] => {
+      const match = frontmatter.match(new RegExp(`^${key}:\\s*\\n([\\s\\S]*?)(?=\\n\\w|$)`, "m"));
+      if (!match) return [];
+      return match[1].split("\n").filter(l => l.trim().startsWith("-")).map(l => l.replace(/^\s*-\s*["']?([^"']*)["']?$/, "$1"));
+    };
+
+    // Create a prompt object for the editor
+    const suggestionPrompt: Prompt = {
+      id: "", // Empty ID for create mode
+      title: getValue("title"),
+      description: getValue("description"),
+      category: getValue("category") as PromptCategory || "workflow",
+      version: getValue("version") || "1.0.0",
+      content: promptContent,
+      tags: getList("tags"),
+      whenToUse: getList("whenToUse"),
+      tips: getList("tips"),
+      created: new Date().toISOString().split("T")[0],
+      author: getValue("author") || "AI Generated",
+    };
+
+    setEditingPrompt(suggestionPrompt);
+    setEditorOpen(true);
   };
 
   // Derive categories that have prompts
@@ -219,8 +276,40 @@ export function PromptDeck() {
               </div>
             </div>
 
-            {/* Add + Stats */}
+            {/* Tabs + Add + Stats */}
             <div className="flex items-center gap-4">
+              {/* View toggle */}
+              <div className="flex items-center gap-1 p-1 rounded-lg bg-white/[0.04]">
+                <button
+                  onClick={() => setActiveView("prompts")}
+                  className={cn(
+                    "px-3 py-1 rounded-md text-sm font-medium transition-colors",
+                    activeView === "prompts"
+                      ? "bg-white/[0.08] text-white/90"
+                      : "text-white/40 hover:text-white/60"
+                  )}
+                >
+                  Prompts
+                </button>
+                <button
+                  onClick={() => setActiveView("suggestions")}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1 rounded-md text-sm font-medium transition-colors",
+                    activeView === "suggestions"
+                      ? "bg-white/[0.08] text-white/90"
+                      : "text-white/40 hover:text-white/60"
+                  )}
+                >
+                  <Lightbulb className="h-3.5 w-3.5" />
+                  Suggestions
+                  {suggestionCount > 0 && (
+                    <span className="ml-1 px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-amber-500/20 text-amber-400">
+                      {suggestionCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+
               <button
                 onClick={handleCreateNew}
                 className={cn(
@@ -252,11 +341,27 @@ export function PromptDeck() {
         </div>
       </div>
 
-      {/* Main grid */}
+      {/* Main content */}
       <main className="flex-1 py-4 px-4 sm:px-6">
         <div className="max-w-[1600px] mx-auto">
           <AnimatePresence mode="wait">
-            {isLoading ? (
+            {activeView === "suggestions" ? (
+              <motion.div
+                key="suggestions"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <SuggestionsPane
+                  onEditSuggestion={handleEditSuggestion}
+                  onRefreshPrompts={() => {
+                    reloadPrompts();
+                    loadSuggestionCount();
+                  }}
+                />
+              </motion.div>
+            ) : isLoading ? (
               <motion.div
                 key="loading"
                 initial={{ opacity: 0 }}
