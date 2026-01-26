@@ -169,18 +169,19 @@ html.theme-transitioning *::after {
   background: hsl(var(--background) / 0.85);
 }
 
-/* Number badge indicator */
+/* Number badge indicator - compact version */
 .number-badge {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  width: 24px;
-  height: 24px;
+  top: 50%;
+  left: 6px;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
-  font-size: 11px;
+  border-radius: 4px;
+  font-size: 10px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   background: hsl(var(--muted));
@@ -190,6 +191,11 @@ html.theme-transitioning *::after {
 
 .dark .number-badge {
   background: hsl(var(--muted) / 0.8);
+}
+
+.group:hover .number-badge {
+  background: hsl(var(--primary) / 0.1);
+  color: hsl(var(--primary));
 }
 
 /* Focus visible ring */
@@ -221,36 +227,49 @@ html.theme-transitioning *::after {
 }
 
 /* ============================================================================
-   TILE GRID LAYOUT
+   TILE GRID LAYOUT - Ultra-compact for maximum density
    ============================================================================ */
 
 .prompt-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 8px;
 }
 
 @media (min-width: 640px) {
   .prompt-grid {
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}
+
+@media (min-width: 768px) {
+  .prompt-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
 @media (min-width: 1024px) {
   .prompt-grid {
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
   }
 }
 
 @media (min-width: 1280px) {
   .prompt-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
   }
 }
 
 @media (min-width: 1536px) {
   .prompt-grid {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+@media (min-width: 1800px) {
+  .prompt-grid {
+    grid-template-columns: repeat(7, 1fr);
   }
 }

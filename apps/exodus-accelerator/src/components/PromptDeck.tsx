@@ -76,28 +76,28 @@ export function PromptDeck() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Header */}
+      {/* Header - compact */}
       <header className="sticky top-0 z-40 glass border-b border-border/50">
-        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 py-4">
+        <div className="max-w-[2400px] mx-auto px-3 sm:px-4 py-2">
           <div className="flex items-center justify-between gap-4">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
+            {/* Logo - compact */}
+            <div className="flex items-center gap-2">
               <motion.div
                 className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-xl",
+                  "flex h-8 w-8 items-center justify-center rounded-lg",
                   "bg-gradient-to-br from-violet-500 to-purple-600",
-                  "shadow-lg shadow-violet-500/25"
+                  "shadow-md shadow-violet-500/25"
                 )}
                 whileHover={{ scale: 1.05, rotate: 5 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Sparkles className="h-5 w-5 text-white" />
+                <Sparkles className="h-4 w-4 text-white" />
               </motion.div>
-              <div>
-                <h1 className="text-lg font-bold tracking-tight">Exodus Accelerator</h1>
-                <p className="text-xs text-muted-foreground hidden sm:block">
-                  Press 1-9 to quick copy
-                </p>
+              <div className="flex items-center gap-2">
+                <h1 className="text-base font-bold tracking-tight">Exodus</h1>
+                <span className="text-xs text-muted-foreground hidden sm:inline">
+                  1-9 quick copy
+                </span>
               </div>
             </div>
 
@@ -122,9 +122,9 @@ export function PromptDeck() {
         </div>
       </header>
 
-      {/* Filter bar */}
-      <div className="sticky top-[73px] z-30 glass border-b border-border/50">
-        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 py-3">
+      {/* Filter bar - compact */}
+      <div className="sticky top-[53px] z-30 glass border-b border-border/50">
+        <div className="max-w-[2400px] mx-auto px-3 sm:px-4 py-2">
           <CategoryFilter
             categories={categories}
             selected={selectedCategory}
@@ -134,9 +134,9 @@ export function PromptDeck() {
         </div>
       </div>
 
-      {/* Main grid */}
-      <main className="flex-1 py-6 px-4 sm:px-6">
-        <div className="max-w-[1800px] mx-auto">
+      {/* Main grid - minimal padding for maximum density */}
+      <main className="flex-1 py-3 px-3 sm:px-4">
+        <div className="max-w-[2400px] mx-auto">
           {filteredPrompts.length === 0 ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -162,9 +162,9 @@ export function PromptDeck() {
         </div>
       </main>
 
-      {/* Footer stats */}
+      {/* Footer stats - compact */}
       <footer className="sticky bottom-0 z-40 glass border-t border-border/50">
-        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 py-3">
+        <div className="max-w-[2400px] mx-auto px-3 sm:px-4 py-2">
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>
               <strong className="text-foreground tabular-nums">{filteredPrompts.length}</strong> prompts
