@@ -71,6 +71,40 @@ body {
 }
 
 /* ============================================================================
+   TOOLTIP ANIMATIONS (Radix UI)
+   ============================================================================ */
+
+@keyframes tooltip-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes tooltip-exit {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.96) translateY(2px);
+  }
+}
+
+.tooltip-content {
+  animation: tooltip-enter 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tooltip-content[data-state="closed"] {
+  animation: tooltip-exit 0.1s ease-in;
+}
+
+/* ============================================================================
    UTILITY CLASSES
    ============================================================================ */
 
