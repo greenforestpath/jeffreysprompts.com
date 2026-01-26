@@ -499,6 +499,39 @@ export const prompts: Prompt[] = [
     ]
   },
   {
+    id: "critical-architecture-improvement-analysis",
+    title: "Critical Architecture Improvement Analysis",
+    description: "Systematically generates, evaluates, and details architectural improvement ideas for a project with confidence ratings and implementation plans.",
+    category: "ideation",
+    tags: [
+      "architecture",
+      "code-review",
+      "planning",
+      "refactoring",
+      "design"
+    ],
+    author: "Jeffrey Emanuel",
+    twitter: "@doodlestein",
+    version: "1.0.2",
+    featured: false,
+    difficulty: "intermediate",
+    estimatedTokens: 337,
+    created: "2026-01-26",
+    updatedAt: "2026-01-26",
+    content: "You are a senior software architect specializing in code design and implementation planning. You are well versed in both 1) best abstractions - theory, architecture, first principles of designing systems 2) latest and great tools and patterns. \n\nUIUX-focus: You are also very thoughtful about the UIUX and care about excellent ergonomics for both humans(me, minimize principal bottleneck) + agents\n\nYour must take great care to look at our task, deeply understand project, context. Come up with your very best ideas for improving this project(minimum 10)....Then go through each one systematically and critically evaluate it, rejecting the ones that are not excellent choices for good reasons and keeping the ones that pass your scrutiny. Highlight critical architectural decisions that need to be made.  \n\nclarification: try not to waste the principal's time, but if you really have questions ask for clarification (high bandwidth question dump and ill return brain dump, do NOT ask stupid surface-level questions)\n\n\nThen, for each idea that passed your test, explain in detail exactly what the idea is (in the form of a concrete, specific, actionable plan with detailed code snippets where relevant), why it would be a good improvement, what are the possible downsides, and how confident you are that it actually improves the project (0-100%).",
+    whenToUse: [
+      "Starting a major refactoring initiative",
+      "Evaluating technical debt priorities",
+      "Planning the next development phase",
+      "Onboarding to understand improvement opportunities"
+    ],
+    tips: [
+      "Provide comprehensive project context including current pain points",
+      "Include specific files or patterns you want analyzed",
+      "Mention any constraints like timeline, team size, or tech stack limitations"
+    ]
+  },
+  {
     id: "deployment-verifier",
     title: "Deployment Verifier",
     description: "Verify live deployment works with automated browser testing",
@@ -586,6 +619,36 @@ export const prompts: Prompt[] = [
       "Agents often have valuable outside perspective",
       "Encourages intellectual honesty",
       "Great for catching blind spots"
+    ]
+  },
+  {
+    id: "prompt-registry-improver",
+    title: "Prompt Registry Improvement Ideator",
+    description: "Generate, evaluate, and implement ideas for improving your prompt library",
+    category: "ideation",
+    tags: [
+      "meta",
+      "prompts",
+      "brainstorming",
+      "evaluation",
+      "improvement"
+    ],
+    author: "Jeffrey Emanuel",
+    twitter: "@doodlestein",
+    version: "1.0.0",
+    featured: false,
+    difficulty: "advanced",
+    created: "2026-01-26",
+    content: "Come up with your very best ideas for improving the Prompts in our registry.\n\nYou may suggest new ones, edit old ones, etc.\n\nYou must deeply understand the project context (and how projects relate). Then suggest human and robot prompts for better results.\n\nThink hard and generate an abundance of **already-good** ideas (15+) (brief one-liner for each).\n\nThen go through each one systematically and critically evaluate it, rejecting the ones that are not excellent choices for good reasons and keeping the ones that pass your scrutiny.\n\nThen, for each idea that passed your test, explain in detail exactly what the idea is (in the form of a concrete, specific, actionable plan with detailed code snippets where relevant), why it would be a good improvement, what are the possible downsides, and how confident you are that it actually improves the project (0-100%). Make sure to actually implement the top ideas now.\n\nUse ultrathink.",
+    whenToUse: [
+      "When you want to expand or improve your prompt collection",
+      "During periodic reviews of your prompt library",
+      "When onboarding to a new project and need tailored prompts"
+    ],
+    tips: [
+      "Run this after deeply understanding your project context",
+      "Use ultrathink for better quality ideation",
+      "The 15+ ideas phase prevents premature convergence"
     ]
   },
   {
