@@ -65,7 +65,8 @@ function generateId(title: string): string {
 }
 
 export function PromptEditor({ prompt, open, onOpenChange, onSave, onDelete }: PromptEditorProps) {
-  const isEdit = !!prompt;
+  // Clone mode: prompt exists but id is empty
+  const isEdit = !!prompt && !!prompt.id;
   const [mode, setMode] = useState<"edit" | "preview">("edit");
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);

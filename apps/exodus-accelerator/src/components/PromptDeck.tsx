@@ -94,6 +94,18 @@ export function PromptDeck() {
     setEditorOpen(true);
   };
 
+  const handleClone = (prompt: Prompt) => {
+    // Clone opens editor in create mode with pre-filled data
+    setEditingPrompt({
+      ...prompt,
+      id: "", // Clear ID to trigger create mode
+      title: `${prompt.title} (Copy)`,
+      version: "1.0.0",
+      created: new Date().toISOString().split("T")[0],
+    });
+    setEditorOpen(true);
+  };
+
   const handleSave = async (prompt: Prompt) => {
     const isNew = !editingPrompt;
     const url = isNew ? "/api/prompts" : `/api/prompts?id=${prompt.id}`;
@@ -296,6 +308,7 @@ export function PromptDeck() {
                     prompt={prompt}
                     index={index}
                     onEdit={() => handleEdit(prompt)}
+                    onClone={() => handleClone(prompt)}
                   />
                 ))}
               </motion.div>

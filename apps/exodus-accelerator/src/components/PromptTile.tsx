@@ -7,6 +7,7 @@ import {
   Check,
   Info,
   Edit3,
+  CopyPlus,
   Lightbulb,
   FileText,
   Bot,
@@ -40,9 +41,10 @@ interface PromptTileProps {
   index: number;
   usageCount?: number;
   onEdit?: () => void;
+  onClone?: () => void;
 }
 
-export function PromptTile({ prompt, index, usageCount = 0, onEdit }: PromptTileProps) {
+export function PromptTile({ prompt, index, usageCount = 0, onEdit, onClone }: PromptTileProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -76,6 +78,11 @@ export function PromptTile({ prompt, index, usageCount = 0, onEdit }: PromptTile
     e.stopPropagation();
     onEdit?.();
   }, [onEdit]);
+
+  const handleClone = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onClone?.();
+  }, [onClone]);
 
   return (
     <TooltipProvider>
@@ -183,6 +190,30 @@ export function PromptTile({ prompt, index, usageCount = 0, onEdit }: PromptTile
                     aria-label="Edit prompt"
                   >
                     <Edit3 className="h-4 w-4" strokeWidth={1.75} />
+                  </motion.button>
+                </SimpleTooltip>
+              )}
+
+              {/* Clone button */}
+              {onClone && (
+                <SimpleTooltip content="Clone prompt" side="top">
+                  <motion.button
+                    type="button"
+                    onClick={handleClone}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={cn(
+                      "flex h-9 w-9 items-center justify-center",
+                      "rounded-lg",
+                      "bg-white/[0.04] hover:bg-white/[0.08]",
+                      "border border-transparent hover:border-white/[0.08]",
+                      "text-white/40 hover:text-white/70",
+                      "transition-all duration-150",
+                      "focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50"
+                    )}
+                    aria-label="Clone prompt"
+                  >
+                    <CopyPlus className="h-4 w-4" strokeWidth={1.75} />
                   </motion.button>
                 </SimpleTooltip>
               )}
