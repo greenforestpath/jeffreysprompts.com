@@ -777,7 +777,7 @@ export const prompts: Prompt[] = [
   {
     id: "prompt-registry-improver",
     title: "Prompt Registry Improvement Ideator",
-    description: "Generate, evaluate, and implement ideas for improving your prompt library",
+    description: "Generate and evaluate ideas for improving your prompt library (outputs to suggestions queue)",
     category: "ideation",
     tags: [
       "meta",
@@ -788,11 +788,11 @@ export const prompts: Prompt[] = [
     ],
     author: "Jeffrey Emanuel",
     twitter: "@doodlestein",
-    version: "1.0.0",
+    version: "1.1.0",
     featured: false,
     difficulty: "advanced",
     created: "2026-01-26",
-    content: "Come up with your very best ideas for improving the Prompts in our registry.\n\nYou may suggest new ones, edit old ones, etc.\n\nYou must deeply understand the project context (and how projects relate). Then suggest human and robot prompts for better results.\n\nThink hard and generate an abundance of **already-good** ideas (15+) (brief one-liner for each).\n\nThen go through each one systematically and critically evaluate it, rejecting the ones that are not excellent choices for good reasons and keeping the ones that pass your scrutiny.\n\nThen, for each idea that passed your test, explain in detail exactly what the idea is (in the form of a concrete, specific, actionable plan with detailed code snippets where relevant), why it would be a good improvement, what are the possible downsides, and how confident you are that it actually improves the project (0-100%). Make sure to actually implement the top ideas now.\n\nUse ultrathink.",
+    content: "Come up with your very best ideas for improving the Prompts in our registry.\n\nYou may suggest new ones, edit old ones, etc.\n\nYou must deeply understand the project context (and how projects relate). Then suggest human and robot prompts for better results.\n\nThink hard and generate an abundance of **already-good** ideas (15+) (brief one-liner for each).\n\nThen go through each one systematically and critically evaluate it, rejecting the ones that are not excellent choices for good reasons and keeping the ones that pass your scrutiny.\n\nThen, for each idea that passed your test, explain in detail exactly what the idea is, why it would be a good improvement, what are the possible downsides, and how confident you are that it actually improves the project (0-100%).\n\n## Output Format\n\n**DO NOT directly create prompts.** Instead, output suggestions for human review.\n\nFor each suggestion that passed evaluation, output in this format:\n\n```json\n{\n  \"type\": \"new\" | \"edit\",\n  \"targetId\": \"existing-prompt-id (if edit)\",\n  \"confidence\": 85,\n  \"rationale\": \"Why this improvement matters\",\n  \"prompt\": {\n    \"id\": \"suggested-slug\",\n    \"title\": \"Suggested Title\",\n    \"description\": \"One sentence description\",\n    \"category\": \"one of: ideation, documentation, automation, refactoring, testing, debugging, workflow, communication\",\n    \"tags\": [\"tag1\", \"tag2\"],\n    \"content\": \"The full prompt content...\",\n    \"whenToUse\": [\"When to use 1\", \"When to use 2\"],\n    \"tips\": [\"Tip 1\", \"Tip 2\"]\n  }\n}\n```\n\nPresent all suggestions in a clear list. The human will review and approve/reject each one.\n\nUse ultrathink.",
     whenToUse: [
       "When you want to expand or improve your prompt collection",
       "During periodic reviews of your prompt library",
@@ -801,7 +801,8 @@ export const prompts: Prompt[] = [
     tips: [
       "Run this after deeply understanding your project context",
       "Use ultrathink for better quality ideation",
-      "The 15+ ideas phase prevents premature convergence"
+      "The 15+ ideas phase prevents premature convergence",
+      "Output goes to suggestions queue for human review"
     ]
   },
   {

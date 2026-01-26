@@ -174,16 +174,75 @@ GET /api/prompts/[id]/versions/[hash]
 - One-click revert to any version
 - Creates new commit (preserves history)
 
-### Phase 5: Polish
+### Phase 5: Prompt Suggestions Queue (NEW - v0.3)
 
-**5.1 Prompt Templates**
+**Problem:** AI-generated prompt improvements should be reviewed, not auto-implemented.
+
+**5.1 Suggestions Storage**
+```
+packages/core/src/prompts/
+├── content/              # Approved prompts (source of truth)
+└── suggestions/          # Pending suggestions (queue)
+    ├── index.json        # List of all suggestions with metadata
+    └── {slug}.md         # Full suggested prompt content
+```
+
+**5.2 Suggestion Schema**
+```typescript
+interface PromptSuggestion {
+  id: string;              // UUID
+  slug: string;            // Proposed ID for the prompt
+  type: "new" | "edit";    // New prompt or edit existing
+  targetId?: string;       // If edit, which prompt to modify
+  status: "pending" | "approved" | "rejected";
+  confidence: number;      // 0-100%
+  rationale: string;       // Why this improvement
+  createdAt: string;
+  reviewedAt?: string;
+  prompt: Partial<Prompt>; // The suggested prompt content
+}
+```
+
+**5.3 Suggestions API**
+```
+GET    /api/prompts/suggestions         - List pending suggestions
+POST   /api/prompts/suggestions         - Add new suggestion
+PUT    /api/prompts/suggestions/[id]    - Approve/reject suggestion
+DELETE /api/prompts/suggestions/[id]    - Delete suggestion
+```
+
+**5.4 Suggestions UI Pane**
+- Tab or panel in the prompt library showing pending suggestions
+- Each suggestion card shows:
+  - Proposed title and description
+  - Type (new/edit) and confidence score
+  - Rationale summary
+- Actions per suggestion:
+  - **View** → Expand to see full content
+  - **Edit** → Opens in PromptEditor (pre-filled, editable)
+  - **Approve** → Creates/updates the prompt from current state
+  - **Reject** → Marks as rejected (keeps for reference)
+- Flow: View → Edit (optional) → Approve
+- Editing a suggestion updates the suggestion, not the prompt directly
+- Only "Approve" creates the actual prompt
+
+**5.5 Update prompt-registry-improver**
+- Output suggestions to the queue, NOT directly implement
+- Format: structured JSON with all required fields
+- User reviews and approves before prompts are created
+
+### Phase 6: Polish
+
+**6.1 Prompt Templates**
 - Starter templates by category
 - Shown when creating new prompt
 
-**5.2 CLI Commands**
+**6.2 CLI Commands**
 - `jfp add` - Interactive prompt creation
 - `jfp edit <id>` - Open in $EDITOR
 - `jfp history <id>` - Show version history
+- `jfp suggestions` - List pending suggestions
+- `jfp approve <id>` - Approve a suggestion
 
 ---
 
@@ -257,11 +316,19 @@ apps/exodus-accelerator/src/
 4. ~~All changes tracked in git~~ ✅
 
 ### v0.2 (Simplified + Versioning)
-1. Can create prompt with ONLY content (AI generates metadata)
-2. Can view version history when editing
-3. Can view previous version content
-4. Can diff between versions
-5. Can rollback to previous version
+1. Can create prompt with ONLY content (AI generates metadata) ✅
+2. Can clone/fork existing prompts ✅
+3. Can view version history when editing (partial - API done)
+4. Can view previous version content
+5. Can diff between versions
+6. Can rollback to previous version
+
+### v0.3 (Suggestions Queue)
+1. AI-generated prompt ideas go to suggestions queue (not auto-created)
+2. UI pane to view pending suggestions
+3. Approve/reject suggestions with one click
+4. Approved suggestions become real prompts
+5. prompt-registry-improver writes to queue
 
 ---
 
