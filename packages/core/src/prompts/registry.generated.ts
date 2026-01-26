@@ -6,36 +6,6 @@ import type { Prompt } from "./types";
 
 export const prompts: Prompt[] = [
   {
-    id: "agent-handoff",
-    title: "Agent Handoff",
-    description: "Prepare work state for handoff to another agent or future session",
-    category: "workflow",
-    tags: [
-      "handoff",
-      "continuity",
-      "documentation",
-      "session"
-    ],
-    author: "Jeffrey Emanuel",
-    twitter: "@doodlestein",
-    version: "1.0.0",
-    featured: true,
-    difficulty: "beginner",
-    created: "2026-01-26",
-    content: "Prepare a complete handoff document for whoever continues this work (another agent or a future session).\n\n## Required Sections\n\n### 1. Current State\n- What was the original goal/task?\n- What has been completed?\n- What is the current state of the code?\n\n### 2. In Progress\n- What were you actively working on when stopped?\n- Any half-finished changes or uncommitted work?\n- Files currently modified (list with brief description of changes)\n\n### 3. Blockers & Open Questions\n- What is blocking progress?\n- What decisions need to be made?\n- What questions need answers from the user?\n\n### 4. Next Steps\n- Concrete, numbered list of what to do next\n- In priority order\n- Each step should be actionable without additional context\n\n### 5. Key Files\n- List the 3-5 most important files for this work\n- Brief description of what each does\n- Any tricky parts to watch out for\n\n### 6. Context That Would Be Lost\n- Any non-obvious discoveries or learnings\n- Failed approaches (so they aren't re-tried)\n- Important constraints or requirements\n\n## Output Format\n\nWrite this to: `thoughts/handoffs/{TASK_SLUG}-handoff.md`\n\nThe document should be self-contained. A fresh agent reading only this file should be able to continue the work effectively.",
-    whenToUse: [
-      "Before ending a long session",
-      "When handing work to another agent",
-      "Before context compaction",
-      "When work is blocked and needs to be resumed later"
-    ],
-    tips: [
-      "Run this BEFORE you lose context, not after",
-      "The output should let a fresh agent resume without ramp-up",
-      "Include specific file paths and line numbers"
-    ]
-  },
-  {
     id: "agent-swarm-launcher",
     title: "Agent Swarm Launcher",
     description: "Initialize multiple agents with full context and coordination protocols",
@@ -63,36 +33,6 @@ export const prompts: Prompt[] = [
       "Requires Agent Mail MCP server to be running",
       "Works with beads (bd) for task management",
       "Prevents agents from duplicating work"
-    ]
-  },
-  {
-    id: "communication-drafter",
-    title: "Communication Drafter",
-    description: "Generate professional PR descriptions, commit messages, and team communications",
-    category: "communication",
-    tags: [
-      "writing",
-      "pr",
-      "documentation",
-      "communication"
-    ],
-    author: "Jeffrey Emanuel",
-    twitter: "@doodlestein",
-    version: "1.0.0",
-    featured: true,
-    difficulty: "beginner",
-    created: "2026-01-26",
-    content: "Draft professional, human-sounding communication for the specified purpose.\n\n## Communication Types\n\n**For PR Descriptions:**\n- Summary of what changed and why\n- Testing done\n- Screenshots if UI changes\n- Breaking changes or migration notes\n\n**For Commit Messages:**\n- Follow conventional commits format\n- First line: type(scope): brief description\n- Body: explain why, not what (code shows what)\n\n**For Emails/Messages:**\n- Clear subject line\n- Context first, ask/action second\n- Bullet points for multiple items\n- Explicit next steps or asks\n\n**For Release Notes:**\n- User-facing changes only\n- Grouped by type (features, fixes, breaking)\n- Link to relevant docs/PRs\n\n## Writing Rules\n\n1. **No AI-slop patterns:**\n   - Avoid em dashes (use semicolons or commas)\n   - No \"Here's why\" or \"Here's the thing\"\n   - No \"It's not X, it's Y\" constructions\n   - No excessive hedging or qualifiers\n\n2. **Be direct:**\n   - State the main point first\n   - Use active voice\n   - Keep sentences short\n\n3. **Match the context:**\n   - Technical detail for technical audiences\n   - Plain language for stakeholders\n   - Appropriate formality for the medium\n\n## Output\n\nThe communication text, ready to use. If you need clarification about audience or context, ask first.",
-    whenToUse: [
-      "Writing PR descriptions",
-      "Drafting technical emails",
-      "Creating release announcements",
-      "Team status updates"
-    ],
-    tips: [
-      "Specify the audience (technical vs non-technical)",
-      "Provide context about what changed",
-      "Review output for AI-isms (em dashes, \"Here's why\", etc.)"
     ]
   },
   {
@@ -215,37 +155,6 @@ export const prompts: Prompt[] = [
       "Works with Claude, GPT, Gemini, or any combination",
       "Requires intellectual honesty about other models' strengths",
       "Great for avoiding single-model blind spots"
-    ]
-  },
-  {
-    id: "security-auditor",
-    title: "Security Auditor",
-    description: "Systematic security review for OWASP top 10 and common vulnerabilities",
-    category: "debugging",
-    tags: [
-      "security",
-      "audit",
-      "owasp",
-      "vulnerabilities",
-      "ultrathink"
-    ],
-    author: "Jeffrey Emanuel",
-    twitter: "@doodlestein",
-    version: "1.0.0",
-    featured: true,
-    difficulty: "advanced",
-    created: "2026-01-26",
-    content: "Conduct a systematic security audit of this codebase. Use ultrathink.\n\n## Check for OWASP Top 10\n\n1. **Injection (SQL, NoSQL, Command, LDAP)** - Look for unsanitized user input in queries, commands, or system calls\n2. **Broken Authentication** - Check session management, password handling, token security\n3. **Sensitive Data Exposure** - Find hardcoded secrets, unencrypted sensitive data, excessive logging\n4. **XML External Entities (XXE)** - Check XML parsers for external entity processing\n5. **Broken Access Control** - Verify authorization checks on all endpoints and resources\n6. **Security Misconfiguration** - Check for debug modes, default credentials, verbose errors in production\n7. **Cross-Site Scripting (XSS)** - Find unescaped user input rendered in HTML/JS\n8. **Insecure Deserialization** - Check for unsafe deserialization of untrusted data\n9. **Using Components with Known Vulnerabilities** - Note any obviously outdated dependencies\n10. **Insufficient Logging & Monitoring** - Check for security event logging\n\n## Additional Checks\n\n- **Secrets in code:** API keys, passwords, tokens hardcoded or in git history\n- **Environment variables:** Ensure secrets use env vars, not config files\n- **CORS configuration:** Check for overly permissive CORS\n- **Rate limiting:** Identify endpoints vulnerable to brute force\n- **Input validation:** Check for missing or weak validation\n- **Error messages:** Ensure errors don't leak internal details\n\n## Output Format\n\nFor each issue found:\n1. **Severity:** Critical / High / Medium / Low\n2. **Location:** File and line number\n3. **Description:** What the vulnerability is\n4. **Impact:** What could happen if exploited\n5. **Fix:** Concrete remediation with code example\n\nPrioritize findings by severity. Critical and High issues should block deployment.",
-    whenToUse: [
-      "Before any production deployment",
-      "When handling user data or authentication",
-      "After adding new API endpoints",
-      "Periodic security reviews"
-    ],
-    tips: [
-      "Run this on every significant feature before merge",
-      "Some issues require runtime testing to verify",
-      "Follow up with dependency audit for supply chain security"
     ]
   },
   {
@@ -623,37 +532,6 @@ export const prompts: Prompt[] = [
     ]
   },
   {
-    id: "dependency-auditor",
-    title: "Dependency Auditor",
-    description: "Audit dependencies for security vulnerabilities, outdated packages, and bloat",
-    category: "refactoring",
-    tags: [
-      "dependencies",
-      "security",
-      "audit",
-      "npm",
-      "maintenance"
-    ],
-    author: "Jeffrey Emanuel",
-    twitter: "@doodlestein",
-    version: "1.0.0",
-    featured: false,
-    difficulty: "intermediate",
-    created: "2026-01-26",
-    content: "Audit the project's dependencies for security, maintenance, and bloat issues.\n\n## Audit Checklist\n\n### 1. Security Vulnerabilities\n- Run `npm audit` / `yarn audit` / `pnpm audit`\n- Check for known CVEs in dependencies\n- Note severity levels and available fixes\n\n### 2. Outdated Packages\n- Run `npm outdated` or equivalent\n- Identify packages more than 1 major version behind\n- Check changelogs for breaking changes before updating\n\n### 3. Unused Dependencies\n- Identify packages in package.json not imported anywhere\n- Check for dev dependencies that should be regular deps (or vice versa)\n- Look for duplicate packages serving same purpose\n\n### 4. Maintenance Status\nFor each major dependency, check:\n- Last publish date (>1 year = concerning)\n- Open issues count and response time\n- Is it deprecated or archived?\n- Are there better-maintained alternatives?\n\n### 5. Bundle Size Impact\n- Which dependencies contribute most to bundle size?\n- Are there lighter alternatives?\n- Can any be lazy-loaded?\n\n## Output Format\n\n```markdown\n## Security Issues\n| Package | Severity | CVE | Fix Available |\n|---------|----------|-----|---------------|\n\n## Outdated (Major)\n| Package | Current | Latest | Breaking Changes |\n|---------|---------|--------|------------------|\n\n## Unused\n- package-name (reason it appears unused)\n\n## Maintenance Concerns\n- package-name: [last updated X ago, Y open issues, etc.]\n\n## Recommendations\n1. [Priority action items]\n```\n\n## Action Priority\n\n1. **Critical/High security** - Fix immediately\n2. **Unused dependencies** - Remove now (easy win)\n3. **Outdated major versions** - Plan upgrade path\n4. **Maintenance concerns** - Evaluate alternatives",
-    whenToUse: [
-      "Before production deployments",
-      "Monthly maintenance reviews",
-      "When adding new dependencies",
-      "After security advisories"
-    ],
-    tips: [
-      "Run npm audit or equivalent first",
-      "Check if unused dependencies can be removed",
-      "Consider maintenance status of packages (last update, open issues)"
-    ]
-  },
-  {
     id: "deployment-verifier",
     title: "Deployment Verifier",
     description: "Verify live deployment works with automated browser testing",
@@ -681,37 +559,6 @@ export const prompts: Prompt[] = [
       "Test both desktop and mobile viewports",
       "Check browser console for JS errors",
       "Screenshots help catch visual regressions"
-    ]
-  },
-  {
-    id: "minimal-reproducer",
-    title: "Minimal Reproducer Creator",
-    description: "Extract the minimal reproduction steps for a bug",
-    category: "debugging",
-    tags: [
-      "debugging",
-      "bug",
-      "reproduction",
-      "isolation",
-      "ultrathink"
-    ],
-    author: "Jeffrey Emanuel",
-    twitter: "@doodlestein",
-    version: "1.0.0",
-    featured: false,
-    difficulty: "intermediate",
-    created: "2026-01-26",
-    content: "Create a minimal reproduction case for this bug. Use ultrathink.\n\n## Process\n\n### 1. Confirm the Bug\n- Can you reproduce it reliably?\n- What are the exact steps to trigger it?\n- What is the expected vs actual behavior?\n\n### 2. Identify the Boundaries\n- Which files/modules are involved?\n- What inputs trigger the bug?\n- What environment factors matter?\n\n### 3. Reduce to Minimal Case\n- Start removing code/dependencies that aren't needed\n- After each removal, verify the bug still reproduces\n- Continue until you can't remove anything without the bug disappearing\n\n### 4. Document the Reproducer\n\n**Output format:**\n```\n## Bug Description\n[One sentence describing the bug]\n\n## Expected Behavior\n[What should happen]\n\n## Actual Behavior\n[What actually happens]\n\n## Minimal Reproduction Steps\n1. [Step 1]\n2. [Step 2]\n3. [etc.]\n\n## Minimal Code\n[The smallest code that reproduces the issue]\n\n## Environment\n- OS:\n- Node/Runtime version:\n- Package versions:\n\n## Root Cause Analysis\n[Your hypothesis about why this happens]\n```\n\n### 5. Verify Minimality\n- Try removing one more thing. Does the bug still happen?\n- If yes, it's not minimal yet. Keep reducing.\n- If no, you've found the minimal case.\n\nThe goal is the smallest possible code/steps that still demonstrate the bug. This usually reveals the root cause.",
-    whenToUse: [
-      "When debugging a complex bug",
-      "Before filing an issue on an external project",
-      "When you need to isolate root cause",
-      "When a bug is intermittent or hard to understand"
-    ],
-    tips: [
-      "Start by reproducing the bug reliably",
-      "Remove code until the bug disappears, then add the last thing back",
-      "The minimal case reveals the true cause"
     ]
   },
   {
@@ -803,36 +650,6 @@ export const prompts: Prompt[] = [
       "Use ultrathink for better quality ideation",
       "The 15+ ideas phase prevents premature convergence",
       "Output goes to suggestions queue for human review"
-    ]
-  },
-  {
-    id: "quick-fix",
-    title: "Quick Fix",
-    description: "Fast, focused fix for small issues without deep codebase exploration",
-    category: "debugging",
-    tags: [
-      "fix",
-      "quick",
-      "focused",
-      "minimal"
-    ],
-    author: "Jeffrey Emanuel",
-    twitter: "@doodlestein",
-    version: "1.0.0",
-    featured: false,
-    difficulty: "beginner",
-    created: "2026-01-26",
-    content: "Fix this specific issue quickly and precisely. Don't explore the broader codebase unless necessary.\n\n## Approach\n\n1. **Understand the specific issue** - What exactly is wrong or needs to change?\n2. **Locate the relevant code** - Find the exact file(s) and line(s)\n3. **Make the minimal fix** - Change only what's necessary\n4. **Verify the fix** - Ensure it works and doesn't break related code\n5. **Done** - Don't gold-plate or refactor surrounding code\n\n## Rules\n\n- Stay focused on the specific issue\n- Don't refactor unrelated code\n- Don't add features beyond what was requested\n- Don't deep-dive into project architecture\n- If the fix requires understanding more context, say so\n\n## Output\n\nBrief description of what was changed and why. No extensive explanations needed.",
-    whenToUse: [
-      "For obvious bugs with clear fixes",
-      "Single-file changes",
-      "When you already know exactly what needs to change",
-      "Small features or tweaks"
-    ],
-    tips: [
-      "Don't use this for complex multi-file changes",
-      "If unsure, use deep-project-primer first",
-      "Verify the fix doesn't break related functionality"
     ]
   },
   {

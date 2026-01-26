@@ -1,0 +1,58 @@
+{
+  "suggestions": [
+    {
+      "id": "sug-001",
+      "slug": "security-auditor",
+      "type": "new",
+      "status": "pending",
+      "confidence": 90,
+      "rationale": "Critical gap - no security prompt existed. Every project needs systematic security review for OWASP top 10 and common vulnerabilities.",
+      "createdAt": "2026-01-26T00:00:00Z"
+    },
+    {
+      "id": "sug-002",
+      "slug": "agent-handoff",
+      "type": "new",
+      "status": "pending",
+      "confidence": 92,
+      "rationale": "Essential for session continuity. Context compaction loses nuance; handoffs preserve intent for another agent or future session.",
+      "createdAt": "2026-01-26T00:00:00Z"
+    },
+    {
+      "id": "sug-003",
+      "slug": "quick-fix",
+      "type": "new",
+      "status": "pending",
+      "confidence": 88,
+      "rationale": "Not every task needs deep-project-primer. Lightweight prompt for obvious single-file fixes without overhead.",
+      "createdAt": "2026-01-26T00:00:00Z"
+    },
+    {
+      "id": "sug-004",
+      "slug": "communication-drafter",
+      "type": "new",
+      "status": "pending",
+      "confidence": 85,
+      "rationale": "Fills the empty 'communication' category. Universal need for PR descriptions, emails, and team messages.",
+      "createdAt": "2026-01-26T00:00:00Z"
+    },
+    {
+      "id": "sug-005",
+      "slug": "minimal-reproducer",
+      "type": "new",
+      "status": "pending",
+      "confidence": 80,
+      "rationale": "Essential for debugging complex issues. Forces understanding of root cause by extracting minimal reproduction steps.",
+      "createdAt": "2026-01-26T00:00:00Z"
+    },
+    {
+      "id": "sug-006",
+      "slug": "dependency-auditor",
+      "type": "new",
+      "status": "pending",
+      "confidence": 82,
+      "rationale": "Supply chain security is critical. Audits for vulnerabilities, outdated packages, and unnecessary bloat.",
+      "createdAt": "2026-01-26T00:00:00Z"
+    }
+  ]
+}
