@@ -87,7 +87,7 @@ export function PromptEditor({ prompt, open, onOpenChange, onSave, onDelete }: P
     tips: "",
   });
 
-  // Load prompt data when editing
+  // Load prompt data when editing or cloning
   useEffect(() => {
     if (prompt) {
       setForm({
@@ -101,9 +101,13 @@ export function PromptEditor({ prompt, open, onOpenChange, onSave, onDelete }: P
         whenToUse: prompt.whenToUse?.join("\n") || "",
         tips: prompt.tips?.join("\n") || "",
       });
-      setShowMetadata(true); // Show metadata when editing
-      // Load version history
-      loadVersions(prompt.id);
+      setShowMetadata(true); // Show metadata when editing/cloning
+      // Load version history only for existing prompts (not clones)
+      if (prompt.id) {
+        loadVersions(prompt.id);
+      } else {
+        setVersions([]);
+      }
     } else {
       // Reset form for create mode
       setForm({

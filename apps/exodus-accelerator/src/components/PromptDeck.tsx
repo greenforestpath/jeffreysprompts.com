@@ -107,7 +107,8 @@ export function PromptDeck() {
   };
 
   const handleSave = async (prompt: Prompt) => {
-    const isNew = !editingPrompt;
+    // Clone mode: editingPrompt exists but has empty id
+    const isNew = !editingPrompt || !editingPrompt.id;
     const url = isNew ? "/api/prompts" : `/api/prompts?id=${prompt.id}`;
     const method = isNew ? "POST" : "PUT";
 
