@@ -6,6 +6,7 @@ import {
   Copy,
   Check,
   Info,
+  Edit3,
   Lightbulb,
   FileText,
   Bot,
@@ -38,9 +39,10 @@ interface PromptTileProps {
   prompt: Prompt;
   index: number;
   usageCount?: number;
+  onEdit?: () => void;
 }
 
-export function PromptTile({ prompt, index, usageCount = 0 }: PromptTileProps) {
+export function PromptTile({ prompt, index, usageCount = 0, onEdit }: PromptTileProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -69,6 +71,11 @@ export function PromptTile({ prompt, index, usageCount = 0 }: PromptTileProps) {
     e.stopPropagation();
     setIsModalOpen(true);
   }, []);
+
+  const handleEdit = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEdit?.();
+  }, [onEdit]);
 
   return (
     <TooltipProvider>
@@ -156,6 +163,30 @@ export function PromptTile({ prompt, index, usageCount = 0 }: PromptTileProps) {
 
             {/* Action buttons - proper spacing and size */}
             <div className="flex items-center gap-1.5">
+              {/* Edit button */}
+              {onEdit && (
+                <SimpleTooltip content="Edit prompt" side="top">
+                  <motion.button
+                    type="button"
+                    onClick={handleEdit}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={cn(
+                      "flex h-9 w-9 items-center justify-center",
+                      "rounded-lg",
+                      "bg-white/[0.04] hover:bg-white/[0.08]",
+                      "border border-transparent hover:border-white/[0.08]",
+                      "text-white/40 hover:text-white/70",
+                      "transition-all duration-150",
+                      "focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50"
+                    )}
+                    aria-label="Edit prompt"
+                  >
+                    <Edit3 className="h-4 w-4" strokeWidth={1.75} />
+                  </motion.button>
+                </SimpleTooltip>
+              )}
+
               {/* Info button */}
               <SimpleTooltip content="View details" side="top">
                 <motion.button

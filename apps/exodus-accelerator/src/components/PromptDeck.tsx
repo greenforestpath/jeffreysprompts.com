@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Sparkles, X, Loader2 } from "lucide-react";
+import { Search, Sparkles, X, Loader2, Plus } from "lucide-react";
 import type { Prompt, PromptCategory } from "@jeffreysprompts/core/prompts/types";
 import { type UsageEvent } from "@/lib/usage";
 import { PromptTile } from "./PromptTile";
 import { CategoryFilter } from "./CategoryFilter";
+import { PromptEditor } from "./PromptEditor";
 import { cn } from "@/lib/utils";
 
 // All valid categories (for filter UI)
@@ -29,6 +30,10 @@ export function PromptDeck() {
   const [searchQuery, setSearchQuery] = useState("");
   const [usageEvents, setUsageEvents] = useState<UsageEvent[]>([]);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Editor state
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editingPrompt, setEditingPrompt] = useState<Prompt | undefined>(undefined);
 
   // Load prompts from API
   useEffect(() => {
@@ -68,6 +73,54 @@ export function PromptDeck() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  // Reload prompts
+  const reloadPrompts = useCallback(() => {
+    fetch("/api/prompts")
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.error) setPrompts(data.prompts || []);
+      });
+  }, []);
+
+  // Editor handlers
+  const handleCreateNew = () => {
+    setEditingPrompt(undefined);
+    setEditorOpen(true);
+  };
+
+  const handleEdit = (prompt: Prompt) => {
+    setEditingPrompt(prompt);
+    setEditorOpen(true);
+  };
+
+  const handleSave = async (prompt: Prompt) => {
+    const isNew = !editingPrompt;
+    const url = isNew ? "/api/prompts" : `/api/prompts?id=${prompt.id}`;
+    const method = isNew ? "POST" : "PUT";
+
+    const res = await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(prompt),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw { errors: data.details || [data.error] };
+    }
+
+    reloadPrompts();
+  };
+
+  const handleDelete = async (id: string) => {
+    const res = await fetch(`/api/prompts?id=${id}`, { method: "DELETE" });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error);
+    }
+    reloadPrompts();
+  };
 
   // Derive categories that have prompts
   const categories = useMemo(() => {
@@ -153,9 +206,22 @@ export function PromptDeck() {
               </div>
             </div>
 
-            {/* Stats */}
-            <div className="text-[12px] text-white/40 tabular-nums">
-              {isLoading ? "..." : `${filteredPrompts.length} prompts`}
+            {/* Add + Stats */}
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleCreateNew}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium",
+                  "bg-violet-500/10 text-violet-400 hover:bg-violet-500/20",
+                  "transition-colors duration-200"
+                )}
+              >
+                <Plus className="h-4 w-4" />
+                Add
+              </button>
+              <div className="text-[12px] text-white/40 tabular-nums">
+                {isLoading ? "..." : `${filteredPrompts.length} prompts`}
+              </div>
             </div>
           </div>
         </div>
@@ -229,6 +295,7 @@ export function PromptDeck() {
                     key={prompt.id}
                     prompt={prompt}
                     index={index}
+                    onEdit={() => handleEdit(prompt)}
                   />
                 ))}
               </motion.div>
@@ -236,6 +303,15 @@ export function PromptDeck() {
           </AnimatePresence>
         </div>
       </main>
+
+      {/* Prompt Editor Modal */}
+      <PromptEditor
+        prompt={editingPrompt}
+        open={editorOpen}
+        onOpenChange={setEditorOpen}
+        onSave={handleSave}
+        onDelete={handleDelete}
+      />
     </div>
   );
 }
