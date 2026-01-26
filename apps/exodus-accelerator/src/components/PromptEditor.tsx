@@ -217,16 +217,65 @@ export function PromptEditor({ prompt, open, onOpenChange, onSave, onDelete }: P
       setErrors(["Prompt content is required"]);
       return;
     }
-    if (!form.title.trim()) {
-      setErrors(["Title is required - click 'Generate Metadata' or enter manually"]);
-      return;
-    }
 
     setSaving(true);
     setErrors([]);
 
     try {
-      const promptData = buildPrompt() as Prompt;
+      // Auto-generate metadata if title is missing (new prompts)
+      let currentForm = form;
+      if (!form.title.trim() && !isEdit) {
+        try {
+          const res = await fetch("/api/prompts/analyze", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ content: form.content }),
+          });
+
+          if (res.ok) {
+            const metadata: GeneratedMetadata = await res.json();
+            currentForm = {
+              ...form,
+              title: metadata.title,
+              description: metadata.description,
+              category: metadata.category,
+              tags: metadata.tags.join(", "),
+              whenToUse: metadata.whenToUse.join("\n"),
+              tips: metadata.tips.join("\n"),
+              id: generateId(metadata.title),
+            };
+            setForm(currentForm);
+          }
+        } catch {
+          // If AI fails, use fallback title from first line
+          const firstLine = form.content.split("\n")[0].slice(0, 50) || "New Prompt";
+          currentForm = {
+            ...form,
+            title: firstLine,
+            id: generateId(firstLine),
+          };
+          setForm(currentForm);
+        }
+      }
+
+      const promptData = {
+        id: currentForm.id,
+        title: currentForm.title,
+        description: currentForm.description,
+        category: currentForm.category,
+        tags: currentForm.tags.split(",").map(t => t.trim()).filter(Boolean),
+        author: "Jeffrey Emanuel",
+        twitter: "@doodlestein",
+        version: prompt?.version || "1.0.0",
+        featured: false,
+        difficulty: currentForm.difficulty,
+        created: prompt?.created || new Date().toISOString().split("T")[0],
+        content: currentForm.content,
+        whenToUse: currentForm.whenToUse.split("\n").map(s => s.trim()).filter(Boolean),
+        tips: currentForm.tips.split("\n").map(s => s.trim()).filter(Boolean),
+        estimatedTokens: Math.ceil(currentForm.content.length / 4),
+      } as Prompt;
+
       await onSave(promptData);
       onOpenChange(false);
     } catch (err: any) {
@@ -603,11 +652,14 @@ export function PromptEditor({ prompt, open, onOpenChange, onSave, onDelete }: P
               className="bg-violet-600 hover:bg-violet-500 text-white"
             >
               {saving ? (
-                <span>Saving...</span>
+                <>
+                  <Loader2 className="size-4 mr-1 animate-spin" />
+                  {!form.title.trim() && !isEdit ? "Generating..." : "Saving..."}
+                </>
               ) : (
                 <>
                   <Save className="size-4 mr-1" />
-                  {isEdit ? "Save Changes" : "Create Prompt"}
+                  {isEdit ? "Save Changes" : "Save"}
                 </>
               )}
             </Button>
