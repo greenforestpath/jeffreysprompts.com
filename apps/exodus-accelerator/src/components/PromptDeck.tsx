@@ -78,7 +78,7 @@ export function PromptDeck() {
   // Focus search on "/" key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "/" && document.activeElement?.tagName !== "INPUT") {
+      if (e.key === "/" && !["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName || "")) {
         e.preventDefault();
         searchInputRef.current?.focus();
       }
