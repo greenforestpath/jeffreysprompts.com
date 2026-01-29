@@ -4,7 +4,7 @@
 //! original Bun/TypeScript implementation while adding robust SQLite storage
 //! and improved performance.
 
-use clap::{Parser, Subcommand};
+use clap::{CommandFactory, Parser, Subcommand};
 use std::io::IsTerminal;
 use std::process::ExitCode;
 
@@ -257,6 +257,15 @@ fn main() -> ExitCode {
         }
         Commands::Random { category, tag, copy } => {
             commands::random::run(category, tag, copy, use_json)
+        }
+        Commands::Open { id } => {
+            commands::open::run(&id, use_json)
+        }
+        Commands::Doctor => {
+            commands::doctor::run(use_json)
+        }
+        Commands::Completion { shell } => {
+            commands::completion::run(&shell, Cli::command())
         }
         _ => {
             eprintln!("Command not yet implemented");

@@ -15,6 +15,7 @@ repository = "https://github.com/Dicklesworthstone/jeffreysprompts.com"
 [workspace.dependencies]
 # CLI framework
 clap = { version = "4", features = ["derive", "env", "string"] }
+clap_complete = "4"
 
 # Async runtime
 tokio = { version = "1", features = ["full"] }
