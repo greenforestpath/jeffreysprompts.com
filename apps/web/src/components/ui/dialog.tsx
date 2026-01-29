@@ -87,7 +87,7 @@ const dialogContentVariants = cva(
     "grid w-full gap-4 p-6",
     // Styling - refined shadow and border
     "border border-border/40 bg-card text-card-foreground",
-    "shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25),0_0_0_1px_rgba(0,0,0,0.05)]",
+    "shadow-2xl",
     // Smooth scale + opacity animation only (NO translate animation)
     "data-[state=open]:animate-in data-[state=closed]:animate-out",
     "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",

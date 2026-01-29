@@ -114,7 +114,7 @@ export function FirstVisitWelcome({
                 <Sparkles className="w-8 h-8 text-white" />
               </motion.div>
               <h2 id="welcome-title" className="text-xl font-bold mb-2">
-                Welcome to Jeffrey's Prompts
+                Welcome to Jeffrey&apos;s Prompts
               </h2>
               <p className="text-sm text-neutral-400 dark:text-neutral-500">
                 Discover powerful prompts for your AI tools
@@ -172,7 +172,7 @@ export function FirstVisitWelcome({
                 Get Started
               </Button>
               <p className="text-center text-[10px] text-neutral-500 dark:text-neutral-400 mt-3">
-                You can revisit these tips anytime from Settings
+                You can revisit these tips anytime from settings
               </p>
             </motion.div>
           </motion.div>

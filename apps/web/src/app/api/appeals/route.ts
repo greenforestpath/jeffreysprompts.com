@@ -5,7 +5,6 @@ import {
   canAppealAction,
   getUserAppeals,
   getAppeal,
-  APPEAL_SUBMISSION_WINDOW_DAYS,
 } from "@/lib/moderation/appeal-store";
 import { getModerationAction } from "@/lib/moderation/action-store";
 import { checkContentForSpam } from "@/lib/moderation/spam-check";

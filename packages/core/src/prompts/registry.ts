@@ -635,12 +635,23 @@ export function getPromptsByTag(tag: string): Prompt[] {
   return prompts.filter((p) => p.tags.includes(tag));
 }
 
+/**
+ * Simple text search across prompt fields
+ * Searches id, title, description, tags, and content
+ * @deprecated Use `searchPrompts` from `@jeffreysprompts/core/search` for better results (BM25 + semantic)
+ */
 export function searchPromptsByText(query: string): Prompt[] {
-  const lower = query.toLowerCase();
-  return prompts.filter(
-    (p) =>
-      p.title.toLowerCase().includes(lower) ||
-      p.description.toLowerCase().includes(lower) ||
-      p.tags.some((t) => t.toLowerCase().includes(lower))
-  );
+  const lowerQuery = query.toLowerCase().trim();
+  if (!lowerQuery) return [];
+
+  return prompts.filter((p) => {
+    const searchable = [
+      p.id,
+      p.title,
+      p.description,
+      ...p.tags,
+      p.content,
+    ].join(" ").toLowerCase();
+    return searchable.includes(lowerQuery);
+  });
 }

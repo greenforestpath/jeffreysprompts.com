@@ -7,16 +7,14 @@
  * - jfp collections <name> --add <prompt-id>: Add prompt to collection
  */
 
-import { writeFileSync } from "fs";
+import { atomicWriteFileSync, exitWithDeprecatedSkillCommand, isSafeSkillId, shouldOutputJson } from "../lib/utils";
 import Table from "cli-table3";
 import boxen from "boxen";
 import chalk from "chalk";
 import { ApiClient, isAuthError } from "../lib/api-client";
 import { isLoggedIn, loadCredentials } from "../lib/credentials";
 import { getOfflinePromptById, normalizePromptCategory } from "../lib/offline";
-import { isSafeSkillId, shouldOutputJson } from "../lib/utils";
 import { type Prompt } from "@jeffreysprompts/core/prompts";
-import { generateSkillMd } from "@jeffreysprompts/core/export/skills";
 import { generatePromptMarkdown } from "@jeffreysprompts/core/export/markdown";
 import { loadRegistry } from "../lib/registry-loader";
 
@@ -99,7 +97,7 @@ function extractPromptPayload(payload: unknown): PromptPayload | null {
     return data.prompt as PromptPayload;
   }
   if (typeof data.id === "string") {
-    return data as PromptPayload;
+    return data as unknown as PromptPayload;
   }
   return null;
 }
@@ -650,7 +648,13 @@ export async function exportCollectionCommand(
     return;
   }
 
-  const format: "skill" | "md" = options.format === "md" ? "md" : "skill";
+  if (options.format === "skill") {
+    exitWithDeprecatedSkillCommand(
+      options,
+      "Skill export moved to jsm. Run: jsm --help"
+    );
+  }
+
   const exported: Array<{ id: string; file?: string; source?: string }> = [];
   const failed: Array<{ id: string; error: string }> = [];
 
@@ -664,10 +668,7 @@ export async function exportCollectionCommand(
       continue;
     }
 
-    const content =
-      format === "skill"
-        ? generateSkillMd(resolved.prompt)
-        : generatePromptMarkdown(resolved.prompt);
+    const content = generatePromptMarkdown(resolved.prompt);
 
     if (options.stdout) {
       console.log(content);
@@ -686,11 +687,10 @@ export async function exportCollectionCommand(
       continue;
     }
 
-    const ext = format === "skill" ? "-SKILL.md" : ".md";
-    const filename = `${resolved.prompt.id}${ext}`;
+    const filename = `${resolved.prompt.id}.md`;
 
     try {
-      writeFileSync(filename, content);
+      atomicWriteFileSync(filename, content);
       exported.push({
         id: resolved.prompt.id,
         file: filename,

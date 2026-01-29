@@ -107,7 +107,8 @@ async function downloadFile(url: string, destPath: string, expectedSize?: number
   if (!body) throw new Error("No response body");
 
   const reader = body.getReader();
-  const fileStream = createWriteStream(destPath);
+  // Create with secure permissions (rwx------)
+  const fileStream = createWriteStream(destPath, { mode: 0o700 });
   const showProgress = process.stdout.isTTY && totalSize > 0;
   let lastProgressUpdate = 0;
 

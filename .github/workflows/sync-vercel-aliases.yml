@@ -1,0 +1,18 @@
+name: Sync Vercel Aliases (Disabled)
+
+# Disabled in this repo.
+# The pro domain is owned and managed by the premium repo (jeffreysprompts-pro).
+# Do NOT run alias sync from this repo or it will fight the premium deployment.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  sync-aliases:
+    name: Disabled Alias Sync
+    runs-on: ubuntu-latest
+    steps:
+      - name: Disabled notice
+        run: |
+          echo "::warning::Alias sync is disabled in this repo."
+          echo "pro.jeffreysprompts.com is managed by the premium repo (jeffreysprompts-pro)."

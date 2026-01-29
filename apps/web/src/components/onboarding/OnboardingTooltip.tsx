@@ -118,7 +118,15 @@ export function OnboardingTooltip({
         setVisible(true);
       }, delay);
     } else {
-      setVisible(false);
+      // Clear any pending timeout and schedule hiding on next tick
+      // to avoid synchronous setState in effect body
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      timeoutRef.current = setTimeout(() => {
+        setVisible(false);
+      }, 0);
     }
 
     return () => {

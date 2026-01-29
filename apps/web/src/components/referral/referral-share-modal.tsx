@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 import {
   Copy,
   Check,
@@ -96,7 +95,7 @@ export function ReferralShareModal({
             >
               {copied ? (
                 <>
-                  <Check className="size-4 text-green-500" />
+                  <Check className="size-4 text-emerald-500" />
                   Copied
                 </>
               ) : (
