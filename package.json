@@ -11,9 +11,7 @@
   ],
   "scripts": {
     "dev": "bun run --cwd apps/web dev",
-    "dev:accelerator": "bun run --cwd apps/exodus-accelerator dev",
     "build": "bun run --cwd apps/web build",
-    "build:accelerator": "bun run --cwd apps/exodus-accelerator build",
     "lint": "bun run --cwd apps/web lint",
     "test": "bun run --cwd apps/web test",
     "test:cli": "bun test jfp.test.ts packages/core/__tests__ packages/cli/__tests__",
