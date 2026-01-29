@@ -29,6 +29,15 @@ const intlMiddleware = createMiddleware({
 });
 
 export async function proxy(request: NextRequest) {
+  // Temporarily bypass i18n middleware to debug 404 issue
+  const { NextResponse } = await import("next/server");
+
+  // For root path, just continue without redirect
+  const pathname = request.nextUrl.pathname;
+  if (pathname === "/" || pathname === "") {
+    return NextResponse.next();
+  }
+
   return intlMiddleware(request);
 }
 
