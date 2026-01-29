@@ -7,10 +7,10 @@ tags:
   - debugging
 author: Jeffrey Emanuel
 twitter: '@doodlestein'
-version: 1.0.2
+version: 1.0.3
 featured: false
 difficulty: intermediate
-estimatedTokens: 104
+estimatedTokens: 108
 created: '2026-01-27'
 updatedAt: '2026-01-28'
 whenToUse:
@@ -18,7 +18,7 @@ whenToUse:
 tips:
   - Review and customize before using
 ---
-1. Write detailed a detailed IP(iterative plan)
+1. Write/Update  a Detailed/Comprehensive IP(iterative plan)
   2. Think deeply about the plan(if another AI is available query and talk together, otherwise "think again with fresh eyes, thesis-antithesis-synthesis then create GRANULAR  beads
   3. Review ALL beads: "Check
   each - is it optimal?"
