@@ -36,7 +36,7 @@ export const PromptChangeSchema = z.object({
 });
 
 export const PromptSchema = z.object({
-  id: z.string().regex(/^[a-z0-9-]+$/, "ID must be lowercase kebab-case"),
+  id: z.string().regex(/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/, "ID must be lowercase kebab-case starting with a letter"),
   title: z.string().min(1).max(100),
   description: z.string().min(1).max(200),
   category: PromptCategorySchema,
@@ -49,7 +49,7 @@ export const PromptSchema = z.object({
   estimatedTokens: z.number().positive().optional(),
   created: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   updatedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  content: z.string().min(1),
+  content: z.string().min(20, "Content must be at least 20 characters"),
   variables: z.array(PromptVariableSchema).optional(),
   whenToUse: z.array(z.string()).optional(),
   tips: z.array(z.string()).optional(),

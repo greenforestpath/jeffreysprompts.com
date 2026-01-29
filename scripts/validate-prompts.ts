@@ -4,11 +4,12 @@
 
 import { prompts } from "@jeffreysprompts/core/prompts";
 import { bundles } from "@jeffreysprompts/core/prompts/bundles";
+import { workflows } from "@jeffreysprompts/core/prompts/workflows";
 import { PromptSchema } from "@jeffreysprompts/core/prompts/schema";
 
 interface ValidationError {
   id: string;
-  type: "schema" | "duplicate" | "format" | "content" | "bundle";
+  type: "schema" | "duplicate" | "format" | "content" | "bundle" | "workflow";
   message: string;
 }
 
@@ -40,33 +41,6 @@ function validate(): ValidationError[] {
       });
     }
     ids.add(prompt.id);
-
-    // ID format check (lowercase kebab-case, starting with letter, no trailing hyphen)
-    if (!/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(prompt.id)) {
-      errors.push({
-        id: prompt.id,
-        type: "format",
-        message: "ID must be lowercase kebab-case starting with a letter and no trailing hyphens",
-      });
-    }
-
-    // Content check
-    if (!prompt.content?.trim()) {
-      errors.push({
-        id: prompt.id,
-        type: "content",
-        message: "Empty or missing content",
-      });
-    }
-
-    // Content minimum length check
-    if (prompt.content && prompt.content.trim().length < 20) {
-      errors.push({
-        id: prompt.id,
-        type: "content",
-        message: "Content is too short (minimum 20 characters)",
-      });
-    }
   }
 
   // Validate bundles reference valid prompt IDs
@@ -79,6 +53,21 @@ function validate(): ValidationError[] {
           id: bundle.id,
           type: "bundle",
           message: `Bundle references non-existent prompt: ${promptId}`,
+        });
+      }
+    }
+  }
+
+  // Validate workflows reference valid prompt IDs
+  console.log("Validating workflows...\n");
+
+  for (const workflow of workflows) {
+    for (const step of workflow.steps) {
+      if (!ids.has(step.promptId)) {
+        errors.push({
+          id: workflow.id,
+          type: "workflow",
+          message: `Workflow step '${step.id}' references non-existent prompt: ${step.promptId}`,
         });
       }
     }
@@ -98,6 +87,7 @@ function main() {
   if (errors.length === 0) {
     console.log(`✅ Validated ${prompts.length} prompts successfully`);
     console.log(`✅ Validated ${bundles.length} bundles successfully`);
+    console.log(`✅ Validated ${workflows.length} workflows successfully`);
     console.log();
     process.exit(0);
   }

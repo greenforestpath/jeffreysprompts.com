@@ -1,8 +1,8 @@
-import { writeFileSync, mkdirSync } from "fs";
+import { mkdirSync } from "fs";
 import { join } from "path";
 import { generatePromptMarkdown } from "@jeffreysprompts/core/export/markdown";
 import chalk from "chalk";
-import { exitWithDeprecatedSkillCommand, shouldOutputJson } from "../lib/utils";
+import { exitWithDeprecatedSkillCommand, shouldOutputJson, atomicWriteFileSync } from "../lib/utils";
 import { loadRegistry } from "../lib/registry-loader";
 
 interface ExportOptions {
@@ -76,7 +76,7 @@ export async function exportCommand(ids: string[], options: ExportOptions) {
     } else {
       const filename = join(outputDir, `${prompt.id}.md`);
       try {
-        writeFileSync(filename, content);
+        atomicWriteFileSync(filename, content);
         results.push({ id: prompt.id, file: filename });
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);

@@ -55,15 +55,15 @@ const zincAllowlist: string[] = [];
 // Files allowed to use indigo (Pro features, intentional accents)
 // Indigo is used as the brand accent color throughout the design system
 const indigoAllowlist = [
-  // Pro badge in footer - intentional branding
-  "app/page.tsx",
+  // Pro badge in footer - intentional branding (i18n locale prefix)
+  "app/[locale]/page.tsx",
   // Landing page sections use indigo for brand consistency
   "components/landing/",
-  // Legal and help pages use indigo accents
+  // Legal and help pages use indigo accents (i18n locale prefix)
   "components/legal/",
   "components/help/",
-  "app/help/",
-  "app/guidelines/",
+  "app/[locale]/help/",
+  "app/[locale]/guidelines/",
   // Mobile components use indigo accents
   "components/mobile/",
   // UI components with indigo accents
@@ -75,13 +75,13 @@ const indigoAllowlist = [
   "components/TextReveal.tsx",
   "components/SwipeablePromptCard.tsx",
   "components/PullToRefresh.tsx",
-  // App pages with intentional indigo accents
-  "app/user/",
+  // App pages with intentional indigo accents (i18n locale prefix)
+  "app/[locale]/user/",
   "app/global-error.tsx",
-  // Pro/Premium feature pages - support tickets use indigo branding
-  "app/settings/",
-  "app/admin/",
-  "app/contact/",
+  // Pro/Premium feature pages - support tickets use indigo branding (i18n locale prefix)
+  "app/[locale]/settings/",
+  "app/[locale]/admin/",
+  "app/[locale]/contact/",
   // Documentation components with indigo accents
   "components/docs/",
   // Onboarding components use indigo for brand accent

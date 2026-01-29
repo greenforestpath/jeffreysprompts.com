@@ -48,15 +48,14 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               !error && [
                 "focus:border-primary",
                 "focus-visible:ring-ring/50",
-                "focus:shadow-[0_0_0_3px_oklch(0.58_0.19_195_/_0.1),_0_0_20px_oklch(0.58_0.19_195_/_0.1)]",
-                "dark:focus:shadow-[0_0_0_3px_oklch(0.72_0.18_195_/_0.15),_0_0_20px_oklch(0.72_0.18_195_/_0.15)]",
+                "focus:shadow-[0_0_0_3px_color-mix(in_oklch,var(--primary),transparent_90%),_0_0_20px_color-mix(in_oklch,var(--primary),transparent_85%)]",
               ],
               // Error state with red glow
               error && [
                 "border-destructive",
                 "focus:border-destructive",
                 "focus-visible:ring-destructive/50",
-                "focus:shadow-[0_0_0_3px_oklch(0.60_0.22_25_/_0.1),_0_0_20px_oklch(0.60_0.22_25_/_0.1)]",
+                "focus:shadow-[0_0_0_3px_color-mix(in_oklch,var(--destructive),transparent_90%),_0_0_20px_color-mix(in_oklch,var(--destructive),transparent_90%)]",
               ],
               "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-muted/50",
               "file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-primary",
