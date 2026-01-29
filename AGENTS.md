@@ -80,6 +80,8 @@ A GitHub Action (`.github/workflows/sync-vercel-aliases.yml`) automatically sync
 - Runs every 6 hours as a safety net
 - Checks CSS chunk alignment between domains
 - Re-aliases pro subdomain if they differ
+- **Hard-fails if `VERCEL_TOKEN` is missing** (so drift never goes unnoticed)
+- **Verifies alias target alignment** (pro alias must point to the same deployment URL as the main site)
 
 **One-time setup required:**
 1. Generate a Vercel token: https://vercel.com/account/tokens
