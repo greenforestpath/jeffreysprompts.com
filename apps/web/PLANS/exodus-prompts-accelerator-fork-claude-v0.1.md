@@ -327,7 +327,7 @@ apps/exodus-accelerator/
 ## Verification
 
 ### Prompt Deck (Primary)
-1. `cd /Users/personal/Projects/CFWOS/jeffreysprompts.com`
+1. `cd /Users/personal/Projects/CFOS/jeffreysprompts.com`
 2. `bun run dev:accelerator`
 3. Open http://localhost:3001
 4. See Prompt Deck grid immediately
