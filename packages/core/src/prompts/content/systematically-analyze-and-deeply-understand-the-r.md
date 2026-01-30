@@ -20,7 +20,7 @@ tips:
 ---
 This is my first time using this prompt.
   Can you create yourself a
-  sandbox_experiment_folder and do this
+  sandbox_experiments/ folder (timestamped) and do this
   task? essentially look at both repos,
   create whatever artifacts are necessary
   then finally some diagrams . loop me in
